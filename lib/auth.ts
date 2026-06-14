@@ -49,16 +49,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials);
-        if (!parsed.success) return null;
+        if (!parsed.success) {
+          console.log('[auth] invalid credentials shape');
+          return null;
+        }
 
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },
         });
-        if (!user?.passwordHash) return null;
+        if (!user) {
+          console.log('[auth] user not found:', parsed.data.email);
+          return null;
+        }
+        if (!user.passwordHash) {
+          console.log('[auth] user has no passwordHash:', parsed.data.email);
+          return null;
+        }
 
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) {
+          console.log('[auth] password mismatch for:', parsed.data.email);
+          return null;
+        }
 
+        console.log('[auth] login success:', user.id);
         return { id: user.id, email: user.email, name: user.name, image: user.avatarUrl };
       },
     }),

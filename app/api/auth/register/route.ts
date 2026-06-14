@@ -21,9 +21,11 @@ function generateSlug(name: string): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const parsed = schema.safeParse(body);
+    console.log('[register] received body keys:', Object.keys(body));
 
+    const parsed = schema.safeParse(body);
     if (!parsed.success) {
+      console.log('[register] validation failed:', parsed.error.flatten().fieldErrors);
       return NextResponse.json(
         { error: 'Invalid input', details: parsed.error.flatten().fieldErrors },
         { status: 400 },
@@ -31,9 +33,11 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, orgName, email, password } = parsed.data;
+    console.log('[register] attempting registration for:', email);
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
+      console.log('[register] email already exists:', email);
       return NextResponse.json(
         { error: 'A user with that email already exists' },
         { status: 409 },
@@ -41,8 +45,8 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
+    console.log('[register] password hashed');
 
-    // Ensure slug uniqueness by appending a counter if needed
     const baseSlug = generateSlug(orgName);
     let slug = baseSlug;
     let counter = 1;
@@ -53,8 +57,9 @@ export async function POST(req: NextRequest) {
     const organization = await prisma.organization.create({
       data: { name: orgName, slug },
     });
+    console.log('[register] organization created:', organization.id);
 
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name,
         email,
@@ -63,6 +68,7 @@ export async function POST(req: NextRequest) {
         organizationId: organization.id,
       },
     });
+    console.log('[register] user created:', user.id);
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {
