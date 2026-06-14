@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 function OraLogo() {
@@ -21,6 +21,8 @@ function OraLogo() {
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const justRegistered = searchParams.get('registered') === '1';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -39,10 +41,10 @@ export default function SignInPage() {
 
     setLoading(false);
 
-    if (result?.error) {
+    if (!result || result.error) {
       setError('Invalid email or password');
     } else {
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     }
   }
 
@@ -53,6 +55,12 @@ export default function SignInPage() {
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
           <h1 className="text-xl font-bold mb-1 text-center">Welcome back</h1>
           <p className="text-sm text-slate-400 text-center mb-6">Sign in to your ORA workspace</p>
+
+          {justRegistered && !error && (
+            <div className="bg-emerald-950 border border-emerald-800 text-emerald-300 text-sm px-3 py-2 rounded-lg mb-4">
+              Account created! Sign in to continue.
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-950 border border-red-800 text-red-300 text-sm px-3 py-2 rounded-lg mb-4">

@@ -41,11 +41,11 @@ export default function SignUpPage() {
 
     setLoading(false);
 
-    if (result?.error) {
-      setError('Account created but login failed. Please sign in.');
-      router.push('/auth/signin');
+    if (!result || result.error) {
+      // Account was created — just send them to sign in
+      window.location.href = '/auth/signin?registered=1';
     } else {
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     }
   }
 
