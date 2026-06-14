@@ -49,6 +49,8 @@ model Organization {
   projects    Project[]
   timePeriods TimePeriod[]
   invites     Invite[]
+
+  @@map("organizations")
 }
 
 model User {
@@ -74,6 +76,7 @@ model User {
   accounts      Account[]
 
   @@index([organizationId])
+  @@map("users")
 }
 
 model Account {
@@ -93,6 +96,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
@@ -102,6 +106,8 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
 model VerificationToken {
@@ -110,6 +116,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model Client {
@@ -125,6 +132,7 @@ model Client {
   projects     Project[]
 
   @@index([organizationId])
+  @@map("clients")
 }
 
 model Project {
@@ -144,6 +152,7 @@ model Project {
   timeEntries  TimeEntry[]
 
   @@index([organizationId])
+  @@map("projects")
 }
 
 model TimeEntry {
@@ -166,6 +175,7 @@ model TimeEntry {
   @@index([userId])
   @@index([projectId])
   @@index([startedAt])
+  @@map("time_entries")
 }
 
 model TimePeriod {
@@ -188,6 +198,7 @@ model TimePeriod {
   entries      TimeEntry[]
 
   @@index([organizationId])
+  @@map("time_periods")
 }
 
 model Invite {
@@ -202,4 +213,5 @@ model Invite {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
+  @@map("invites")
 }
