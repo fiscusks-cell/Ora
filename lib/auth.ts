@@ -48,11 +48,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        const parsed = loginSchema.safeParse(credentials);
+        console.log('[auth] authorize called, keys:', credentials ? Object.keys(credentials) : 'null');
+
+        const parsed = loginSchema.safeParse({
+          email: typeof credentials?.email === 'string' ? credentials.email : '',
+          password: typeof credentials?.password === 'string' ? credentials.password : '',
+        });
+
         if (!parsed.success) {
-          console.log('[auth] invalid credentials shape');
+          console.log('[auth] invalid credentials shape:', parsed.error.flatten().fieldErrors);
           return null;
         }
+
+        console.log('[auth] looking up:', parsed.data.email);
 
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },
@@ -66,6 +74,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        console.log('[auth] comparing password, hash prefix:', user.passwordHash.slice(0, 7));
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!valid) {
           console.log('[auth] password mismatch for:', parsed.data.email);
