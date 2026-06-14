@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getValidClient, qboApiBase } from '@/lib/qbo';
 
 export async function POST(
   _req: NextRequest,
@@ -10,15 +11,29 @@ export async function POST(
     const session = await auth();
     if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    const sessionUser = session.user as { id: string; organizationId: string };
     const { id } = await params;
 
-    const period = await prisma.timePeriod.findFirst({ where: { id, organizationId } });
+    // ── load period with entries ─────────────────────────────────────────────
+
+    const period = await prisma.timePeriod.findFirst({
+      where: { id, organizationId: sessionUser.organizationId },
+      include: {
+        entries: {
+          where: { isBillable: true, durationSeconds: { gt: 0 } },
+          include: {
+            project: { include: { client: true } },
+            user: { select: { name: true } },
+          },
+        },
+      },
+    });
+
     if (!period) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     if (period.status !== 'APPROVED') {
       return NextResponse.json(
-        { error: `Period must be APPROVED before publishing (current status: ${period.status})` },
+        { error: `Period must be APPROVED before publishing (current: ${period.status})` },
         { status: 400 },
       );
     }
@@ -30,34 +45,192 @@ export async function POST(
       );
     }
 
-    if (!process.env.INTUIT_CLIENT_ID) {
-      // Stub / demo mode: publish with a demo invoice ID so the UI can show the flow
-      const stubInvoiceId = `QBO-DEMO-${id}`;
+    // ── demo stub when credentials absent ────────────────────────────────────
 
+    if (!process.env.INTUIT_CLIENT_ID) {
+      const stubId = `QBO-DEMO-${id}`;
       await prisma.timePeriod.update({
         where: { id },
-        data: {
-          status: 'PUBLISHED',
-          publishedAt: new Date(),
-          qboInvoiceId: stubInvoiceId,
-        },
+        data: { status: 'PUBLISHED', publishedAt: new Date(), qboInvoiceId: stubId },
       });
-
       return NextResponse.json({
         ok: true,
-        invoiceId: stubInvoiceId,
-        message: 'QuickBooks integration not configured. Add INTUIT_CLIENT_ID to environment variables.',
+        invoiceId: stubId,
+        message: 'Demo mode — add INTUIT_CLIENT_ID to enable real QuickBooks publishing.',
       });
     }
 
-    // Full QBO OAuth + invoice creation would be implemented here once INTUIT_CLIENT_ID is set.
-    // For now, return a ready confirmation so future implementation can plug in.
-    return NextResponse.json({
-      ok: true,
-      message: 'QBO integration ready but not yet implemented',
+    // ── get valid (auto-refreshed) OAuth client ──────────────────────────────
+
+    const { client, realmId } = await getValidClient(sessionUser.id);
+    const base = qboApiBase(realmId);
+    const token = client.getToken().access_token;
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+
+    // ── group billable entries by project ────────────────────────────────────
+
+    type LineGroup = {
+      projectName: string;
+      clientName: string | null;
+      qboCustomerId: string | null;
+      totalHours: number;
+      hourlyRate: number;
+      amount: number;
+    };
+
+    const byProject = new Map<string, LineGroup>();
+
+    for (const entry of period.entries) {
+      const key = entry.projectId ?? '__no_project__';
+      const rate = entry.project ? parseFloat(entry.project.hourlyRate.toString()) : 0;
+      const hours = (entry.durationSeconds ?? 0) / 3600;
+
+      if (!byProject.has(key)) {
+        byProject.set(key, {
+          projectName: entry.project?.name ?? 'Time',
+          clientName: entry.project?.client?.name ?? null,
+          qboCustomerId: entry.project?.client?.qboCustomerId ?? null,
+          totalHours: 0,
+          hourlyRate: rate,
+          amount: 0,
+        });
+      }
+
+      const g = byProject.get(key)!;
+      g.totalHours += hours;
+      g.amount += hours * rate;
+    }
+
+    // ── resolve or create QBO Customer for each unique client ────────────────
+
+    async function ensureCustomer(clientName: string, existingQboId: string | null): Promise<string> {
+      if (existingQboId) return existingQboId;
+
+      // search first
+      const searchRes = await fetch(
+        `${base}/query?query=${encodeURIComponent(`SELECT * FROM Customer WHERE DisplayName = '${clientName.replace(/'/g, "\\'")}'`)}&minorversion=65`,
+        { headers },
+      );
+      const searchData = (await searchRes.json()) as { QueryResponse: { Customer?: { Id: string }[] } };
+      const existing = searchData.QueryResponse.Customer?.[0];
+      if (existing) return existing.Id;
+
+      // create
+      const createRes = await fetch(`${base}/customer?minorversion=65`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ DisplayName: clientName }),
+      });
+      const createData = (await createRes.json()) as { Customer: { Id: string } };
+      return createData.Customer.Id;
+    }
+
+    // ── build Invoice Line items ─────────────────────────────────────────────
+
+    // Pick the primary customer (first group that has one, or "Time Tracking")
+    let primaryCustomerId: string | null = null;
+
+    for (const [, g] of byProject) {
+      if (g.clientName) {
+        primaryCustomerId = await ensureCustomer(g.clientName, g.qboCustomerId);
+
+        // persist QBO customer ID back to Client record if we resolved it
+        if (!g.qboCustomerId && g.clientName) {
+          await prisma.client.updateMany({
+            where: { organizationId: sessionUser.organizationId, name: g.clientName },
+            data: { qboCustomerId: primaryCustomerId },
+          });
+        }
+        break;
+      }
+    }
+
+    if (!primaryCustomerId) {
+      // fallback: use a catch-all customer
+      primaryCustomerId = await ensureCustomer('Time Tracking Client', null);
+    }
+
+    const lines = Array.from(byProject.values()).map((g, i) => ({
+      Id: String(i + 1),
+      LineNum: i + 1,
+      Description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ $${g.hourlyRate.toFixed(2)}/hr`,
+      Amount: parseFloat(g.amount.toFixed(2)),
+      DetailType: 'SalesItemLineDetail',
+      SalesItemLineDetail: {
+        Qty: parseFloat(g.totalHours.toFixed(4)),
+        UnitPrice: parseFloat(g.hourlyRate.toFixed(2)),
+        ItemRef: { value: '1', name: 'Services' }, // default Services item
+      },
+    }));
+
+    // ── create QBO Invoice ────────────────────────────────────────────────────
+
+    const invoicePayload = {
+      Line: lines,
+      CustomerRef: { value: primaryCustomerId },
+      DocNumber: `ORA-${id.slice(-8).toUpperCase()}`,
+      TxnDate: new Date().toISOString().slice(0, 10),
+      PrivateNote: `Billing period ${period.startDate.toISOString().slice(0, 10)} – ${period.endDate.toISOString().slice(0, 10)}`,
+    };
+
+    const invoiceRes = await fetch(`${base}/invoice?minorversion=65`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(invoicePayload),
     });
+
+    if (!invoiceRes.ok) {
+      const errBody = await invoiceRes.text();
+      console.error('[qbo publish] invoice create failed:', errBody);
+      return NextResponse.json({ error: 'Failed to create QBO invoice', detail: errBody }, { status: 502 });
+    }
+
+    const invoiceData = (await invoiceRes.json()) as { Invoice: { Id: string; DocNumber: string } };
+    const qboInvoiceId = invoiceData.Invoice.Id;
+    const docNumber = invoiceData.Invoice.DocNumber;
+
+    // ── attach PDF report (best-effort) ──────────────────────────────────────
+
+    // QBO supports attachments via /attachable. We attach if reportPdfUrl is a data URL
+    // or a publicly accessible URL. If absent, skip silently.
+    if (period.reportPdfUrl) {
+      try {
+        const attachPayload = {
+          AttachableRef: [{ EntityRef: { type: 'Invoice', value: qboInvoiceId } }],
+          FileName: `ORA-period-${id.slice(-8)}.pdf`,
+          ContentType: 'application/pdf',
+          FileAccessUri: period.reportPdfUrl,
+        };
+        await fetch(`${base}/attachable?minorversion=65`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(attachPayload),
+        });
+      } catch (attachErr) {
+        console.warn('[qbo publish] PDF attach failed (non-fatal):', attachErr);
+      }
+    }
+
+    // ── update TimePeriod ─────────────────────────────────────────────────────
+
+    await prisma.timePeriod.update({
+      where: { id },
+      data: {
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        qboInvoiceId,
+      },
+    });
+
+    return NextResponse.json({ ok: true, invoiceId: qboInvoiceId, docNumber });
   } catch (err) {
     console.error('[periods/publish/qbo POST] error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const message = err instanceof Error ? err.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
