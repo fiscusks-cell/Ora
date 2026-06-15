@@ -144,10 +144,7 @@ export default function LandingPage() {
             {features.map((f) => (
               <div
                 key={f.title}
-                className="rounded-2xl p-7 transition-all duration-200 hover:scale-[1.02] bg-white"
-                style={{ border: '1px solid #E2E8F0' }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = '#CBD5E1')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = '#E2E8F0')}
+                className="rounded-2xl p-7 transition-all duration-200 hover:scale-[1.02] bg-white border border-slate-200 hover:border-slate-300"
               >
                 <div className="mb-5">{f.icon}</div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">{f.title}</h3>
