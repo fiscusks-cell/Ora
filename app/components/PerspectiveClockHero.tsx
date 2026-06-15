@@ -164,17 +164,14 @@ export default function PerspectiveClockHero() {
       for (const s of strands) {
         const flicker = 0.7 + 0.3 * Math.sin(now2 * 2.3 + s.phase);
         const x = cx + s.xOff;
-        const grad = ctx.createLinearGradient(x, ellipseTopY, x, ellipseTopY - s.height);
-        grad.addColorStop(0, s.color.replace('#', 'rgba(') + ',0.0)'); // opaque base
-        // parse hex to rgba properly
         const r16 = parseInt(s.color.slice(1, 3), 16);
         const g16 = parseInt(s.color.slice(3, 5), 16);
         const b16 = parseInt(s.color.slice(5, 7), 16);
         const base = `rgba(${r16},${g16},${b16},`;
-        const grad2 = ctx.createLinearGradient(x, ellipseTopY, x, ellipseTopY - s.height);
-        grad2.addColorStop(0, base + (0.6 * flicker) + ')');
-        grad2.addColorStop(0.4, base + (0.35 * flicker) + ')');
-        grad2.addColorStop(1, base + '0)');
+        const grad = ctx.createLinearGradient(x, ellipseTopY, x, ellipseTopY - s.height);
+        grad.addColorStop(0, base + (0.6 * flicker) + ')');
+        grad.addColorStop(0.4, base + (0.35 * flicker) + ')');
+        grad.addColorStop(1, base + '0)');
 
         ctx.save();
         ctx.shadowBlur = 18;
@@ -182,7 +179,7 @@ export default function PerspectiveClockHero() {
         ctx.beginPath();
         ctx.moveTo(x, ellipseTopY);
         ctx.lineTo(x, ellipseTopY - s.height);
-        ctx.strokeStyle = grad2;
+        ctx.strokeStyle = grad;
         ctx.lineWidth = s.width;
         ctx.lineCap = 'round';
         ctx.stroke();
