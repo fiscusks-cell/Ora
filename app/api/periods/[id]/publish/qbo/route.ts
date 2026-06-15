@@ -304,25 +304,43 @@ export async function POST(
     const qboInvoiceId = invoiceData.Invoice.Id;
     const docNumber = invoiceData.Invoice.DocNumber;
 
-    // ── attach PDF report (best-effort) ──────────────────────────────────────
+    // ── attach PDF report via multipart upload ────────────────────────────────
 
-    // QBO supports attachments via /attachable. We attach if reportPdfUrl is a data URL
-    // or a publicly accessible URL. If absent, skip silently.
     if (period.reportPdfUrl) {
-      try {
-        const attachPayload = {
-          AttachableRef: [{ EntityRef: { type: 'Invoice', value: qboInvoiceId } }],
-          FileName: `ORA-period-${id.slice(-8)}.pdf`,
-          ContentType: 'application/pdf',
-          FileAccessUri: period.reportPdfUrl,
-        };
-        await fetch(`${base}/attachable?minorversion=65`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(attachPayload),
-        });
-      } catch (attachErr) {
-        console.warn('[qbo publish] PDF attach failed (non-fatal):', attachErr);
+      const pdfRes = await fetch(period.reportPdfUrl);
+      if (!pdfRes.ok) {
+        return NextResponse.json(
+          { error: 'Could not fetch PDF report for attachment. Invoice was created but not marked Published.' },
+          { status: 502 },
+        );
+      }
+
+      const pdfBuffer = await pdfRes.arrayBuffer();
+      const fileName = `ORA-period-${id.slice(-8).toUpperCase()}.pdf`;
+
+      const metadata = JSON.stringify({
+        AttachableRef: [{ EntityRef: { type: 'Invoice', value: qboInvoiceId } }],
+        FileName: fileName,
+        ContentType: 'application/pdf',
+      });
+
+      const form = new FormData();
+      form.append('file_metadata', new Blob([metadata], { type: 'application/json' }), 'metadata');
+      form.append('file_content', new Blob([pdfBuffer], { type: 'application/pdf' }), fileName);
+
+      const uploadRes = await fetch(`${base}/upload?minorversion=65`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        body: form,
+      });
+
+      if (!uploadRes.ok) {
+        const uploadErr = await uploadRes.text();
+        console.error('[qbo publish] PDF upload failed:', uploadErr);
+        return NextResponse.json(
+          { error: 'PDF report could not be attached to the QBO invoice. Invoice was created but not marked Published.' },
+          { status: 502 },
+        );
       }
     }
 

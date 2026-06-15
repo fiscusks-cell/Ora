@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { formatDuration, formatCurrency } from '@/lib/utils';
+import { getCurrency } from '@/lib/currency';
 import { format } from 'date-fns';
 import { CheckCircle, Clock, FileText, AlertCircle } from 'lucide-react';
 
@@ -12,7 +13,7 @@ interface Entry {
   stoppedAt: string | null;
   durationSeconds: number | null;
   isBillable: boolean;
-  project: { id: string; name: string; color: string; hourlyRate: string; client: { name: string } | null } | null;
+  project: { id: string; name: string; color: string; hourlyRate: string; client: { name: string; currency: string } | null } | null;
   user: { id: string; name: string };
 }
 
@@ -33,6 +34,7 @@ interface Period {
     projectName: string;
     projectColor: string;
     clientName: string | null;
+    clientCurrency: string;
     totalSeconds: number;
     billableAmount: number;
   }>;
@@ -197,7 +199,7 @@ export default function PeriodDetailPage() {
                   </div>
                   <div>
                     <div className="text-xs text-slate-500">Amount</div>
-                    <div className="text-sm font-semibold text-white">{formatCurrency(p.billableAmount)}</div>
+                    <div className="text-sm font-semibold text-white">{formatCurrency(p.billableAmount, p.clientCurrency)}</div>
                   </div>
                 </div>
               </div>

@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Archive, Pencil, X } from 'lucide-react';
+import { getCurrency } from '@/lib/currency';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
 interface Client {
   id: string;
   name: string;
+  currency: string;
 }
 
 interface Project {
@@ -163,6 +165,10 @@ export default function ProjectsPage() {
   const activeCount = projects.filter((p) => !p.isArchived).length;
   const archivedCount = projects.filter((p) => p.isArchived).length;
 
+  // Currency symbol for the hourly rate field — derived from selected client
+  const selectedClient = clients.find((c) => c.id === form.clientId) ?? null;
+  const rateSymbol = getCurrency(selectedClient?.currency ?? 'USD').symbol;
+
   return (
     <div className="p-6 md:p-8 max-w-5xl mx-auto">
       {/* Header */}
@@ -199,66 +205,70 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {visibleProjects.map((p) => (
-            <div
-              key={p.id}
-              className={`bg-slate-900 border border-slate-800 rounded-xl p-5 relative overflow-hidden transition-opacity ${
-                p.isArchived ? 'opacity-50' : ''
-              }`}
-              style={{ borderLeftColor: p.color, borderLeftWidth: 4 }}
-            >
-              {/* Header row */}
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <h3 className="font-semibold text-white text-sm leading-tight truncate">
-                  {p.name}
-                </h3>
-                {!p.isArchived && (
-                  <div className="flex items-center gap-0.5 flex-shrink-0">
-                    <button
-                      onClick={() => openEdit(p)}
-                      className="p-1.5 text-slate-600 hover:text-slate-300 transition-colors rounded"
-                      title="Edit project"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleArchive(p.id)}
-                      className="p-1.5 text-slate-600 hover:text-amber-400 transition-colors rounded"
-                      title="Archive project"
-                    >
-                      <Archive className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Meta */}
-              <div className="space-y-1.5">
-                {p.client && (
-                  <p className="text-xs text-slate-500 truncate">{p.client.name}</p>
-                )}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs text-slate-400">
-                    ${Number(p.hourlyRate).toFixed(2)}/hr
-                  </span>
-                  <span
-                    className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                      p.isBillable
-                        ? 'bg-emerald-900/60 text-emerald-400'
-                        : 'bg-slate-800 text-slate-500'
-                    }`}
-                  >
-                    {p.isBillable ? 'Billable' : 'Non-billable'}
-                  </span>
-                  {p.isArchived && (
-                    <span className="text-xs bg-amber-900/40 text-amber-600 px-1.5 py-0.5 rounded">
-                      Archived
-                    </span>
+          {visibleProjects.map((p) => {
+            const currency = getCurrency(p.client?.currency ?? 'USD');
+            const rateDecimals = p.client?.currency === 'JPY' ? 0 : 2;
+            return (
+              <div
+                key={p.id}
+                className={`bg-slate-900 border border-slate-800 rounded-xl p-5 relative overflow-hidden transition-opacity ${
+                  p.isArchived ? 'opacity-50' : ''
+                }`}
+                style={{ borderLeftColor: p.color, borderLeftWidth: 4 }}
+              >
+                {/* Header row */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <h3 className="font-semibold text-white text-sm leading-tight truncate">
+                    {p.name}
+                  </h3>
+                  {!p.isArchived && (
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                      <button
+                        onClick={() => openEdit(p)}
+                        className="p-1.5 text-slate-600 hover:text-slate-300 transition-colors rounded"
+                        title="Edit project"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleArchive(p.id)}
+                        className="p-1.5 text-slate-600 hover:text-amber-400 transition-colors rounded"
+                        title="Archive project"
+                      >
+                        <Archive className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
+
+                {/* Meta */}
+                <div className="space-y-1.5">
+                  {p.client && (
+                    <p className="text-xs text-slate-500 truncate">{p.client.name}</p>
+                  )}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-slate-400">
+                      {currency.symbol} {Number(p.hourlyRate).toFixed(rateDecimals)}/hr
+                    </span>
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                        p.isBillable
+                          ? 'bg-emerald-900/60 text-emerald-400'
+                          : 'bg-slate-800 text-slate-500'
+                      }`}
+                    >
+                      {p.isBillable ? 'Billable' : 'Non-billable'}
+                    </span>
+                    {p.isArchived && (
+                      <span className="text-xs bg-amber-900/40 text-amber-600 px-1.5 py-0.5 rounded">
+                        Archived
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -311,10 +321,15 @@ export default function ProjectsPage() {
                   <option value="">No client</option>
                   {clients.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name}
+                      {c.name} ({getCurrency(c.currency).label})
                     </option>
                   ))}
                 </select>
+                {selectedClient && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    Currency inherited from client: {getCurrency(selectedClient.currency).label}
+                  </p>
+                )}
               </div>
 
               {/* Color picker */}
@@ -338,12 +353,14 @@ export default function ProjectsPage() {
                 </div>
               </div>
 
-              {/* Hourly rate */}
+              {/* Hourly rate — symbol from client's currency */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Hourly rate (USD)</label>
+                <label className="block text-sm text-slate-400 mb-1.5">
+                  Hourly rate{selectedClient ? ` (${getCurrency(selectedClient.currency).label})` : ''}
+                </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                    $
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm select-none">
+                    {rateSymbol}
                   </span>
                   <input
                     type="number"
@@ -351,7 +368,7 @@ export default function ProjectsPage() {
                     step="0.01"
                     value={form.hourlyRate}
                     onChange={(e) => setForm((f) => ({ ...f, hourlyRate: e.target.value }))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-7 pr-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="0.00"
                   />
                 </div>
