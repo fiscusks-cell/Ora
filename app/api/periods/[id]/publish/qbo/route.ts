@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getValidClient, qboApiBase } from '@/lib/qbo';
+import { getCurrency, roundForCurrency } from '@/lib/currency';
 
 export async function POST(
   _req: NextRequest,
@@ -164,17 +165,16 @@ export async function POST(
       primaryCustomerId = await ensureCustomer('Time Tracking Client', null);
     }
 
-    const isJPY = clientCurrency === 'JPY';
-    const currencySymbol = isJPY ? '¥' : '$';
-    const rateDecimals = isJPY ? 0 : 2;
+    const currencyMeta = getCurrency(clientCurrency ?? 'USD');
+    const decimals = clientCurrency === 'JPY' ? 0 : 2;
 
     const lines = Array.from(byProject.values()).map((g, i) => {
-      const unitPrice = isJPY ? Math.round(g.hourlyRate) : parseFloat(g.hourlyRate.toFixed(2));
-      const lineAmount = isJPY ? Math.round(g.amount) : parseFloat(g.amount.toFixed(2));
+      const unitPrice = roundForCurrency(g.hourlyRate, clientCurrency ?? 'USD');
+      const lineAmount = roundForCurrency(g.amount, clientCurrency ?? 'USD');
       return {
         Id: String(i + 1),
         LineNum: i + 1,
-        Description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ ${currencySymbol}${g.hourlyRate.toFixed(rateDecimals)}/hr`,
+        Description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ ${currencyMeta.symbol} ${g.hourlyRate.toFixed(decimals)}/hr`,
         Amount: lineAmount,
         DetailType: 'SalesItemLineDetail',
         SalesItemLineDetail: {

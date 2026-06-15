@@ -3,6 +3,7 @@ import { Invoice, LineItem, Contact, LineAmountTypes, CurrencyCode } from 'xero-
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getValidXeroClient } from '@/lib/xero';
+import { getCurrency, roundForCurrency } from '@/lib/currency';
 
 export async function POST(
   _req: NextRequest,
@@ -108,7 +109,6 @@ export async function POST(
       if (g.clientCurrency) { clientCurrency = g.clientCurrency.toUpperCase(); break; }
     }
 
-    const isJPY = clientCurrency === 'JPY';
 
     // ── resolve or create Xero Contact ───────────────────────────────────────
 
@@ -151,13 +151,14 @@ export async function POST(
 
     // ── build line items ─────────────────────────────────────────────────────
 
-    const rateDecimals = isJPY ? 0 : 2;
+    const currencyMeta = getCurrency(clientCurrency);
+    const rateDecimals = clientCurrency === 'JPY' ? 0 : 2;
     const lineItems: LineItem[] = Array.from(byProject.values()).map((g) => ({
-      description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ ${isJPY ? '¥' : '$'}${g.hourlyRate.toFixed(rateDecimals)}/hr`,
+      description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ ${currencyMeta.symbol} ${g.hourlyRate.toFixed(rateDecimals)}/hr`,
       quantity: parseFloat(g.totalHours.toFixed(4)),
-      unitAmount: isJPY ? Math.round(g.hourlyRate) : parseFloat(g.hourlyRate.toFixed(2)),
+      unitAmount: roundForCurrency(g.hourlyRate, clientCurrency),
       accountCode: '200',
-      lineAmount: isJPY ? Math.round(g.amount) : parseFloat(g.amount.toFixed(2)),
+      lineAmount: roundForCurrency(g.amount, clientCurrency),
     }));
 
     // ── create Xero Invoice ───────────────────────────────────────────────────
