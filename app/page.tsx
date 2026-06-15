@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Send } from 'lucide-react';
 import { OriginLink } from '@/components/ui/origin-button';
 import { PerspectiveClockHero, SparklesCore } from './components/HeroClient';
 
@@ -20,17 +20,17 @@ function OraLogo({ size = 32 }: { size?: number }) {
 
 const features = [
   {
-    icon: '⏱',
+    icon: <span className="text-4xl">⏱</span>,
     title: 'Track time',
     desc: 'One-click timer, manual entry, and team tracking. Works across projects and clients.',
   },
   {
-    icon: '✅',
+    icon: <span className="text-4xl">✅</span>,
     title: 'Approve periods',
     desc: 'Weekly, bi-weekly, or monthly billing cycles. Review, approve, and lock with one click.',
   },
   {
-    icon: '🚀',
+    icon: <Send className="w-9 h-9 text-[#FFE600]" />,
     title: 'Push to QBO / Xero',
     desc: 'Creates a real invoice with line items. Attaches a PDF time report. Fully automated.',
   },
@@ -125,30 +125,27 @@ export default function LandingPage() {
           style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
       </div>
 
-      {/* Sparkle transition strip below the clock */}
-      <div className="relative w-full bg-[#050c1b]" style={{ height: '200px' }}>
+      {/* Sparkle strip below the clock */}
+      <div className="relative w-full h-48 bg-black overflow-hidden">
+        {/* Glow lines */}
+        <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm mx-auto" />
+        <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4 mx-auto" />
+        <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm mx-auto" />
+        {/* Sparkles */}
         <SparklesCore
           background="transparent"
           minSize={0.4}
-          maxSize={1.2}
-          particleDensity={80}
+          maxSize={1}
+          particleDensity={1200}
           className="w-full h-full"
-          particleColor="#FFE600"
-          speed={0.8}
+          particleColor="#FFFFFF"
+          speed={0.5}
         />
-        <div className="absolute inset-0 pointer-events-none">
-          <SparklesCore
-            background="transparent"
-            minSize={0.3}
-            maxSize={0.8}
-            particleDensity={40}
-            className="w-full h-full"
-            particleColor="#10B981"
-            speed={0.5}
-          />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-          style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
+        {/* Radial fade */}
+        <div
+          className="absolute inset-0 w-full h-full bg-black pointer-events-none"
+          style={{ maskImage: 'radial-gradient(350px 200px at top, transparent 20%, white)' }}
+        />
       </div>
 
       {/* Features */}
@@ -167,7 +164,7 @@ export default function LandingPage() {
                 style={{ background: '#061025' }}
                 className="rounded-2xl p-8 hover:scale-[1.02] transition-transform"
               >
-                <div className="text-4xl mb-5">{f.icon}</div>
+                <div className="mb-5">{f.icon}</div>
                 <h3 className="text-xl font-bold text-white mb-3">{f.title}</h3>
                 <p className="text-slate-400 leading-relaxed">{f.desc}</p>
               </div>
