@@ -120,35 +120,37 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Clock — full width, no sparkles */}
-      <div className="relative w-full bg-[#050c1b]" style={{ height: '480px' }}>
-        <PerspectiveClockHero />
-        {/* Glow line sits at the very bottom edge of the clock */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-          <div className="relative h-[2px] w-3/4 mx-auto blur-sm bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
-          <div className="relative h-px w-3/4 mx-auto bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
-          <div className="relative h-[5px] w-1/4 mx-auto blur-sm bg-gradient-to-r from-transparent via-sky-500 to-transparent" />
+      {/* Clock + sparkles in one seamless parent — no gap */}
+      <div className="w-full bg-[#050c1b]">
+        <div className="relative w-full" style={{ height: '480px' }}>
+          <PerspectiveClockHero />
+          {/* Glow line at the exact clock/sparkle junction */}
+          <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+            <div className="relative h-[2px] w-3/4 mx-auto blur-sm bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
+            <div className="relative h-px w-3/4 mx-auto bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
+            <div className="relative h-[5px] w-1/4 mx-auto blur-sm bg-gradient-to-r from-transparent via-sky-500 to-transparent" />
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+            style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-          style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
-      </div>
 
-      {/* Sparkle strip — flush below clock, same bg */}
-      <div className="relative w-full h-48 overflow-hidden" style={{ background: '#050c1b' }}>
-        <SparklesCore
-          background="transparent"
-          minSize={0.4}
-          maxSize={1}
-          particleDensity={1200}
-          className="w-full h-full"
-          particleColor="#FFFFFF"
-          speed={0.5}
-        />
-        {/* Radial fade masks sparkles toward bottom */}
-        <div
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ background: '#050c1b', maskImage: 'radial-gradient(350px 200px at top, transparent 20%, white)' }}
-        />
+        {/* Sparkle strip — immediately after clock, no gap */}
+        <div className="relative w-full overflow-hidden" style={{ height: '200px', marginTop: '-1px' }}>
+          <SparklesCore
+            background="transparent"
+            minSize={0.4}
+            maxSize={1}
+            particleDensity={1200}
+            className="w-full h-full"
+            particleColor="#FFFFFF"
+            speed={0.5}
+          />
+          {/* Radial fade masks sparkles toward bottom */}
+          <div
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            style={{ background: '#050c1b', maskImage: 'radial-gradient(350px 200px at top, transparent 20%, white)' }}
+          />
+        </div>
       </div>
 
       {/* Features */}
