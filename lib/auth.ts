@@ -56,6 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        console.log('[auth] authorize entry point hit');
         console.log('[auth] authorize called, keys:', credentials ? Object.keys(credentials) : 'null');
 
         const parsed = loginSchema.safeParse({
