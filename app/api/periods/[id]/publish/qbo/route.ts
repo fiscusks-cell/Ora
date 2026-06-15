@@ -177,26 +177,93 @@ export async function POST(
       },
     }));
 
-    // ── create QBO Invoice ────────────────────────────────────────────────────
+    // ── resolve next DocNumber ────────────────────────────────────────────────
 
-    const invoicePayload: Record<string, unknown> = {
-      Line: lines,
-      CustomerRef: { value: primaryCustomerId },
-      TxnDate: new Date().toISOString().slice(0, 10),
-      PrivateNote: `Billing period ${period.startDate.toISOString().slice(0, 10)} – ${period.endDate.toISOString().slice(0, 10)}`,
-    };
+    async function getNextDocNumber(): Promise<number> {
+      try {
+        const qRes = await fetch(
+          `${base}/query?query=${encodeURIComponent('SELECT * FROM Invoice ORDERBY DocNumber DESC MAXRESULTS 1')}&minorversion=65`,
+          { headers },
+        );
+        if (!qRes.ok) return 1001;
+        const qData = (await qRes.json()) as { QueryResponse: { Invoice?: { DocNumber: string }[] } };
+        const invoices = qData.QueryResponse.Invoice ?? [];
+        if (invoices.length === 0) return 1001;
 
-    if (clientCurrency && clientCurrency !== 'USD') {
-      invoicePayload.CurrencyRef = { value: clientCurrency };
+        // Find highest purely-numeric DocNumber
+        let highest = 0;
+        for (const inv of invoices) {
+          const n = parseInt(inv.DocNumber, 10);
+          if (!isNaN(n) && n > highest) highest = n;
+        }
+
+        // If the latest DocNumber wasn't numeric, query for the highest numeric one
+        if (highest === 0) {
+          const q2Res = await fetch(
+            `${base}/query?query=${encodeURIComponent('SELECT * FROM Invoice MAXRESULTS 100')}&minorversion=65`,
+            { headers },
+          );
+          if (q2Res.ok) {
+            const q2Data = (await q2Res.json()) as { QueryResponse: { Invoice?: { DocNumber: string }[] } };
+            for (const inv of q2Data.QueryResponse.Invoice ?? []) {
+              const n = parseInt(inv.DocNumber, 10);
+              if (!isNaN(n) && n > highest) highest = n;
+            }
+          }
+        }
+
+        return highest > 0 ? highest + 1 : 1001;
+      } catch {
+        return 1001;
+      }
     }
 
-    let invoiceRes: Response;
-    try {
-      invoiceRes = await fetch(`${base}/invoice?minorversion=65`, {
+    const nextDocNumber = await getNextDocNumber();
+
+    // ── create QBO Invoice (with one DocNumber-collision retry) ──────────────
+
+    const periodNote = `Billing period ${period.startDate.toISOString().slice(0, 10)} – ${period.endDate.toISOString().slice(0, 10)}`;
+
+    async function attemptCreate(docNumber: number): Promise<Response> {
+      const invoicePayload: Record<string, unknown> = {
+        DocNumber: String(docNumber),
+        Line: lines,
+        CustomerRef: { value: primaryCustomerId },
+        TxnDate: new Date().toISOString().slice(0, 10),
+        PrivateNote: periodNote,
+      };
+
+      if (clientCurrency && clientCurrency !== 'USD') {
+        invoicePayload.CurrencyRef = { value: clientCurrency };
+      }
+
+      return fetch(`${base}/invoice?minorversion=65`, {
         method: 'POST',
         headers,
         body: JSON.stringify(invoicePayload),
       });
+    }
+
+    let invoiceRes: Response;
+    try {
+      invoiceRes = await attemptCreate(nextDocNumber);
+
+      // Retry once on DocNumber collision (race condition)
+      if (!invoiceRes.ok) {
+        const peek = await invoiceRes.text();
+        if (peek.toLowerCase().includes('docnumber') && peek.toLowerCase().includes('exist')) {
+          console.warn('[qbo publish] DocNumber collision, retrying with', nextDocNumber + 1);
+          invoiceRes = await attemptCreate(nextDocNumber + 1);
+          // Re-wrap the already-consumed body so the error path below can read it
+          if (!invoiceRes.ok) {
+            const errBody2 = await invoiceRes.text();
+            invoiceRes = new Response(errBody2, { status: invoiceRes.status, headers: invoiceRes.headers });
+          }
+        } else {
+          // Re-wrap the already-consumed body for the error handler below
+          invoiceRes = new Response(peek, { status: invoiceRes.status, headers: invoiceRes.headers });
+        }
+      }
     } catch (fetchErr) {
       console.error('[qbo publish] invoice fetch error:', fetchErr);
       return NextResponse.json({ error: 'Network error contacting QuickBooks' }, { status: 502 });
