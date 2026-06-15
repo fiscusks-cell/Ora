@@ -26,10 +26,9 @@ export default function PerspectiveClockHero() {
       const w = canvas.width;
       const h = canvas.height;
 
-      ctx.clearRect(0, 0, w, h);
-
-      // Clear to transparent so sparkles show through
-      ctx.clearRect(0, 0, w, h);
+      // Fill with exact page background so canvas edges are seamless
+      ctx.fillStyle = '#050c1b';
+      ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
       const cy = h / 2;
@@ -51,7 +50,7 @@ export default function PerspectiveClockHero() {
 
       // Clock face
       const faceGrad = ctx.createRadialGradient(0, -radius * 0.2, 0, 0, 0, radius);
-      faceGrad.addColorStop(0, '#0d1f3c');
+      faceGrad.addColorStop(0, '#0a1628');
       faceGrad.addColorStop(1, '#050c1b');
       ctx.beginPath();
       ctx.arc(0, 0, radius, 0, Math.PI * 2);
@@ -210,7 +209,7 @@ export default function PerspectiveClockHero() {
   }, []);
 
   return (
-    <div className="absolute inset-0" style={{ background: 'transparent' }}>
+    <div className="absolute inset-0" style={{ background: '#050c1b' }}>
       <canvas
         ref={canvasRef}
         className="absolute inset-0"
