@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { CheckCircle, Send, Timer, Stamp } from 'lucide-react';
 import { OriginLink } from '@/components/ui/origin-button';
-import { PerspectiveClockHero, SparklesCore } from './components/HeroClient';
+import { PerspectiveClockHero } from './components/HeroClient';
+
+const BG = '#F5F4EF';
 
 function OraLogo({ size = 32 }: { size?: number }) {
   return (
@@ -10,27 +12,27 @@ function OraLogo({ size = 32 }: { size?: number }) {
         <circle cx="16" cy="16" r="14" stroke="#FFE600" strokeWidth="2.5" />
         <circle cx="16" cy="16" r="10" stroke="#FFE600" strokeWidth="1.5" />
         <line x1="16" y1="8" x2="16" y2="16" stroke="#FFE600" strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="16" y1="16" x2="21" y2="19" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+        <line x1="16" y1="16" x2="21" y2="19" stroke="#1e293b" strokeWidth="2" strokeLinecap="round" />
         <circle cx="16" cy="16" r="1.5" fill="#FFE600" />
       </svg>
-      <span className="text-xl font-black tracking-tight text-white">ORA</span>
+      <span className="text-xl font-black tracking-tight text-slate-900">ORA</span>
     </div>
   );
 }
 
 const features = [
   {
-    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}><Timer className="w-6 h-6" style={{ color: '#10B981' }} /></div>,
+    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.12)' }}><Timer className="w-6 h-6" style={{ color: '#10B981' }} /></div>,
     title: 'Track time',
     desc: 'One-click timer, manual entry, and team tracking. Works across projects and clients.',
   },
   {
-    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.15)' }}><Stamp className="w-6 h-6" style={{ color: '#818CF8' }} /></div>,
+    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.12)' }}><Stamp className="w-6 h-6" style={{ color: '#818CF8' }} /></div>,
     title: 'Approve periods',
     desc: 'Weekly, bi-weekly, or monthly billing cycles. Review, approve, and lock with one click.',
   },
   {
-    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,230,0,0.15)' }}><Send className="w-6 h-6" style={{ color: '#FFE600' }} /></div>,
+    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(234,179,8,0.12)' }}><Send className="w-6 h-6" style={{ color: '#CA8A04' }} /></div>,
     title: 'Push to QBO / Xero',
     desc: 'Creates a real invoice with line items. Attaches a PDF time report. Fully automated.',
   },
@@ -71,164 +73,118 @@ const plans = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: '#050c1b' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: BG }}>
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-[#050c1b]/80 backdrop-blur-md">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200">
         <OraLogo />
         <div className="flex items-center gap-4">
-          <Link href="/auth/signin" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">
+          <Link href="/auth/signin" className="text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors">
             Sign in
           </Link>
           <Link
             href="/auth/signup"
-            className="px-4 py-2 bg-[#FFE600] hover:bg-yellow-300 text-black text-sm font-bold rounded-lg transition-colors"
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold rounded-lg transition-colors"
           >
             Get started
           </Link>
         </div>
       </nav>
 
-      {/* Hero — text only, no sparkles */}
-      <section className="bg-[#050c1b] pt-32 pb-0">
+      {/* Hero */}
+      <section className="pt-32 pb-0" style={{ background: BG }}>
         <div className="text-center px-4 max-w-5xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6">
+          <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-tight mb-6">
             Time tracker for<br />
-            <span className="bg-gradient-to-r from-[#FFE600] via-yellow-300 to-emerald-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-yellow-500 via-amber-400 to-emerald-500 bg-clip-text text-transparent">
               Freelancers and More
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
             Track hours. Approve periods. Push to QuickBooks or Xero automatically.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-4">
             <OriginLink
               href="/auth/signup"
-              className="px-8 py-4 bg-[#FFE600] hover:bg-yellow-300 text-black font-bold rounded-xl text-base transition-colors"
+              className="px-8 py-4 bg-slate-900 hover:bg-slate-700 text-white font-bold rounded-xl text-base transition-colors"
             >
               Start free →
             </OriginLink>
             <OriginLink
               href="#features"
-              className="px-8 py-4 border border-white/20 hover:border-white/40 text-white font-semibold rounded-xl text-base transition-colors backdrop-blur-sm"
+              className="px-8 py-4 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-xl text-base transition-colors"
             >
               See how it works
             </OriginLink>
           </div>
-          <p className="text-slate-600 text-sm mb-8">No credit card required · Free forever on solo plan</p>
+          <p className="text-slate-400 text-sm mb-8">No credit card required · Free forever on solo plan</p>
 
-          <div className="flex items-center gap-6 justify-center mt-2 mb-10">
-            <span className="text-slate-500 text-sm">Integrates with</span>
-            <img src="/Intuit_QuickBooks_logo.png" alt="QuickBooks" className="h-8 w-auto opacity-80 hover:opacity-100 transition-opacity" />
-            <img src="/Xero.jpg" alt="Xero" className="h-8 w-auto opacity-80 hover:opacity-100 transition-opacity" />
+          <div className="flex items-center justify-center gap-8 mt-2 mb-10">
+            <p className="text-sm text-slate-400">Integrates with</p>
+            <img src="/Intuit_QuickBooks_logo.png" alt="QuickBooks Online" className="h-10 w-auto object-contain" />
+            <img src="/Xero.jpg" alt="Xero" className="h-10 w-auto object-contain" />
           </div>
-
-          {/* TODO: Replace with real Intuit and Xero logo files */}
         </div>
       </section>
 
-      {/* Clock + sparkles in one seamless parent — no gap */}
-      <div className="w-full bg-[#050c1b]">
-        <div className="relative w-full" style={{ height: '480px' }}>
-          <PerspectiveClockHero />
-          {/* Glow line at the exact clock/sparkle junction */}
-          <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-            <div className="relative h-[2px] w-3/4 mx-auto blur-sm bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
-            <div className="relative h-px w-3/4 mx-auto bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
-            <div className="relative h-[5px] w-1/4 mx-auto blur-sm bg-gradient-to-r from-transparent via-sky-500 to-transparent" />
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-            style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
-        </div>
-
-        {/* Sparkle strip — immediately after clock, no gap */}
-        <div className="relative w-full overflow-hidden" style={{ height: '200px', marginTop: '-1px' }}>
-          <SparklesCore
-            background="transparent"
-            minSize={0.4}
-            maxSize={1}
-            particleDensity={1200}
-            className="w-full h-full"
-            particleColor="#FFFFFF"
-            speed={0.5}
-          />
-          {/* Radial fade masks sparkles toward bottom */}
-          <div
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            style={{ background: '#050c1b', maskImage: 'radial-gradient(350px 200px at top, transparent 20%, white)' }}
-          />
-        </div>
+      {/* Clock */}
+      <div className="relative w-full" style={{ height: '480px', background: BG }}>
+        <PerspectiveClockHero />
       </div>
 
       {/* Features */}
-      <section className="py-24 px-6" style={{ background: '#050c1b' }}>
+      <section id="features" className="py-24 px-6" style={{ background: BG }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black text-white text-center mb-4">
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 text-center mb-4">
             Everything you need to bill clients
           </h2>
-          <p className="text-slate-400 text-center mb-16 text-lg">
+          <p className="text-slate-500 text-center mb-16 text-lg">
             From first click to paid invoice, ORA handles the whole workflow.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {features.map((f) => (
               <div
                 key={f.title}
-                className="group rounded-2xl p-7 transition-all duration-200 hover:scale-[1.02]"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '16px',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+                className="rounded-2xl p-7 transition-all duration-200 hover:scale-[1.02] bg-white"
+                style={{ border: '1px solid #E2E8F0' }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = '#CBD5E1')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = '#E2E8F0')}
               >
                 <div className="mb-5">{f.icon}</div>
-                <h3 className="text-lg font-semibold text-white mb-2">{f.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">{f.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Integrations bar */}
-      <section className="py-12 px-6" style={{ background: '#061025' }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-slate-500 text-sm uppercase tracking-widest font-semibold mb-8">Works with</p>
-          <div className="flex items-center justify-center gap-12 flex-wrap">
-            <div className="text-2xl font-bold text-slate-300">QuickBooks</div>
-            <div className="text-slate-700 text-2xl">·</div>
-            <div className="text-2xl font-bold text-slate-300">Xero</div>
-          </div>
-        </div>
-      </section>
-
       {/* Pricing */}
-      <section className="py-24 px-6" style={{ background: '#050c1b' }}>
+      <section className="py-24 px-6" style={{ background: BG }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black text-white text-center mb-4">Simple, transparent pricing</h2>
-          <p className="text-slate-400 text-center mb-16 text-lg">
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 text-center mb-4">Simple, transparent pricing</h2>
+          <p className="text-slate-500 text-center mb-16 text-lg">
             Start free. Upgrade when you need integrations or team features.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                style={{ background: '#061025' }}
-                className={`rounded-2xl p-8 flex flex-col ${plan.highlight ? 'ring-2 ring-[#FFE600]' : ''}`}
+                className={`rounded-2xl p-8 flex flex-col bg-white ${plan.highlight ? 'ring-2 ring-slate-900' : ''}`}
+                style={{ border: '1px solid #E2E8F0' }}
               >
                 <div className="mb-6">
-                  <div className="text-lg font-bold text-white mb-1">{plan.name}</div>
+                  <div className="text-lg font-bold text-slate-900 mb-1">{plan.name}</div>
                   <div className="flex items-end gap-1 mb-2">
-                    <span className="text-4xl font-black text-white">{plan.price}</span>
+                    <span className="text-4xl font-black text-slate-900">{plan.price}</span>
                     <span className="text-slate-400 text-sm pb-1">{plan.period}</span>
                   </div>
-                  <p className="text-slate-400 text-sm">{plan.desc}</p>
+                  <p className="text-slate-500 text-sm">{plan.desc}</p>
                 </div>
                 <ul className="space-y-3 flex-1 mb-8">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="w-4 h-4 flex-shrink-0 text-[#10B981]" />
-                      <span className="text-slate-300">{f}</span>
+                      <CheckCircle className="w-4 h-4 flex-shrink-0 text-emerald-500" />
+                      <span className="text-slate-600">{f}</span>
                     </li>
                   ))}
                 </ul>
@@ -236,8 +192,8 @@ export default function LandingPage() {
                   href={plan.href}
                   className={`block text-center font-bold py-3 rounded-xl text-sm transition-colors ${
                     plan.highlight
-                      ? 'bg-[#FFE600] text-black hover:bg-yellow-300'
-                      : 'bg-slate-800 text-white hover:bg-slate-700'
+                      ? 'bg-slate-900 text-white hover:bg-slate-700'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   {plan.cta}
@@ -249,7 +205,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Banner */}
-      <section className="py-24 px-6" style={{ background: '#050c1b' }}>
+      <section className="py-24 px-6 bg-slate-900">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-4xl font-black text-white mb-4">Ready to stop losing billable hours?</h2>
           <p className="text-slate-400 mb-8">
@@ -265,20 +221,20 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer style={{ background: '#050c1b' }}>
-        <div className="max-w-5xl mx-auto px-6 py-10 flex items-center justify-between flex-wrap gap-4 border-b border-white/5">
+      <footer style={{ background: BG }}>
+        <div className="max-w-5xl mx-auto px-6 py-10 flex items-center justify-between flex-wrap gap-4 border-b border-slate-200">
           <OraLogo />
           <div className="flex gap-6">
-            <Link href="/auth/signin" className="text-slate-600 hover:text-slate-400 text-sm transition-colors">
+            <Link href="/auth/signin" className="text-slate-400 hover:text-slate-700 text-sm transition-colors">
               Sign in
             </Link>
-            <Link href="/auth/signup" className="text-slate-600 hover:text-slate-400 text-sm transition-colors">
+            <Link href="/auth/signup" className="text-slate-400 hover:text-slate-700 text-sm transition-colors">
               Sign up
             </Link>
           </div>
         </div>
-        <div className="border-t border-white/10 py-6 text-center">
-          <p className="text-slate-500 text-sm">© 2026 ORA · Powered by Fiscus LLC</p>
+        <div className="border-t border-slate-200 py-6 text-center">
+          <p className="text-slate-400 text-sm">© 2026 ORA · Powered by Fiscus LLC</p>
         </div>
       </footer>
     </div>

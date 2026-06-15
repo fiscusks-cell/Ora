@@ -27,7 +27,7 @@ export default function PerspectiveClockHero() {
       const h = canvas.height;
 
       // Fill with exact page background so canvas edges are seamless
-      ctx.fillStyle = '#050c1b';
+      ctx.fillStyle = '#F5F4EF';
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
@@ -50,8 +50,8 @@ export default function PerspectiveClockHero() {
 
       // Clock face
       const faceGrad = ctx.createRadialGradient(0, -radius * 0.2, 0, 0, 0, radius);
-      faceGrad.addColorStop(0, '#0a1628');
-      faceGrad.addColorStop(1, '#050c1b');
+      faceGrad.addColorStop(0, '#e8e6df');
+      faceGrad.addColorStop(1, '#F5F4EF');
       ctx.beginPath();
       ctx.arc(0, 0, radius, 0, Math.PI * 2);
       ctx.fillStyle = faceGrad;
@@ -60,14 +60,14 @@ export default function PerspectiveClockHero() {
       // Face border
       ctx.beginPath();
       ctx.arc(0, 0, radius, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255, 230, 0, 0.25)';
+      ctx.strokeStyle = 'rgba(71, 85, 105, 0.2)';
       ctx.lineWidth = 2;
       ctx.stroke();
 
       // Inner ring
       ctx.beginPath();
       ctx.arc(0, 0, radius * 0.92, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.strokeStyle = 'rgba(71, 85, 105, 0.1)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -81,7 +81,7 @@ export default function PerspectiveClockHero() {
         ctx.beginPath();
         ctx.moveTo(Math.cos(angle) * tickInner, Math.sin(angle) * tickInner);
         ctx.lineTo(Math.cos(angle) * tickOuter, Math.sin(angle) * tickOuter);
-        ctx.strokeStyle = isHour ? 'rgba(255, 230, 0, 0.7)' : 'rgba(255, 255, 255, 0.2)';
+        ctx.strokeStyle = isHour ? 'rgba(71, 85, 105, 0.6)' : 'rgba(148, 163, 184, 0.4)';
         ctx.lineWidth = isHour ? 2.5 : 1;
         ctx.stroke();
       }
@@ -209,7 +209,7 @@ export default function PerspectiveClockHero() {
   }, []);
 
   return (
-    <div className="absolute inset-0" style={{ background: '#050c1b' }}>
+    <div className="absolute inset-0" style={{ background: '#F5F4EF' }}>
       <canvas
         ref={canvasRef}
         className="absolute inset-0"
