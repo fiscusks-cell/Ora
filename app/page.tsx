@@ -88,34 +88,9 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-[#050c1b] pt-32 pb-0">
-        {/* Sparkles fill the whole section */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <SparklesCore
-            background="transparent"
-            minSize={0.4}
-            maxSize={1.2}
-            particleDensity={80}
-            className="w-full h-full"
-            particleColor="#FFE600"
-            speed={0.8}
-          />
-        </div>
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <SparklesCore
-            background="transparent"
-            minSize={0.3}
-            maxSize={0.8}
-            particleDensity={40}
-            className="w-full h-full"
-            particleColor="#10B981"
-            speed={0.5}
-          />
-        </div>
-
-        {/* Text content above the clock */}
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
+      {/* Hero — text only, no sparkles */}
+      <section className="bg-[#050c1b] pt-32 pb-0">
+        <div className="text-center px-4 max-w-5xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6">
             Time tracker for<br />
             <span className="bg-gradient-to-r from-[#FFE600] via-yellow-300 to-emerald-400 bg-clip-text text-transparent">
@@ -141,15 +116,40 @@ export default function LandingPage() {
           </div>
           <p className="text-slate-600 text-sm mb-10">No credit card required · Free forever on solo plan</p>
         </div>
-
-        {/* Clock canvas below the text, full width */}
-        <div className="relative z-10 w-full" style={{ height: '480px' }}>
-          <PerspectiveClockHero />
-          {/* Fade bottom into next section */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-            style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
-        </div>
       </section>
+
+      {/* Clock — full width, no sparkles */}
+      <div className="relative w-full bg-[#050c1b]" style={{ height: '480px' }}>
+        <PerspectiveClockHero />
+        <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
+      </div>
+
+      {/* Sparkle transition strip below the clock */}
+      <div className="relative w-full bg-[#050c1b]" style={{ height: '200px' }}>
+        <SparklesCore
+          background="transparent"
+          minSize={0.4}
+          maxSize={1.2}
+          particleDensity={80}
+          className="w-full h-full"
+          particleColor="#FFE600"
+          speed={0.8}
+        />
+        <div className="absolute inset-0 pointer-events-none">
+          <SparklesCore
+            background="transparent"
+            minSize={0.3}
+            maxSize={0.8}
+            particleDensity={40}
+            className="w-full h-full"
+            particleColor="#10B981"
+            speed={0.5}
+          />
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
+      </div>
 
       {/* Features */}
       <section className="py-24 px-6" style={{ background: '#050c1b' }}>
