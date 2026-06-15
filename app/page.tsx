@@ -4,6 +4,7 @@ import { CheckCircle } from 'lucide-react';
 import { OriginLink } from '@/components/ui/origin-button';
 
 const PerspectiveClockHero = dynamic(() => import('./components/PerspectiveClockHero'), { ssr: false });
+const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.SparklesCore })), { ssr: false });
 
 function OraLogo({ size = 32 }: { size?: number }) {
   return (
@@ -91,7 +92,77 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <PerspectiveClockHero />
+      <div className="relative w-full min-h-screen overflow-hidden bg-[#050c1b]">
+        {/* Layer 1 — Yellow sparkles */}
+        <div className="absolute inset-0 z-0">
+          <SparklesCore
+            id="ora-hero-sparkles"
+            background="transparent"
+            minSize={0.4}
+            maxSize={1.2}
+            particleDensity={80}
+            className="w-full h-full"
+            particleColor="#FFE600"
+            speed={0.8}
+          />
+        </div>
+
+        {/* Layer 2 — Emerald sparkles for depth */}
+        <div className="absolute inset-0 z-0">
+          <SparklesCore
+            id="ora-hero-sparkles-green"
+            background="transparent"
+            minSize={0.3}
+            maxSize={0.8}
+            particleDensity={40}
+            className="w-full h-full"
+            particleColor="#10B981"
+            speed={0.5}
+          />
+        </div>
+
+        {/* Layer 3 — 3D clock canvas */}
+        <div className="absolute inset-0 z-10">
+          <PerspectiveClockHero />
+        </div>
+
+        {/* Layer 4 — Vignette fade at edges */}
+        <div
+          className="absolute inset-0 z-20 pointer-events-none bg-[#050c1b]"
+          style={{ maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, black 100%)' }}
+        />
+
+        {/* Layer 5 — Headline and CTAs */}
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-yellow-400/30 bg-yellow-400/10 text-yellow-400 text-xs font-semibold mb-8 uppercase tracking-widest pointer-events-auto">
+            Time Tracking · Invoicing · Insights
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6 max-w-4xl">
+            Time tracker for<br />
+            <span className="bg-gradient-to-r from-[#FFE600] via-yellow-300 to-emerald-400 bg-clip-text text-transparent">
+              Freelancers and More
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed">
+            Track hours. Approve periods. Push to QuickBooks or Xero automatically.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 items-center pointer-events-auto">
+            <OriginLink
+              href="/auth/signup"
+              className="px-8 py-4 bg-[#FFE600] hover:bg-yellow-300 text-black font-bold rounded-xl text-base transition-colors"
+            >
+              Start free →
+            </OriginLink>
+            <OriginLink
+              href="#features"
+              className="px-8 py-4 border border-white/20 hover:border-white/40 text-white font-semibold rounded-xl text-base transition-colors backdrop-blur-sm"
+            >
+              See how it works
+            </OriginLink>
+          </div>
+          <p className="text-slate-600 text-sm mt-6">No credit card required · Free forever on solo plan</p>
+        </div>
+      </div>
 
       {/* Features */}
       <section className="py-24 px-6" style={{ background: '#050c1b' }}>

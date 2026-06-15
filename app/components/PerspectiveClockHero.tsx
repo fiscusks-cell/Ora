@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { OriginLink, OriginButton } from '@/components/ui/origin-button';
 
 export default function PerspectiveClockHero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,9 +28,8 @@ export default function PerspectiveClockHero() {
 
       ctx.clearRect(0, 0, w, h);
 
-      // Background
-      ctx.fillStyle = '#050c1b';
-      ctx.fillRect(0, 0, w, h);
+      // Clear to transparent so sparkles show through
+      ctx.clearRect(0, 0, w, h);
 
       const cx = w / 2;
       const cy = h / 2;
@@ -167,42 +165,12 @@ export default function PerspectiveClockHero() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen overflow-hidden" style={{ background: '#050c1b' }}>
-      {/* Canvas background */}
+    <div className="absolute inset-0" style={{ background: 'transparent' }}>
       <canvas
         ref={canvasRef}
         className="absolute inset-0"
         style={{ width: '100%', height: '100%' }}
       />
-
-      {/* Radial gradient overlay */}
-      <div className="absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,_transparent_20%,_#050c1b_80%)]" />
-
-      {/* Hero content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-yellow-400/30 bg-yellow-400/10 text-yellow-400 text-xs font-semibold mb-8 uppercase tracking-widest">
-          Time Tracking · Invoicing · Insights
-        </div>
-        <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6 max-w-4xl">
-          Time tracker for<br />
-          <span className="text-[#FFE600]">Freelancers</span> and More
-        </h1>
-        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed">
-          Track hours. Approve periods. Push to QuickBooks or Xero automatically.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <OriginLink
-            href="/auth/signup"
-            className="px-8 py-4 bg-[#FFE600] hover:bg-yellow-300 text-black font-bold rounded-xl text-base transition-colors"
-          >
-            Start free →
-          </OriginLink>
-          <OriginButton className="px-8 py-4 border border-white/20 hover:border-white/40 text-white font-semibold rounded-xl text-base transition-colors backdrop-blur-sm">
-            See how it works
-          </OriginButton>
-        </div>
-        <p className="text-slate-600 text-sm mt-6">No credit card required · Free forever on solo plan</p>
-      </div>
     </div>
   );
 }
