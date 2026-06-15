@@ -173,7 +173,6 @@ export async function POST(
     const invoicePayload = {
       Line: lines,
       CustomerRef: { value: primaryCustomerId },
-      DocNumber: `ORA-${id.slice(-8).toUpperCase()}`,
       TxnDate: new Date().toISOString().slice(0, 10),
       PrivateNote: `Billing period ${period.startDate.toISOString().slice(0, 10)} – ${period.endDate.toISOString().slice(0, 10)}`,
     };
