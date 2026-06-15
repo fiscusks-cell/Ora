@@ -71,7 +71,7 @@ const plans = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen" style={{ background: '#050c1b' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#050c1b' }}>
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-[#050c1b]/80 backdrop-blur-md">
         <OraLogo />
@@ -261,10 +261,9 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-10 px-6 border-t border-white/5" style={{ background: '#050c1b' }}>
-        <div className="max-w-5xl mx-auto flex items-center justify-between flex-wrap gap-4">
+      <footer style={{ background: '#050c1b' }}>
+        <div className="max-w-5xl mx-auto px-6 py-10 flex items-center justify-between flex-wrap gap-4 border-b border-white/5">
           <OraLogo />
-          <p className="text-slate-600 text-sm">© 2026 ORA. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/auth/signin" className="text-slate-600 hover:text-slate-400 text-sm transition-colors">
               Sign in
@@ -273,6 +272,9 @@ export default function LandingPage() {
               Sign up
             </Link>
           </div>
+        </div>
+        <div className="border-t border-white/10 py-6 text-center">
+          <p className="text-slate-500 text-sm">© 2026 ORA · Powered by Fiscus LLC</p>
         </div>
       </footer>
     </div>
