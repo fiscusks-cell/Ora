@@ -89,11 +89,10 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <div className="relative w-full min-h-screen overflow-hidden bg-[#050c1b]">
-        {/* Layer 1 — Yellow sparkles */}
-        <div className="absolute inset-0 z-0">
+      <section className="relative overflow-hidden bg-[#050c1b] pt-32 pb-0">
+        {/* Sparkles fill the whole section */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
-            id="ora-hero-sparkles"
             background="transparent"
             minSize={0.4}
             maxSize={1.2}
@@ -103,11 +102,8 @@ export default function LandingPage() {
             speed={0.8}
           />
         </div>
-
-        {/* Layer 2 — Emerald sparkles for depth */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 pointer-events-none">
           <SparklesCore
-            id="ora-hero-sparkles-green"
             background="transparent"
             minSize={0.3}
             maxSize={0.8}
@@ -118,32 +114,18 @@ export default function LandingPage() {
           />
         </div>
 
-        {/* Layer 3 — 3D clock canvas */}
-        <div className="absolute inset-0 z-10">
-          <PerspectiveClockHero />
-        </div>
-
-        {/* Layer 4 — Vignette fade at edges */}
-        <div
-          className="absolute inset-0 z-20 pointer-events-none bg-[#050c1b]"
-          style={{ maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, black 100%)' }}
-        />
-
-        {/* Layer 5 — Headline and CTAs */}
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-yellow-400/30 bg-yellow-400/10 text-yellow-400 text-xs font-semibold mb-8 uppercase tracking-widest pointer-events-auto">
-            Time Tracking · Invoicing · Insights
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6 max-w-4xl">
+        {/* Text content above the clock */}
+        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6">
             Time tracker for<br />
             <span className="bg-gradient-to-r from-[#FFE600] via-yellow-300 to-emerald-400 bg-clip-text text-transparent">
               Freelancers and More
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
             Track hours. Approve periods. Push to QuickBooks or Xero automatically.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 items-center pointer-events-auto">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-4">
             <OriginLink
               href="/auth/signup"
               className="px-8 py-4 bg-[#FFE600] hover:bg-yellow-300 text-black font-bold rounded-xl text-base transition-colors"
@@ -157,9 +139,17 @@ export default function LandingPage() {
               See how it works
             </OriginLink>
           </div>
-          <p className="text-slate-600 text-sm mt-6">No credit card required · Free forever on solo plan</p>
+          <p className="text-slate-600 text-sm mb-10">No credit card required · Free forever on solo plan</p>
         </div>
-      </div>
+
+        {/* Clock canvas below the text, full width */}
+        <div className="relative z-10 w-full" style={{ height: '480px' }}>
+          <PerspectiveClockHero />
+          {/* Fade bottom into next section */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+            style={{ background: 'linear-gradient(to bottom, transparent, #050c1b)' }} />
+        </div>
+      </section>
 
       {/* Features */}
       <section className="py-24 px-6" style={{ background: '#050c1b' }}>
