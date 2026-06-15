@@ -11,6 +11,7 @@ const loginSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/auth/signin',
@@ -40,6 +41,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         (session.user as any).organizationId = token.organizationId;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // After sign-in, always go to /dashboard unless a valid relative callbackUrl is set
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
+      return `${baseUrl}/dashboard`;
     },
   },
   providers: [
