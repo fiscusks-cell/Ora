@@ -78,6 +78,7 @@ export async function POST(
       projectName: string;
       clientName: string | null;
       qboCustomerId: string | null;
+      clientCurrency: string | null;
       totalHours: number;
       hourlyRate: number;
       amount: number;
@@ -95,6 +96,7 @@ export async function POST(
           projectName: entry.project?.name ?? 'Time',
           clientName: entry.project?.client?.name ?? null,
           qboCustomerId: entry.project?.client?.qboCustomerId ?? null,
+          clientCurrency: (entry.project?.client as { currency?: string } | null)?.currency ?? null,
           totalHours: 0,
           hourlyRate: rate,
           amount: 0,
@@ -128,6 +130,13 @@ export async function POST(
       });
       const createData = (await createRes.json()) as { Customer: { Id: string } };
       return createData.Customer.Id;
+    }
+
+    // ── detect client currency ────────────────────────────────────────────────
+
+    let clientCurrency: string | null = null;
+    for (const [, g] of byProject) {
+      if (g.clientCurrency) { clientCurrency = g.clientCurrency.toUpperCase(); break; }
     }
 
     // ── build Invoice Line items ─────────────────────────────────────────────
@@ -170,22 +179,49 @@ export async function POST(
 
     // ── create QBO Invoice ────────────────────────────────────────────────────
 
-    const invoicePayload = {
+    const invoicePayload: Record<string, unknown> = {
       Line: lines,
       CustomerRef: { value: primaryCustomerId },
       TxnDate: new Date().toISOString().slice(0, 10),
       PrivateNote: `Billing period ${period.startDate.toISOString().slice(0, 10)} – ${period.endDate.toISOString().slice(0, 10)}`,
     };
 
-    const invoiceRes = await fetch(`${base}/invoice?minorversion=65`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(invoicePayload),
-    });
+    if (clientCurrency && clientCurrency !== 'USD') {
+      invoicePayload.CurrencyRef = { value: clientCurrency };
+    }
+
+    let invoiceRes: Response;
+    try {
+      invoiceRes = await fetch(`${base}/invoice?minorversion=65`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(invoicePayload),
+      });
+    } catch (fetchErr) {
+      console.error('[qbo publish] invoice fetch error:', fetchErr);
+      return NextResponse.json({ error: 'Network error contacting QuickBooks' }, { status: 502 });
+    }
 
     if (!invoiceRes.ok) {
       const errBody = await invoiceRes.text();
       console.error('[qbo publish] invoice create failed:', errBody);
+
+      const lower = errBody.toLowerCase();
+      const isCurrencyError =
+        lower.includes('multicurrency') ||
+        lower.includes('currency') ||
+        /"errorcode"\s*:\s*"?(2500|6000)"?/i.test(errBody);
+
+      if (isCurrencyError) {
+        const currencyLabel = clientCurrency ?? 'a non-USD currency';
+        return NextResponse.json(
+          {
+            error: `This client is billed in ${currencyLabel} but your QuickBooks company does not have multicurrency enabled. Please enable it in QBO under Settings → Advanced → Currency, then try again.`,
+          },
+          { status: 422 },
+        );
+      }
+
       return NextResponse.json({ error: 'Failed to create QBO invoice', detail: errBody }, { status: 502 });
     }
 
