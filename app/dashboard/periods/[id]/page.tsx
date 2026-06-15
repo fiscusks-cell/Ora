@@ -76,7 +76,7 @@ export default function PeriodDetailPage() {
   if (loading) return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
   if (!period) return <div className="p-8 text-slate-400">Period not found</div>;
 
-  const totalSeconds = period.stats?.totalSeconds ?? period.entries.reduce((s, e) => s + (e.durationSeconds || 0), 0);
+  const totalSeconds = period.stats?.totalSeconds ?? (period.entries ?? []).reduce((s, e) => s + (e.durationSeconds || 0), 0);
   const totalAmount = period.stats?.totalBillableAmount ?? 0;
   const s = STATUS_LABEL[period.status];
 
@@ -104,7 +104,7 @@ export default function PeriodDetailPage() {
           </div>
           <div>
             <div className="text-xs text-slate-500">Entries</div>
-            <div className="text-xl font-bold text-white">{period.entries.length}</div>
+            <div className="text-xl font-bold text-white">{(period.entries ?? []).length}</div>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ export default function PeriodDetailPage() {
         {period.status === 'OPEN' && (
           <button
             onClick={() => doAction(`/api/periods/${id}/submit`)}
-            disabled={actionLoading || period.entries.length === 0}
+            disabled={actionLoading || (period.entries ?? []).length === 0}
             className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
           >
             <Clock className="w-4 h-4" /> Submit for Approval
@@ -215,7 +215,7 @@ export default function PeriodDetailPage() {
 
       {tab === 'entries' && (
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-          {period.entries.length === 0 ? (
+          {(period.entries ?? []).length === 0 ? (
             <div className="text-center text-slate-500 py-8">No entries in this period</div>
           ) : (
             <table className="w-full">
@@ -227,7 +227,7 @@ export default function PeriodDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {period.entries.map(e => (
+                {(period.entries ?? []).map(e => (
                   <tr key={e.id} className="border-b border-slate-800/50 last:border-0">
                     <td className="px-4 py-3 text-sm text-slate-400">{format(new Date(e.startedAt), 'MMM d')}</td>
                     <td className="px-4 py-3 text-sm text-slate-200 max-w-xs truncate">{e.description || <span className="text-slate-500 italic">—</span>}</td>
