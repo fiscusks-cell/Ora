@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { CheckCircle } from 'lucide-react';
+import { OriginLink } from '@/components/ui/origin-button';
 
 const PerspectiveClockHero = dynamic(() => import('./components/PerspectiveClockHero'), { ssr: false });
 
@@ -159,7 +160,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link
+                <OriginLink
                   href={plan.href}
                   className={`block text-center font-bold py-3 rounded-xl text-sm transition-colors ${
                     plan.highlight
@@ -168,7 +169,7 @@ export default function LandingPage() {
                   }`}
                 >
                   {plan.cta}
-                </Link>
+                </OriginLink>
               </div>
             ))}
           </div>
@@ -182,12 +183,12 @@ export default function LandingPage() {
           <p className="text-slate-400 mb-8">
             Join freelancers and agencies who trust ORA to track time and get paid on time.
           </p>
-          <Link
+          <OriginLink
             href="/auth/signup"
             className="inline-block px-10 py-4 bg-[#FFE600] hover:bg-yellow-300 text-black font-bold rounded-xl text-lg transition-colors"
           >
             Create your free workspace →
-          </Link>
+          </OriginLink>
         </div>
       </section>
 

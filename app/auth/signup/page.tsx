@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { OriginButton } from '@/components/ui/origin-button';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -118,13 +119,13 @@ export default function SignUpPage() {
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-            <button
+            <OriginButton
               type="submit"
               disabled={loading}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
             >
               {loading ? 'Creating account…' : 'Create account'}
-            </button>
+            </OriginButton>
           </form>
 
           <div className="mt-4 pt-4 border-t border-slate-800 text-center text-sm text-slate-500">

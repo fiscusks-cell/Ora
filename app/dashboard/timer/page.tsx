@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { Play, Square, DollarSign, Trash2 } from 'lucide-react';
+import { OriginButton } from '@/components/ui/origin-button';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 
 // ─── types ───────────────────────────────────────────────────────────────────
@@ -270,7 +271,7 @@ export default function TimerPage() {
           )}
 
           {/* Start / Stop button */}
-          <button
+          <OriginButton
             onClick={isRunning ? handleStop : handleStart}
             disabled={loading}
             className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-base transition-colors disabled:opacity-50 ${
@@ -290,7 +291,7 @@ export default function TimerPage() {
                 Start Timer
               </>
             )}
-          </button>
+          </OriginButton>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useRef } from 'react';
+import { OriginLink, OriginButton } from '@/components/ui/origin-button';
 
 export default function PerspectiveClockHero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -191,15 +191,15 @@ export default function PerspectiveClockHero() {
           Track hours. Approve periods. Push to QuickBooks or Xero automatically.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <Link
+          <OriginLink
             href="/auth/signup"
             className="px-8 py-4 bg-[#FFE600] hover:bg-yellow-300 text-black font-bold rounded-xl text-base transition-colors"
           >
             Start free →
-          </Link>
-          <button className="px-8 py-4 border border-white/20 hover:border-white/40 text-white font-semibold rounded-xl text-base transition-colors backdrop-blur-sm">
+          </OriginLink>
+          <OriginButton className="px-8 py-4 border border-white/20 hover:border-white/40 text-white font-semibold rounded-xl text-base transition-colors backdrop-blur-sm">
             See how it works
-          </button>
+          </OriginButton>
         </div>
         <p className="text-slate-600 text-sm mt-6">No credit card required · Free forever on solo plan</p>
       </div>
