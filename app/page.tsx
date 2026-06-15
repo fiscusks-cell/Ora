@@ -116,6 +116,12 @@ export default function LandingPage() {
           </div>
           <p className="text-slate-600 text-sm mb-8">No credit card required · Free forever on solo plan</p>
 
+          <div className="flex items-center gap-6 justify-center mt-2 mb-10">
+            <span className="text-slate-500 text-sm">Integrates with</span>
+            <img src="/Intuit_QuickBooks_logo.png" alt="QuickBooks" className="h-8 w-auto opacity-80 hover:opacity-100 transition-opacity" />
+            <img src="/Xero.jpg" alt="Xero" className="h-8 w-auto opacity-80 hover:opacity-100 transition-opacity" />
+          </div>
+
           {/* TODO: Replace with real Intuit and Xero logo files */}
         </div>
       </section>
