@@ -43,3 +43,15 @@ body {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+:root {
+  --color-cosmic: #050c1b;
+  --color-card: #061025;
+  --color-accent: #FFE600;
+}
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* Remove default outline on canvas */
+canvas { display: block; }
