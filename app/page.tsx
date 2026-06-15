@@ -1,10 +1,7 @@
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { CheckCircle } from 'lucide-react';
 import { OriginLink } from '@/components/ui/origin-button';
-
-const PerspectiveClockHero = dynamic(() => import('./components/PerspectiveClockHero'), { ssr: false });
-const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.SparklesCore })), { ssr: false });
+import { PerspectiveClockHero, SparklesCore } from './components/HeroClient';
 
 function OraLogo({ size = 32 }: { size?: number }) {
   return (
