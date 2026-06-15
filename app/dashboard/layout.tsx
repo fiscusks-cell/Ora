@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma';
 import { DashboardNav } from '@/components/layout/DashboardNav';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { OraLogo } from '@/components/layout/OraLogo';
-import { Providers } from '@/components/layout/Providers';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -47,7 +46,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       {/* Page content */}
       <main className="flex-1 overflow-auto pt-14 md:pt-0">
-        <Providers>{children}</Providers>
+        {children}
       </main>
     </div>
   );
