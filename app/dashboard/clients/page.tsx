@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, X, Circle } from 'lucide-react';
-import { CURRENCIES } from '@/lib/utils';
+import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/utils';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ interface FormState {
 const DEFAULT_FORM: FormState = {
   name: '',
   email: '',
-  currency: 'USD',
+  currency: DEFAULT_CURRENCY,
 };
 
 // ─── page ────────────────────────────────────────────────────────────────────
@@ -293,8 +293,8 @@ export default function ClientsPage() {
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   {CURRENCIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
+                    <option key={c.code} value={c.code}>
+                      {c.label}
                     </option>
                   ))}
                 </select>

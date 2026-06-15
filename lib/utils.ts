@@ -24,15 +24,5 @@ export function generateSlug(name: string): string {
     .substring(0, 50);
 }
 
-export const CURRENCIES = ['USD', 'GBP', 'EUR', 'CAD', 'AUD', 'JPY'] as const;
-export type CurrencyCode = (typeof CURRENCIES)[number];
-
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  const locale = currency === 'JPY' ? 'ja-JP' : 'en-US';
-  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
-}
-
-export function roundForCurrency(amount: number, currency: string): number {
-  return currency === 'JPY' ? Math.round(amount) : parseFloat(amount.toFixed(2));
-}
+export { CURRENCIES, type CurrencyCode, DEFAULT_CURRENCY, getCurrency, formatCurrency, roundForCurrency } from './currency';
 
