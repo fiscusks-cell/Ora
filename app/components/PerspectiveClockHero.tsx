@@ -147,6 +147,47 @@ export default function PerspectiveClockHero() {
       ctx.restore();
 
       ctx.restore(); // end perspective transform
+
+      // Glowing pillar strands rising from top of clock ellipse
+      const ellipseTopY = cy - radius * 0.6; // top of the perspective-scaled ellipse
+      const now2 = Date.now() / 1000;
+      const strands = [
+        { xOff: 0,           color: '#FFE600', width: 2.5, height: radius * 1.1, phase: 0 },
+        { xOff: -radius * 0.18, color: '#FFE600', width: 1.2, height: radius * 0.7, phase: 1.2 },
+        { xOff:  radius * 0.18, color: '#FFE600', width: 1.2, height: radius * 0.75, phase: 2.1 },
+        { xOff: -radius * 0.38, color: '#10B981', width: 1.0, height: radius * 0.5, phase: 0.7 },
+        { xOff:  radius * 0.38, color: '#10B981', width: 1.0, height: radius * 0.55, phase: 1.9 },
+        { xOff: -radius * 0.6,  color: '#10B981', width: 0.7, height: radius * 0.3, phase: 3.1 },
+        { xOff:  radius * 0.6,  color: '#10B981', width: 0.7, height: radius * 0.32, phase: 0.4 },
+      ];
+
+      for (const s of strands) {
+        const flicker = 0.7 + 0.3 * Math.sin(now2 * 2.3 + s.phase);
+        const x = cx + s.xOff;
+        const grad = ctx.createLinearGradient(x, ellipseTopY, x, ellipseTopY - s.height);
+        grad.addColorStop(0, s.color.replace('#', 'rgba(') + ',0.0)'); // opaque base
+        // parse hex to rgba properly
+        const r16 = parseInt(s.color.slice(1, 3), 16);
+        const g16 = parseInt(s.color.slice(3, 5), 16);
+        const b16 = parseInt(s.color.slice(5, 7), 16);
+        const base = `rgba(${r16},${g16},${b16},`;
+        const grad2 = ctx.createLinearGradient(x, ellipseTopY, x, ellipseTopY - s.height);
+        grad2.addColorStop(0, base + (0.6 * flicker) + ')');
+        grad2.addColorStop(0.4, base + (0.35 * flicker) + ')');
+        grad2.addColorStop(1, base + '0)');
+
+        ctx.save();
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = s.color;
+        ctx.beginPath();
+        ctx.moveTo(x, ellipseTopY);
+        ctx.lineTo(x, ellipseTopY - s.height);
+        ctx.strokeStyle = grad2;
+        ctx.lineWidth = s.width;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.restore();
+      }
     }
 
     function loop() {
