@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, X, Circle } from 'lucide-react';
+import { CURRENCIES } from '@/lib/utils';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -22,8 +23,6 @@ interface FormState {
 }
 
 // ─── constants ────────────────────────────────────────────────────────────────
-
-const CURRENCIES = ['USD', 'GBP', 'EUR', 'CAD', 'AUD'];
 
 const DEFAULT_FORM: FormState = {
   name: '',

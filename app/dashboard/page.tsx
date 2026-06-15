@@ -31,7 +31,8 @@ function formatHM(totalSeconds: number): string {
 }
 
 function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  const locale = currency === 'JPY' ? 'ja-JP' : 'en-US';
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
 }
 
 // ─── stat card ───────────────────────────────────────────────────────────────

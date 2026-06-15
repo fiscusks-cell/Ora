@@ -164,18 +164,26 @@ export async function POST(
       primaryCustomerId = await ensureCustomer('Time Tracking Client', null);
     }
 
-    const lines = Array.from(byProject.values()).map((g, i) => ({
-      Id: String(i + 1),
-      LineNum: i + 1,
-      Description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ $${g.hourlyRate.toFixed(2)}/hr`,
-      Amount: parseFloat(g.amount.toFixed(2)),
-      DetailType: 'SalesItemLineDetail',
-      SalesItemLineDetail: {
-        Qty: parseFloat(g.totalHours.toFixed(4)),
-        UnitPrice: parseFloat(g.hourlyRate.toFixed(2)),
-        ItemRef: { value: '1', name: 'Services' }, // default Services item
-      },
-    }));
+    const isJPY = clientCurrency === 'JPY';
+    const currencySymbol = isJPY ? '¥' : '$';
+    const rateDecimals = isJPY ? 0 : 2;
+
+    const lines = Array.from(byProject.values()).map((g, i) => {
+      const unitPrice = isJPY ? Math.round(g.hourlyRate) : parseFloat(g.hourlyRate.toFixed(2));
+      const lineAmount = isJPY ? Math.round(g.amount) : parseFloat(g.amount.toFixed(2));
+      return {
+        Id: String(i + 1),
+        LineNum: i + 1,
+        Description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ ${currencySymbol}${g.hourlyRate.toFixed(rateDecimals)}/hr`,
+        Amount: lineAmount,
+        DetailType: 'SalesItemLineDetail',
+        SalesItemLineDetail: {
+          Qty: parseFloat(g.totalHours.toFixed(4)),
+          UnitPrice: unitPrice,
+          ItemRef: { value: '1', name: 'Services' },
+        },
+      };
+    });
 
     // ── resolve next DocNumber ────────────────────────────────────────────────
 
