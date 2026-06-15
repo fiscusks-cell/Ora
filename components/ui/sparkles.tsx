@@ -1,9 +1,6 @@
 'use client';
 
-import { useEffect, useId, useState } from 'react';
-import Particles, { initParticlesEngine } from '@tsparticles/react';
-import { loadSlim } from '@tsparticles/slim';
-import type { ISourceOptions } from '@tsparticles/engine';
+import { useEffect, useRef } from 'react';
 
 interface SparklesCoreProps {
   id?: string;
@@ -16,8 +13,17 @@ interface SparklesCoreProps {
   className?: string;
 }
 
+interface Particle {
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  opacitySpeed: number;
+  vx: number;
+  vy: number;
+}
+
 export function SparklesCore({
-  id,
   background = 'transparent',
   minSize = 0.6,
   maxSize = 1.4,
@@ -26,57 +32,88 @@ export function SparklesCore({
   particleDensity = 100,
   className = '',
 }: SparklesCoreProps) {
-  const [engineReady, setEngineReady] = useState(false);
-  const generatedId = useId();
-  const particleId = id ?? generatedId;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine);
-    }).then(() => setEngineReady(true));
-  }, []);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  const options: ISourceOptions = {
-    background: { color: { value: background } },
-    fullScreen: { enable: false },
-    fpsLimit: 60,
-    particles: {
-      number: {
-        value: particleDensity,
-        density: { enable: true },
-      },
-      color: { value: particleColor },
-      shape: { type: 'circle' },
-      opacity: {
-        value: { min: 0.1, max: 0.8 },
-        animation: {
-          enable: true,
-          speed: 1.5,
-          sync: false,
-        },
-      },
-      size: {
-        value: { min: minSize, max: maxSize },
-      },
-      move: {
-        enable: true,
-        speed: speed,
-        direction: 'none',
-        random: true,
-        straight: false,
-        outModes: { default: 'out' },
-      },
-    },
-    detectRetina: true,
-  };
+    let animId: number;
+    let particles: Particle[] = [];
 
-  if (!engineReady) return null;
+    function resize() {
+      if (!canvas) return;
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      particles = init();
+    }
+
+    function rand(min: number, max: number) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function init(): Particle[] {
+      const count = Math.floor((canvas!.width * canvas!.height) / (10000 / particleDensity));
+      return Array.from({ length: count }, () => ({
+        x: rand(0, canvas!.width),
+        y: rand(0, canvas!.height),
+        size: rand(minSize, maxSize),
+        opacity: rand(0.1, 0.8),
+        opacitySpeed: rand(0.003, 0.012) * (Math.random() < 0.5 ? 1 : -1),
+        vx: rand(-0.15, 0.15) * speed,
+        vy: rand(-0.3, -0.05) * speed,
+      }));
+    }
+
+    function draw() {
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (background !== 'transparent') {
+        ctx.fillStyle = background;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.opacity += p.opacitySpeed;
+
+        if (p.opacity <= 0.05 || p.opacity >= 0.85) p.opacitySpeed *= -1;
+
+        if (p.y < -5) { p.y = canvas.height + 5; p.x = rand(0, canvas.width); }
+        if (p.x < -5) p.x = canvas.width + 5;
+        if (p.x > canvas.width + 5) p.x = -5;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = particleColor;
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.opacity));
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+      animId = requestAnimationFrame(draw);
+    }
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    resize();
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      ro.disconnect();
+    };
+  }, [background, minSize, maxSize, speed, particleColor, particleDensity]);
 
   return (
-    <Particles
-      id={particleId}
+    <canvas
+      ref={canvasRef}
       className={className}
-      options={options}
+      style={{ display: 'block', width: '100%', height: '100%' }}
     />
   );
 }
