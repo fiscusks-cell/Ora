@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   format,
   startOfWeek,
@@ -1011,9 +1011,8 @@ export default function ReportsPage() {
                         ? ((proj.totalSeconds / data.totals.totalSeconds) * 100).toFixed(1)
                         : '0.0';
                     return (
-                      <>
+                      <React.Fragment key={key}>
                         <tr
-                          key={key}
                           className="border-b border-slate-800/60 hover:bg-slate-800/30 cursor-pointer"
                           onClick={() => toggleProject(key)}
                         >
@@ -1076,7 +1075,7 @@ export default function ReportsPage() {
                               </tr>
                             );
                           })}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                   <tr className="bg-slate-800/40">
