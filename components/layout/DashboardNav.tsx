@@ -1,9 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Clock, List, FolderKanban, Building2,
-  BarChart3, Users, Settings, PieChart, FileText
+  BarChart3, Users, Settings, PieChart, FileText, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -67,7 +68,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           );
         })}
       </nav>
-      <div className="px-3 py-3 border-t border-slate-800 space-y-1">
+      <div className="mt-auto border-t border-slate-800 px-3 py-3 space-y-1">
         {bottomNavItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href);
           return (
@@ -86,6 +87,24 @@ export function DashboardNav({ user }: DashboardNavProps) {
             </Link>
           );
         })}
+
+        <div className="flex items-center gap-3 px-3 py-2.5">
+          <div className="w-7 h-7 rounded-full bg-indigo-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+            {user.name?.[0]?.toUpperCase() ?? '?'}
+          </div>
+          <div className="overflow-hidden flex-1">
+            <p className="text-sm font-medium text-white truncate">{user.name}</p>
+            <p className="text-xs text-slate-500 truncate">{user.organizationName}</p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          Sign out
+        </button>
       </div>
     </div>
   );
