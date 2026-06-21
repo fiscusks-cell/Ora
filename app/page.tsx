@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { CheckCircle, Send, Timer, Stamp } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { OriginLink } from '@/components/ui/origin-button';
-import { PerspectiveClockHero } from './components/HeroClient';
+import { PerspectiveClockHero, FeaturesShowcase } from './components/HeroClient';
 
 const BG = '#F5F4EF';
 
@@ -19,24 +19,6 @@ function OraLogo({ size = 32 }: { size?: number }) {
     </div>
   );
 }
-
-const features = [
-  {
-    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.12)' }}><Timer className="w-6 h-6" style={{ color: '#10B981' }} /></div>,
-    title: 'Track time',
-    desc: 'One-click timer, manual entry, and team tracking. Works across projects and clients.',
-  },
-  {
-    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.12)' }}><Stamp className="w-6 h-6" style={{ color: '#818CF8' }} /></div>,
-    title: 'Approve periods',
-    desc: 'Weekly, bi-weekly, or monthly billing cycles. Review, approve, and lock with one click.',
-  },
-  {
-    icon: <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(234,179,8,0.12)' }}><Send className="w-6 h-6" style={{ color: '#CA8A04' }} /></div>,
-    title: 'Push to QBO / Xero',
-    desc: 'Creates a real invoice with line items. Attaches a PDF time report. Fully automated.',
-  },
-];
 
 const plans = [
   {
@@ -133,25 +115,14 @@ export default function LandingPage() {
 
       {/* Features */}
       <section id="features" className="py-24 px-6" style={{ background: BG }}>
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 text-center mb-4">
             Everything you need to bill clients
           </h2>
           <p className="text-slate-500 text-center mb-16 text-lg">
             From first click to paid invoice, ORA handles the whole workflow.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl p-7 transition-all duration-200 hover:scale-[1.02] bg-white border border-slate-200 hover:border-slate-300"
-              >
-                <div className="mb-5">{f.icon}</div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">{f.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
+          <FeaturesShowcase />
         </div>
       </section>
 

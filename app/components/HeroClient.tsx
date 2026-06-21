@@ -7,7 +7,4 @@ export const PerspectiveClockHero = dynamic(
   { ssr: false }
 );
 
-export const SparklesCore = dynamic(
-  () => import('@/components/ui/sparkles').then((m) => ({ default: m.SparklesCore })),
-  { ssr: false }
-);
+export { default as FeaturesShowcase } from './FeaturesShowcase';
