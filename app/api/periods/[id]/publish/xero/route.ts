@@ -169,7 +169,7 @@ export async function POST(
       try {
         const currRes = await xero.accountingApi.getCurrencies(tenantId);
         const enabledCodes = (currRes.body.currencies ?? []).map(
-          (c) => (c.code ?? '').toUpperCase(),
+          (c) => String(c.code ?? '').toUpperCase(),
         );
         if (!enabledCodes.includes(clientCurrency)) {
           return NextResponse.json(
@@ -248,7 +248,14 @@ export async function POST(
 
     let pdfAttached = false;
     try {
-      const pdfBuffer = await generatePeriodPdf(period, period.organization?.name);
+      const pdfPeriod = {
+        ...period,
+        entries: period.entries.map(e => ({
+          ...e,
+          project: e.project ? { ...e.project, hourlyRate: Number(e.project.hourlyRate) } : null,
+        })),
+      };
+      const pdfBuffer = await generatePeriodPdf(pdfPeriod, period.organization?.name);
       await xero.accountingApi.createInvoiceAttachmentByFileName(
         tenantId,
         xeroInvoiceId,

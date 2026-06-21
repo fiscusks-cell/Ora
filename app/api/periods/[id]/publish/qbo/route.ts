@@ -310,7 +310,14 @@ export async function POST(
 
     let pdfAttached = false;
     try {
-      const pdfBuffer = await generatePeriodPdf(period, period.organization?.name);
+      const pdfPeriod = {
+        ...period,
+        entries: period.entries.map(e => ({
+          ...e,
+          project: e.project ? { ...e.project, hourlyRate: Number(e.project.hourlyRate) } : null,
+        })),
+      };
+      const pdfBuffer = await generatePeriodPdf(pdfPeriod, period.organization?.name);
       const fileName = 'ORA-Time-Report.pdf';
 
       const metadata = JSON.stringify({
@@ -324,7 +331,7 @@ export async function POST(
 
       const form = new FormData();
       form.append('file_metadata', new Blob([metadata], { type: 'application/json' }), 'metadata');
-      form.append('file_content', new Blob([pdfBuffer], { type: 'application/pdf' }), fileName);
+      form.append('file_content', new Blob([new Uint8Array(pdfBuffer)], { type: 'application/pdf' }), fileName);
 
       const uploadRes = await fetch(`${base}/upload?minorversion=65`, {
         method: 'POST',

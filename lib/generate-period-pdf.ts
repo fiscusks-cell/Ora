@@ -9,7 +9,7 @@ interface PeriodEntry {
   durationSeconds: number | null;
   isBillable: boolean;
   user: { name: string };
-  project: { name: string; hourlyRate: number | string | { toString(): string }; client?: { name?: string } | null } | null;
+  project: { name: string; hourlyRate: number | string; client?: { name?: string } | null } | null;
   projectId?: string | null;
 }
 
@@ -61,6 +61,7 @@ export async function generatePeriodPdf(period: PeriodData, orgName?: string): P
     totalAmount,
   });
 
-  const buffer = await renderToBuffer(doc);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buffer = await renderToBuffer(doc as any);
   return Buffer.from(buffer);
 }
