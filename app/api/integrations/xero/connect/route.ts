@@ -27,10 +27,9 @@ export async function GET() {
 
   const authUrl = `https://login.xero.com/identity/connect/authorize?${params.toString()}`;
 
-  console.log('[xero/connect] client_id:', clientId.slice(0, 8) + '...');
-  console.log('[xero/connect] redirect_uri:', redirectUri);
-  console.log('[xero/connect] scope:', SCOPE);
-  console.log('[xero/connect] full URL:', authUrl);
+  console.log('XERO_CLIENT_ID value:', process.env.XERO_CLIENT_ID);
+  console.log('XERO_REDIRECT_URI value:', process.env.XERO_REDIRECT_URI);
+  console.log('Full auth URL:', authUrl);
 
   return NextResponse.redirect(authUrl);
 }
