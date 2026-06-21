@@ -890,11 +890,11 @@ export default function ReportsPage() {
           )}
 
           {!loading && data && data.entries.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-6">
               {/* Bar chart */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
                 <h2 className="text-sm font-semibold text-slate-300 mb-4">Hours by Day</h2>
-                <ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={350}>
                   <BarChart
                     data={barData}
                     barSize={Math.max(6, Math.min(24, 120 / (barData.length || 1)))}
@@ -937,13 +937,13 @@ export default function ReportsPage() {
               {/* Donut chart */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
                 <h2 className="text-sm font-semibold text-slate-300 mb-4">By Project</h2>
-                <div className="relative flex items-center justify-center" style={{ height: 220 }}>
-                  <ResponsiveContainer width="100%" height={220}>
+                <div className="relative" style={{ minHeight: 300 }}>
+                  <ResponsiveContainer width="100%" height={350}>
                     <PieChart>
                       <Pie
                         data={pieData}
                         cx="50%"
-                        cy="50%"
+                        cy="45%"
                         innerRadius={60}
                         outerRadius={90}
                         paddingAngle={2}
@@ -955,11 +955,18 @@ export default function ReportsPage() {
                         ))}
                       </Pie>
                       <Legend
+                        layout="horizontal"
                         iconType="circle"
                         iconSize={8}
-                        formatter={(value) => (
-                          <span style={{ color: '#94a3b8', fontSize: 11 }}>{value}</span>
-                        )}
+                        wrapperStyle={{ paddingTop: '20px' }}
+                        formatter={(value, entry) => {
+                          const total = pieData.reduce((s, d) => s + d.value, 0);
+                          const item = pieData.find((d) => d.name === value);
+                          const pct = item && total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
+                          return (
+                            <span style={{ color: '#94a3b8', fontSize: 11 }}>{value} ({pct}%)</span>
+                          );
+                        }}
                       />
                       <Tooltip
                         contentStyle={{
@@ -976,8 +983,8 @@ export default function ReportsPage() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div
-                    className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
-                    style={{ paddingRight: pieData.length > 0 ? '80px' : 0 }}
+                    className="absolute top-0 left-0 right-0 flex flex-col items-center justify-center pointer-events-none"
+                    style={{ height: 200 }}
                   >
                     <span className="text-xl font-bold text-white">
                       {fmtHours(data.totals.totalSeconds)}
