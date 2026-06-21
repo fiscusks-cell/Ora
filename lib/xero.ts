@@ -46,7 +46,7 @@ export async function getValidXeroClient(
   const tokens = decryptTokens(user.xeroTokens);
   const xero = makeXeroClient();
 
-  await xero.setTokenSet({
+  xero.setTokenSet({
     access_token: tokens.access_token,
     refresh_token: tokens.refresh_token,
     expires_at: Math.floor(tokens.expires_at / 1000), // xero-node uses unix seconds

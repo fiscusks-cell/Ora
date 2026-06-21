@@ -264,9 +264,20 @@ export default function SettingsPage() {
                 </div>
               </div>
               {integrations.connectedXero ? (
-                <span className="flex items-center gap-1.5 text-emerald-400 text-sm font-semibold">
-                  <CheckCircle className="w-4 h-4" /> Connected
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5 text-emerald-400 text-sm font-semibold">
+                    <CheckCircle className="w-4 h-4" /> Connected
+                  </span>
+                  <button
+                    onClick={async () => {
+                      const res = await fetch('/api/integrations/xero/disconnect', { method: 'POST' });
+                      if (res.ok) setIntegrations((prev) => ({ ...prev, connectedXero: false }));
+                    }}
+                    className="text-xs text-slate-500 hover:text-red-400 transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </div>
               ) : (
                 <a
                   href="/api/integrations/xero/connect"
