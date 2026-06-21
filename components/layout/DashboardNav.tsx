@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Clock, List, FolderKanban, Building2,
-  BarChart3, Users, Settings, PieChart
+  BarChart3, Users, Settings, PieChart, FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +25,7 @@ const navItems = [
   { href: '/dashboard/clients', label: 'Clients', icon: Building2 },
   { href: '/dashboard/periods', label: 'Reports & Periods', icon: BarChart3 },
   { href: '/dashboard/reports', label: 'Reports', icon: PieChart },
+  { href: '/dashboard/invoices', label: 'Invoices', icon: FileText },
 ];
 
 const adminNavItems = [

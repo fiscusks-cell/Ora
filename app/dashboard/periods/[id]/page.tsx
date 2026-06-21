@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { formatDuration, formatCurrency } from '@/lib/utils';
 import { getCurrency } from '@/lib/currency';
 import { format } from 'date-fns';
-import { CheckCircle, Clock, FileText, AlertCircle } from 'lucide-react';
+import { CheckCircle, Clock, FileText, AlertCircle, Download } from 'lucide-react';
 import { OriginButton } from '@/components/ui/origin-button';
 
 interface Entry {
@@ -57,6 +57,8 @@ export default function PeriodDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [tab, setTab] = useState<'summary' | 'entries'>('summary');
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [invoiceGenerated, setInvoiceGenerated] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/periods/${id}`);
@@ -74,6 +76,32 @@ export default function PeriodDetailPage() {
     if (!res.ok) setMessage(data.error || data.message || 'Action failed');
     else await load();
     setActionLoading(false);
+  };
+
+  const handleGenerateInvoice = async () => {
+    setInvoiceLoading(true);
+    setMessage('');
+    try {
+      const res = await fetch(`/api/periods/${id}/generate-invoice`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json();
+        setMessage(data.error || 'Failed to generate invoice');
+        return;
+      }
+      const invNum = res.headers.get('X-Invoice-Number') || 'invoice';
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${invNum}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setInvoiceGenerated(invNum);
+    } catch {
+      setMessage('Failed to generate invoice');
+    } finally {
+      setInvoiceLoading(false);
+    }
   };
 
   if (loading) return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
@@ -165,7 +193,19 @@ export default function PeriodDetailPage() {
             >
               <FileText className="w-4 h-4" /> Publish to Xero
             </OriginButton>
+            <OriginButton
+              onClick={handleGenerateInvoice}
+              disabled={invoiceLoading}
+              className="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            >
+              <Download className="w-4 h-4" /> {invoiceLoading ? 'Generating…' : 'Download Invoice PDF'}
+            </OriginButton>
           </>
+        )}
+        {invoiceGenerated && (
+          <div className="flex items-center gap-2 text-sm text-emerald-400">
+            <CheckCircle className="w-4 h-4" /> {invoiceGenerated} generated
+          </div>
         )}
       </div>
 

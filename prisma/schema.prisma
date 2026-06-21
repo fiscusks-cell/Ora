@@ -49,6 +49,7 @@ model Organization {
   projects    Project[]
   timePeriods TimePeriod[]
   invites     Invite[]
+  invoices    Invoice[]
 
   @@map("organizations")
 }
@@ -196,6 +197,7 @@ model TimePeriod {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   entries      TimeEntry[]
+  invoices     Invoice[]
 
   @@index([organizationId])
   @@map("time_periods")
@@ -214,4 +216,22 @@ model Invite {
 
   @@index([organizationId])
   @@map("invites")
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  organizationId String
+  periodId       String?
+  invoiceNumber  String
+  clientName     String
+  amount         Float
+  currency       String   @default("USD")
+  pdfData        Bytes?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  period       TimePeriod?  @relation(fields: [periodId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@map("invoices")
 }
