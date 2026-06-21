@@ -171,7 +171,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-white">
-          {greeting}, {firstName} 👋
+          {greeting}, {firstName}
         </h1>
         <p className="text-slate-400 text-sm mt-1">Here&apos;s your time tracking overview.</p>
       </div>
