@@ -29,6 +29,7 @@ export async function GET() {
         },
       },
       orderBy: { startDate: 'desc' },
+      take: 100,
     });
 
     // Compute totals and strip raw entries from the response

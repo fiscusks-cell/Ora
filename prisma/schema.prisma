@@ -153,6 +153,7 @@ model Project {
   timeEntries  TimeEntry[]
 
   @@index([organizationId])
+  @@index([organizationId, clientId])
   @@map("projects")
 }
 
@@ -176,6 +177,9 @@ model TimeEntry {
   @@index([userId])
   @@index([projectId])
   @@index([startedAt])
+  @@index([userId, startedAt])
+  @@index([projectId, startedAt])
+  @@index([timePeriodId])
   @@map("time_entries")
 }
 
@@ -200,6 +204,7 @@ model TimePeriod {
   invoices     Invoice[]
 
   @@index([organizationId])
+  @@index([organizationId, status])
   @@map("time_periods")
 }
 

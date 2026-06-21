@@ -44,21 +44,31 @@ export async function GET(req: NextRequest) {
     where.isBillable = false;
   }
 
+  const limit = Math.min(parseInt(searchParams.get('limit') ?? '10000', 10), 50000);
+  const offset = parseInt(searchParams.get('offset') ?? '0', 10);
+
   const entries = await prisma.timeEntry.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      userId: true,
+      projectId: true,
+      description: true,
+      startedAt: true,
+      stoppedAt: true,
+      durationSeconds: true,
+      isBillable: true,
       project: {
-        include: {
-          client: {
-            select: { id: true, name: true, currency: true },
-          },
+        select: {
+          id: true, name: true, color: true, hourlyRate: true,
+          client: { select: { id: true, name: true, currency: true } },
         },
       },
-      user: {
-        select: { id: true, name: true },
-      },
+      user: { select: { id: true, name: true } },
     },
     orderBy: { startedAt: 'asc' },
+    take: limit,
+    skip: offset,
   });
 
   // byDay aggregation
