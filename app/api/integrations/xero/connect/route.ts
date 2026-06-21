@@ -1,16 +1,29 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { makeXeroClient } from '@/lib/xero';
+
+const SCOPE = 'openid profile email accounting.transactions accounting.contacts offline_access';
 
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!process.env.XERO_CLIENT_ID) {
+  const clientId = process.env.XERO_CLIENT_ID;
+  if (!clientId) {
     return NextResponse.json({ error: 'XERO_CLIENT_ID not configured' }, { status: 503 });
   }
 
-  const xero = makeXeroClient();
-  const consentUrl = await xero.buildConsentUrl();
+  const redirectUri =
+    process.env.XERO_REDIRECT_URI ??
+    `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/integrations/xero/callback`;
+
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    scope: SCOPE,
+    state: 'xero-connect',
+  });
+
+  const consentUrl = `https://login.xero.com/identity/connect/authorize?${params.toString()}`;
   return NextResponse.redirect(consentUrl);
 }
