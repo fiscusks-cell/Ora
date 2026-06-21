@@ -12,9 +12,10 @@ export async function GET() {
     return NextResponse.json({ error: 'XERO_CLIENT_ID not configured' }, { status: 503 });
   }
 
-  const redirectUri =
-    process.env.XERO_REDIRECT_URI ??
-    `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/integrations/xero/callback`;
+  const redirectUri = process.env.XERO_REDIRECT_URI;
+  if (!redirectUri) {
+    return NextResponse.json({ error: 'XERO_REDIRECT_URI not configured' }, { status: 503 });
+  }
 
   const params = new URLSearchParams({
     response_type: 'code',
@@ -24,12 +25,12 @@ export async function GET() {
     state: 'xero-connect',
   });
 
-  const consentUrl = `https://login.xero.com/identity/connect/authorize?${params.toString()}`;
+  const authUrl = `https://login.xero.com/identity/connect/authorize?${params.toString()}`;
 
   console.log('[xero/connect] client_id:', clientId.slice(0, 8) + '...');
   console.log('[xero/connect] redirect_uri:', redirectUri);
   console.log('[xero/connect] scope:', SCOPE);
-  console.log('[xero/connect] full URL:', consentUrl);
+  console.log('[xero/connect] full URL:', authUrl);
 
-  return NextResponse.redirect(consentUrl);
+  return NextResponse.redirect(authUrl);
 }
