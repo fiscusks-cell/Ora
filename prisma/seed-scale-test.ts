@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -56,7 +55,7 @@ async function main() {
   });
 
   console.log('Creating 50 users...');
-  const passwordHash = await bcrypt.hash('password123', 10);
+  const passwordHash = await bcrypt.hash('password123', 12);
   const users = [];
   for (let i = 0; i < 50; i++) {
     const role = i < 2 ? 'OWNER' : i < 5 ? 'ADMIN' : 'MEMBER';
