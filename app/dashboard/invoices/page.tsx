@@ -23,7 +23,7 @@ export default function InvoicesPage() {
   useEffect(() => {
     fetch('/api/invoices')
       .then(r => r.json())
-      .then(data => { setInvoices(data); setLoading(false); })
+      .then(data => { setInvoices(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -67,7 +67,7 @@ export default function InvoicesPage() {
               </tr>
             </thead>
             <tbody>
-              {invoices.map(inv => (
+              {(invoices ?? []).map(inv => (
                 <tr key={inv.id} className="border-b border-slate-800/50 last:border-0 hover:bg-slate-800/30">
                   <td className="px-4 py-3 text-sm font-mono font-semibold text-indigo-400">{inv.invoiceNumber}</td>
                   <td className="px-4 py-3 text-sm text-slate-200">{inv.clientName}</td>
