@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getValidXeroClient } from '@/lib/xero';
 import { getCurrency, roundForCurrency } from '@/lib/currency';
+import { generatePeriodPdf } from '@/lib/generate-period-pdf';
 
 export async function POST(
   _req: NextRequest,
@@ -21,6 +22,7 @@ export async function POST(
     const period = await prisma.timePeriod.findFirst({
       where: { id, organizationId: sessionUser.organizationId },
       include: {
+        organization: { select: { name: true } },
         entries: {
           where: { isBillable: true, durationSeconds: { gt: 0 } },
           include: {
@@ -242,24 +244,21 @@ export async function POST(
     const xeroInvoiceId = created.invoiceID;
     const finalInvoiceNumber = created.invoiceNumber ?? xeroInvoiceId;
 
-    // ── attach PDF report (best-effort) ──────────────────────────────────────
+    // ── generate and attach PDF report ─────────────────────────────────────────
 
-    if (period.reportPdfUrl) {
-      try {
-        const pdfRes = await fetch(period.reportPdfUrl);
-        if (pdfRes.ok) {
-          const buffer = Buffer.from(await pdfRes.arrayBuffer());
-          await xero.accountingApi.createInvoiceAttachmentByFileName(
-            tenantId,
-            xeroInvoiceId,
-            `ORA-period-${id.slice(-8)}.pdf`,
-            buffer,
-            true,
-          );
-        }
-      } catch (attachErr) {
-        console.warn('[xero publish] PDF attach failed (non-fatal):', attachErr);
-      }
+    let pdfAttached = false;
+    try {
+      const pdfBuffer = await generatePeriodPdf(period, period.organization?.name);
+      await xero.accountingApi.createInvoiceAttachmentByFileName(
+        tenantId,
+        xeroInvoiceId,
+        'ORA-Time-Report.pdf',
+        pdfBuffer,
+        true,
+      );
+      pdfAttached = true;
+    } catch (pdfErr) {
+      console.error('[xero publish] PDF generation/attachment failed:', pdfErr);
     }
 
     // ── update TimePeriod ─────────────────────────────────────────────────────
@@ -269,7 +268,7 @@ export async function POST(
       data: { status: 'PUBLISHED', publishedAt: new Date(), xeroInvoiceId },
     });
 
-    return NextResponse.json({ ok: true, invoiceId: xeroInvoiceId, invoiceNumber: finalInvoiceNumber });
+    return NextResponse.json({ ok: true, invoiceId: xeroInvoiceId, invoiceNumber: finalInvoiceNumber, pdfAttached });
   } catch (err) {
     console.error('[periods/publish/xero POST] error:', err);
     const message = err instanceof Error ? err.message : 'Internal server error';

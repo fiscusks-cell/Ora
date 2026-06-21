@@ -68,13 +68,24 @@ export default function PeriodDetailPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const [successMsg, setSuccessMsg] = useState('');
+
   const doAction = async (url: string, method = 'PATCH') => {
     setActionLoading(true);
     setMessage('');
+    setSuccessMsg('');
     const res = await fetch(url, { method });
     const data = await res.json();
-    if (!res.ok) setMessage(data.error || data.message || 'Action failed');
-    else await load();
+    if (!res.ok) {
+      setMessage(data.error || data.message || 'Action failed');
+    } else {
+      if (data.pdfAttached === true) {
+        setSuccessMsg('Invoice created + PDF attached');
+      } else if (data.pdfAttached === false) {
+        setSuccessMsg('Invoice created (PDF attachment failed)');
+      }
+      await load();
+    }
     setActionLoading(false);
   };
 
@@ -166,6 +177,13 @@ export default function PeriodDetailPage() {
         <div className="bg-red-950 border border-red-800 text-red-300 text-sm px-3 py-2 rounded-lg mb-4 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {message}
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="bg-emerald-950 border border-emerald-800 text-emerald-300 text-sm px-3 py-2 rounded-lg mb-4 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 flex-shrink-0" />
+          {successMsg}
         </div>
       )}
 

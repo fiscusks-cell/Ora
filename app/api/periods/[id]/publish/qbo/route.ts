@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getValidClient, qboApiBase } from '@/lib/qbo';
 import { getCurrency, roundForCurrency } from '@/lib/currency';
+import { generatePeriodPdf } from '@/lib/generate-period-pdf';
 
 export async function POST(
   _req: NextRequest,
@@ -20,6 +21,7 @@ export async function POST(
     const period = await prisma.timePeriod.findFirst({
       where: { id, organizationId: sessionUser.organizationId },
       include: {
+        organization: { select: { name: true } },
         entries: {
           where: { isBillable: true, durationSeconds: { gt: 0 } },
           include: {
@@ -304,22 +306,18 @@ export async function POST(
     const qboInvoiceId = invoiceData.Invoice.Id;
     const docNumber = invoiceData.Invoice.DocNumber;
 
-    // ── attach PDF report via multipart upload ────────────────────────────────
+    // ── generate and attach PDF report ─────────────────────────────────────────
 
-    if (period.reportPdfUrl) {
-      const pdfRes = await fetch(period.reportPdfUrl);
-      if (!pdfRes.ok) {
-        return NextResponse.json(
-          { error: 'Could not fetch PDF report for attachment. Invoice was created but not marked Published.' },
-          { status: 502 },
-        );
-      }
-
-      const pdfBuffer = await pdfRes.arrayBuffer();
-      const fileName = `ORA-period-${id.slice(-8).toUpperCase()}.pdf`;
+    let pdfAttached = false;
+    try {
+      const pdfBuffer = await generatePeriodPdf(period, period.organization?.name);
+      const fileName = 'ORA-Time-Report.pdf';
 
       const metadata = JSON.stringify({
-        AttachableRef: [{ EntityRef: { type: 'Invoice', value: qboInvoiceId } }],
+        AttachableRef: [{
+          EntityRef: { type: 'Invoice', value: qboInvoiceId },
+          IncludeOnSend: true,
+        }],
         FileName: fileName,
         ContentType: 'application/pdf',
       });
@@ -334,14 +332,13 @@ export async function POST(
         body: form,
       });
 
-      if (!uploadRes.ok) {
-        const uploadErr = await uploadRes.text();
-        console.error('[qbo publish] PDF upload failed:', uploadErr);
-        return NextResponse.json(
-          { error: 'PDF report could not be attached to the QBO invoice. Invoice was created but not marked Published.' },
-          { status: 502 },
-        );
+      if (uploadRes.ok) {
+        pdfAttached = true;
+      } else {
+        console.error('[qbo publish] PDF upload failed:', await uploadRes.text());
       }
+    } catch (pdfErr) {
+      console.error('[qbo publish] PDF generation/upload failed:', pdfErr);
     }
 
     // ── update TimePeriod ─────────────────────────────────────────────────────
@@ -355,7 +352,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({ ok: true, invoiceId: qboInvoiceId, docNumber });
+    return NextResponse.json({ ok: true, invoiceId: qboInvoiceId, docNumber, pdfAttached });
   } catch (err) {
     console.error('[periods/publish/qbo POST] error:', err);
     const message = err instanceof Error ? err.message : 'Internal server error';
