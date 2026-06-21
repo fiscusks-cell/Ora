@@ -138,13 +138,13 @@ export async function POST(
         clientName: billTo.name,
         amount: total,
         currency,
-        pdfData: pdfBuffer,
+        pdfData: new Uint8Array(pdfBuffer),
       },
     });
 
     // ── return PDF response ──────────────────────────────────────────────────
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${invoiceNumber}.pdf"`,
