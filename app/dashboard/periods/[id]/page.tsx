@@ -146,7 +146,18 @@ export default function PeriodDetailPage() {
           <div className="text-sm text-emerald-300">
             Published {period.publishedAt ? format(new Date(period.publishedAt), 'MMM d, yyyy') : ''}
             {period.qboInvoiceId && <span className="ml-3">· QBO: {period.qboInvoiceId}</span>}
-            {period.xeroInvoiceId && <span className="ml-3">· Xero: {period.xeroInvoiceId}</span>}
+            {period.xeroInvoiceId && (
+              <span className="ml-3">
+                · <a
+                    href={`https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=${period.xeroInvoiceId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-300 underline hover:text-emerald-200"
+                  >
+                    View in Xero
+                  </a>
+              </span>
+            )}
           </div>
         </div>
       )}

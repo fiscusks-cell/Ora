@@ -9,6 +9,7 @@ type Tab = 'profile' | 'organization' | 'billing' | 'integrations';
 interface IntegrationStatus {
   connectedQBO: boolean;
   connectedXero: boolean;
+  xeroOrgName: string | null;
 }
 
 export default function SettingsPage() {
@@ -17,7 +18,7 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>(() =>
     searchParams.get('tab') === 'integrations' ? 'integrations' : 'profile'
   );
-  const [integrations, setIntegrations] = useState<IntegrationStatus>({ connectedQBO: false, connectedXero: false });
+  const [integrations, setIntegrations] = useState<IntegrationStatus>({ connectedQBO: false, connectedXero: false, xeroOrgName: null });
   const [qboMsg, setQboMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [xeroMsg, setXeroMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [name, setName] = useState('');
@@ -35,7 +36,7 @@ export default function SettingsPage() {
       .catch(() => {});
     fetch('/api/integrations/xero/status')
       .then((r) => r.json())
-      .then((d) => setIntegrations((prev) => ({ ...prev, connectedXero: !!d.connected })))
+      .then((d) => setIntegrations((prev) => ({ ...prev, connectedXero: !!d.connected, xeroOrgName: d.orgName ?? null })))
       .catch(() => {});
   }, []);
 
@@ -259,7 +260,9 @@ export default function SettingsPage() {
                 <div>
                   <div className="font-semibold text-white">Xero</div>
                   <div className="text-sm text-slate-400">
-                    {integrations.connectedXero ? 'Connected — invoices will be published to your Xero organisation' : 'Publish invoices directly to Xero'}
+                    {integrations.connectedXero
+                      ? `Connected${integrations.xeroOrgName ? ` to ${integrations.xeroOrgName}` : ''} — invoices will be published to your Xero organisation`
+                      : 'Publish invoices directly to Xero'}
                   </div>
                 </div>
               </div>

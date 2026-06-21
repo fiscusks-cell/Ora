@@ -161,6 +161,46 @@ export async function POST(
       lineAmount: roundForCurrency(g.amount, clientCurrency),
     }));
 
+    // ── validate currency is enabled in Xero ─────────────────────────────────
+
+    if (clientCurrency !== 'USD') {
+      try {
+        const currRes = await xero.accountingApi.getCurrencies(tenantId);
+        const enabledCodes = (currRes.body.currencies ?? []).map(
+          (c) => (c.code ?? '').toUpperCase(),
+        );
+        if (!enabledCodes.includes(clientCurrency)) {
+          return NextResponse.json(
+            {
+              error: `This client is billed in ${clientCurrency} but your Xero organisation does not have multicurrency enabled or ${clientCurrency} is not added as a currency.`,
+            },
+            { status: 422 },
+          );
+        }
+      } catch {
+        // non-fatal — let Xero reject if currency is truly invalid
+      }
+    }
+
+    // ── determine next invoice number ────────────────────────────────────────
+
+    let invoiceNumber: string | undefined;
+    try {
+      const existing = await xero.accountingApi.getInvoices(
+        tenantId, undefined, undefined, 'InvoiceNumber DESC', undefined, undefined, undefined, undefined, 1,
+      );
+      const lastNum = existing.body.invoices?.[0]?.invoiceNumber;
+      if (lastNum) {
+        const numPart = lastNum.replace(/\D/g, '');
+        const prefix = lastNum.replace(/\d+$/, '');
+        if (numPart) {
+          invoiceNumber = `${prefix}${String(parseInt(numPart, 10) + 1).padStart(numPart.length, '0')}`;
+        }
+      }
+    } catch {
+      // fall through — let Xero auto-assign
+    }
+
     // ── create Xero Invoice ───────────────────────────────────────────────────
 
     const contact: Contact = { contactID: primaryContactId };
@@ -175,11 +215,23 @@ export async function POST(
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
       reference: `ORA-${id.slice(-8).toUpperCase()}`,
       status: Invoice.StatusEnum.AUTHORISED,
+      ...(invoiceNumber && { invoiceNumber }),
       ...(clientCurrency !== 'USD' && { currencyCode: clientCurrency as unknown as CurrencyCode }),
     };
 
-    const invoiceRes = await xero.accountingApi.createInvoices(tenantId, { invoices: [invoice] });
-    const created = invoiceRes.body.invoices?.[0];
+    let invoiceRes = await xero.accountingApi.createInvoices(tenantId, { invoices: [invoice] });
+    let created = invoiceRes.body.invoices?.[0];
+
+    // retry with incremented number if duplicate
+    if (!created?.invoiceID && invoiceNumber) {
+      const numPart = invoiceNumber.replace(/\D/g, '');
+      const prefix = invoiceNumber.replace(/\d+$/, '');
+      if (numPart) {
+        invoice.invoiceNumber = `${prefix}${String(parseInt(numPart, 10) + 1).padStart(numPart.length, '0')}`;
+        invoiceRes = await xero.accountingApi.createInvoices(tenantId, { invoices: [invoice] });
+        created = invoiceRes.body.invoices?.[0];
+      }
+    }
 
     if (!created?.invoiceID) {
       const detail = JSON.stringify(invoiceRes.body);
@@ -188,7 +240,7 @@ export async function POST(
     }
 
     const xeroInvoiceId = created.invoiceID;
-    const invoiceNumber = created.invoiceNumber ?? xeroInvoiceId;
+    const finalInvoiceNumber = created.invoiceNumber ?? xeroInvoiceId;
 
     // ── attach PDF report (best-effort) ──────────────────────────────────────
 
@@ -217,7 +269,7 @@ export async function POST(
       data: { status: 'PUBLISHED', publishedAt: new Date(), xeroInvoiceId },
     });
 
-    return NextResponse.json({ ok: true, invoiceId: xeroInvoiceId, invoiceNumber });
+    return NextResponse.json({ ok: true, invoiceId: xeroInvoiceId, invoiceNumber: finalInvoiceNumber });
   } catch (err) {
     console.error('[periods/publish/xero POST] error:', err);
     const message = err instanceof Error ? err.message : 'Internal server error';
