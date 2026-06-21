@@ -1,15 +1,17 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import bcrypt from 'bcryptjs';
+// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-var-requires */
+const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const bcrypt = require('bcryptjs');
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-function randomItem<T>(arr: T[]): T {
+function randomItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function randomBetween(min: number, max: number): number {
+function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -34,7 +36,6 @@ const PROJECT_PREFIXES = [
 async function main() {
   console.log('Cleaning existing data...');
   await prisma.timeEntry.deleteMany();
-  await prisma.invoice.deleteMany();
   await prisma.timePeriod.deleteMany();
   await prisma.project.deleteMany();
   await prisma.client.deleteMany();
@@ -55,7 +56,7 @@ async function main() {
   });
 
   console.log('Creating 50 users...');
-  const passwordHash = await bcrypt.hash('password123', 12);
+  const hashedPassword = await bcrypt.hash('password123', 12);
   const users = [];
   for (let i = 0; i < 50; i++) {
     const role = i < 2 ? 'OWNER' : i < 5 ? 'ADMIN' : 'MEMBER';
@@ -63,8 +64,8 @@ async function main() {
       data: {
         email: `user${i}@scaletest.com`,
         name: `Test User ${i}`,
-        passwordHash,
-        role: role as 'OWNER' | 'ADMIN' | 'MEMBER',
+        passwordHash: hashedPassword,
+        role,
         organizationId: org.id,
       },
     });
@@ -116,7 +117,7 @@ async function main() {
         periodType: 'MONTHLY',
         startDate,
         endDate,
-        status: status as 'OPEN' | 'PENDING_APPROVAL' | 'APPROVED' | 'PUBLISHED',
+        status,
         ...(status === 'PUBLISHED' ? { publishedAt: endDate } : {}),
         ...(status === 'APPROVED' || status === 'PUBLISHED' ? { approvedAt: endDate } : {}),
       },
@@ -136,7 +137,7 @@ async function main() {
       const pStart = period.startDate.getTime();
       const pEnd = period.endDate.getTime();
       const startedAt = new Date(pStart + Math.random() * (pEnd - pStart));
-      const durationSeconds = randomBetween(900, 28800); // 15min to 8hrs
+      const durationSeconds = randomBetween(900, 28800);
       const stoppedAt = new Date(startedAt.getTime() + durationSeconds * 1000);
 
       entries.push({
