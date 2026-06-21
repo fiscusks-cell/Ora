@@ -25,5 +25,11 @@ export async function GET() {
   });
 
   const consentUrl = `https://login.xero.com/identity/connect/authorize?${params.toString()}`;
+
+  console.log('[xero/connect] client_id:', clientId.slice(0, 8) + '...');
+  console.log('[xero/connect] redirect_uri:', redirectUri);
+  console.log('[xero/connect] scope:', SCOPE);
+  console.log('[xero/connect] full URL:', consentUrl);
+
   return NextResponse.redirect(consentUrl);
 }
