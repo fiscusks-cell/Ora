@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
-const SCOPE = 'openid profile email accounting.transactions accounting.contacts offline_access';
+const SCOPE = 'openid profile email accounting.invoices accounting.contacts accounting.attachments offline_access';
 
 export async function GET() {
   const session = await auth();
