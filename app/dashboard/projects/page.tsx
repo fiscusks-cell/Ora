@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Archive, Pencil, X } from 'lucide-react';
 import { getCurrency } from '@/lib/currency';
 import { DataTable, StatusBadge, Column } from '@/components/ui/data-table';
+import { InlineClientForm } from '@/components/forms/inline-client-form';
 
 interface Client {
   id: string;
@@ -39,6 +40,7 @@ export default function ProjectsPage() {
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
+  const [showInlineClient, setShowInlineClient] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
   const fetchProjects = useCallback(async () => { const res = await fetch('/api/projects'); if (res.ok) setProjects(await res.json()); }, []);
@@ -48,7 +50,7 @@ export default function ProjectsPage() {
 
   const openNew = () => { setEditProject(null); setForm(DEFAULT_FORM); setShowDialog(true); };
   const openEdit = (p: Project) => { setEditProject(p); setForm({ name: p.name, clientId: p.client?.id ?? '', color: p.color, hourlyRate: String(Number(p.hourlyRate).toFixed(2)), isBillable: p.isBillable }); setShowDialog(true); };
-  const closeDialog = () => { setShowDialog(false); setEditProject(null); };
+  const closeDialog = () => { setShowDialog(false); setEditProject(null); setShowInlineClient(false); };
 
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
@@ -171,6 +173,28 @@ export default function ProjectsPage() {
                   {clients.map((c) => (<option key={c.id} value={c.id}>{c.name} ({getCurrency(c.currency).label})</option>))}
                 </select>
                 {selectedClient && <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Currency inherited from client: {getCurrency(selectedClient.currency).label}</p>}
+                {!showInlineClient ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowInlineClient(true)}
+                    className="text-xs mt-1.5 flex items-center gap-1 transition-colors"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    <Plus className="w-3 h-3" />
+                    Create new client
+                  </button>
+                ) : (
+                  <div className="mt-2">
+                    <InlineClientForm
+                      onCreated={(client) => {
+                        setClients((prev) => [{ ...client, email: null, qboCustomerId: null, xeroContactId: null } as Client, ...prev]);
+                        setForm((f) => ({ ...f, clientId: client.id }));
+                        setShowInlineClient(false);
+                      }}
+                      onCancel={() => setShowInlineClient(false)}
+                    />
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Color</label>

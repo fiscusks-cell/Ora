@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { DashboardNav } from '@/components/layout/DashboardNav';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { OraLogo } from '@/components/layout/OraLogo';
+import { IdleTimerWarning } from '@/components/timer/idle-warning';
+import { fetchRandomPhotos } from '@/lib/unsplash';
+import { UnsplashSlideshow } from '@/components/background/unsplash-slideshow';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -20,6 +23,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const org = await prisma.organization.findUnique({
     where: { id: sessionUser.organizationId },
   });
+
+  const photos = await fetchRandomPhotos();
 
   const navUser = {
     name: sessionUser.name || sessionUser.email || 'User',
@@ -45,9 +50,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
 
       {/* Page content */}
-      <main className="flex-1 overflow-auto pt-14 md:pt-0" style={{ background: 'var(--background)' }}>
+      <main className="flex-1 overflow-auto pt-14 md:pt-0 relative" style={{ background: 'var(--background)' }}>
+        <UnsplashSlideshow photos={photos} />
         {children}
       </main>
+      <IdleTimerWarning />
     </div>
   );
 }
