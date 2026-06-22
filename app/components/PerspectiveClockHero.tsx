@@ -32,7 +32,7 @@ export default function PerspectiveClockHero() {
 
       const cx = w / 2;
       const cy = h / 2;
-      const radius = Math.min(w, h) * 0.36;
+      const radius = Math.min(w, h) * 0.47;
 
       // Save and apply perspective transform (ellipse effect)
       ctx.save();
@@ -41,7 +41,7 @@ export default function PerspectiveClockHero() {
 
       // Outer glow ring
       const outerGlow = ctx.createRadialGradient(0, 0, radius * 0.85, 0, 0, radius * 1.1);
-      outerGlow.addColorStop(0, 'rgba(255, 230, 0, 0.06)');
+      outerGlow.addColorStop(0, 'rgba(255, 230, 0, 0.12)');
       outerGlow.addColorStop(1, 'rgba(255, 230, 0, 0)');
       ctx.beginPath();
       ctx.arc(0, 0, radius * 1.1, 0, Math.PI * 2);

@@ -6,17 +6,17 @@ import { OraReveal } from '@/components/ui/ora-reveal';
 
 const BG = '#F5F4EF';
 
-function OraLogo({ size = 32 }: { size?: number }) {
+function OraLogo({ size = 44 }: { size?: number }) {
   return (
     <div className="flex items-center gap-2">
-      <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-        <circle cx="16" cy="16" r="14" stroke="#FFE600" strokeWidth="2.5" />
-        <circle cx="16" cy="16" r="10" stroke="#FFE600" strokeWidth="1.5" />
-        <line x1="16" y1="8" x2="16" y2="16" stroke="#FFE600" strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="16" y1="16" x2="21" y2="19" stroke="#1e293b" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="16" cy="16" r="1.5" fill="#FFE600" />
+      <svg width={size} height={size} viewBox="0 0 44 44" fill="none">
+        <circle cx="22" cy="22" r="19" stroke="#FFE600" strokeWidth="2.5" />
+        <circle cx="22" cy="22" r="14" stroke="#FFE600" strokeWidth="1.5" />
+        <line x1="22" y1="12" x2="22" y2="22" stroke="#FFE600" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="22" y1="22" x2="29" y2="26" stroke="#1e293b" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="22" cy="22" r="2" fill="#FFE600" />
       </svg>
-      <span className="text-xl font-black tracking-tight text-slate-900">ORA</span>
+      <span className="text-2xl font-black tracking-tight text-slate-900">ORA</span>
     </div>
   );
 }
@@ -73,8 +73,18 @@ export default function LandingPage() {
         </div>
       </nav>
 
+      {/* ORA Brand Reveal */}
+      <div className="pt-28" style={{ background: BG }}>
+        <OraReveal />
+      </div>
+
+      {/* Clock */}
+      <div className="relative w-full" style={{ height: '480px', background: BG }}>
+        <PerspectiveClockHero />
+      </div>
+
       {/* Hero */}
-      <section className="pt-32 pb-0" style={{ background: BG }}>
+      <section className="py-16" style={{ background: BG }}>
         <div className="text-center px-4 max-w-5xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-tight mb-6">
             Time tracker for<br />
@@ -108,16 +118,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Clock */}
-      <div className="relative w-full" style={{ height: '480px', background: BG }}>
-        <PerspectiveClockHero />
-      </div>
-
-      {/* ORA Brand Reveal */}
-      <div style={{ background: BG }}>
-        <OraReveal />
-      </div>
 
       {/* Features */}
       <section id="features" className="py-24 px-6" style={{ background: BG }}>
