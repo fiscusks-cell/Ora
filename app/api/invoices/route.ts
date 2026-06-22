@@ -21,7 +21,7 @@ export async function GET() {
     const result = invoices.map(inv => ({
       id: inv.id,
       invoiceNumber: inv.invoiceNumber,
-      clientName: inv.client?.name ?? 'Unknown Client',
+      clientName: inv.client.name,
       amount: Number(inv.amount),
       currency: inv.currency,
       createdAt: inv.createdAt.toISOString(),

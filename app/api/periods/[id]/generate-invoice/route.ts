@@ -131,12 +131,16 @@ export async function POST(
     // ── save invoice record ──────────────────────────────────────────────────
 
     // Resolve clientId from entries
-    let clientId: string | null = null;
+    let clientId = '';
     for (const entry of period.entries) {
       if (entry.project?.client?.id) {
         clientId = entry.project.client.id;
         break;
       }
+    }
+
+    if (!clientId) {
+      return NextResponse.json({ error: 'No client found on billable entries' }, { status: 400 });
     }
 
     const invoice = await prisma.invoice.create({

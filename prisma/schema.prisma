@@ -229,17 +229,17 @@ model Invoice {
   id             String   @id @default(cuid())
   organizationId String
   periodId       String?
-  clientId       String?
+  clientId       String
   invoiceNumber  String
   amount         Decimal
-  currency       String   @default("USD")
-  pdfData        Bytes?
+  currency       String       @default("USD")
   pdfUrl         String?
-  createdAt      DateTime @default(now())
+  pdfData        Bytes?
+  createdAt      DateTime     @default(now())
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  period       TimePeriod?  @relation(fields: [periodId], references: [id], onDelete: SetNull)
-  client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  organization Organization @relation(fields: [organizationId], references: [id])
+  period       TimePeriod?  @relation(fields: [periodId], references: [id])
+  client       Client       @relation(fields: [clientId], references: [id])
 
   @@index([organizationId])
   @@map("invoices")
