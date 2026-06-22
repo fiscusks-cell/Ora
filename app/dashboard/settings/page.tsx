@@ -46,7 +46,10 @@ export default function SettingsPage() {
     if (qbo === 'error') setQboMsg({ ok: false, text: 'QuickBooks connection failed. Please try again.' });
     const xero = searchParams.get('xero');
     if (xero === 'connected') setXeroMsg({ ok: true, text: 'Xero connected successfully!' });
-    if (xero === 'error') setXeroMsg({ ok: false, text: 'Xero connection failed. Please try again.' });
+    if (xero === 'error') {
+      const msg = searchParams.get('msg');
+      setXeroMsg({ ok: false, text: msg ? `Xero connection failed: ${msg}` : 'Xero connection failed. Please try again.' });
+    }
   }, [searchParams]);
 
   const handleSaveName = async () => {
