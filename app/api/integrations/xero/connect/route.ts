@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   const params = new URLSearchParams({
     client_id: process.env.XERO_CLIENT_ID,
-    scope: 'openid profile email accounting.invoices accounting.contacts accounting.attachments offline_access',
+    scope: 'openid profile email offline_access accounting.invoices accounting.invoices.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read',
     response_type: 'code',
     redirect_uri: process.env.XERO_REDIRECT_URI,
     state: `xero-connect-${userId}`,
@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
 
   const authUrl = `https://login.xero.com/identity/connect/authorize?${params.toString()}`;
 
+  console.log('[xero/connect] redirect_uri:', process.env.XERO_REDIRECT_URI);
   console.log('[xero/connect] authUrl:', authUrl);
 
   const response = NextResponse.redirect(authUrl);
