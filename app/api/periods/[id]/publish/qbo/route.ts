@@ -317,7 +317,7 @@ export async function POST(
           project: e.project ? { ...e.project, hourlyRate: Number(e.project.hourlyRate) } : null,
         })),
       };
-      const pdfBuffer = await generatePeriodPdf(pdfPeriod, period.organization?.name);
+      const pdfBuffer = await generatePeriodPdf(pdfPeriod as any, period.organization?.name);
       const fileName = 'ORA-Time-Report.pdf';
 
       const metadata = JSON.stringify({
