@@ -55,7 +55,7 @@ export async function generatePeriodPdf(period: PeriodData, orgName?: string): P
     periodStart: period.startDate,
     periodEnd: period.endDate,
     status: period.status,
-    entries: period.entries,
+    entries: period.entries as any,
     projectSummaries,
     totalSeconds,
     totalAmount,
