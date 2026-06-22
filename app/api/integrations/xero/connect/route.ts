@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getXeroClient } from '@/lib/xero-client';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -8,17 +7,23 @@ export async function GET(req: NextRequest) {
 
   const userId = (session.user as { id: string }).id;
 
-  if (!process.env.XERO_CLIENT_ID) {
-    return NextResponse.json({ error: 'XERO_CLIENT_ID not configured' }, { status: 503 });
+  if (!process.env.XERO_CLIENT_ID || !process.env.XERO_REDIRECT_URI) {
+    return NextResponse.json({ error: 'Xero not configured' }, { status: 503 });
   }
 
-  const xero = getXeroClient();
-  const consentUrl = await xero.buildConsentUrl();
+  const params = new URLSearchParams({
+    client_id: process.env.XERO_CLIENT_ID,
+    scope: 'openid profile email accounting.invoices accounting.contacts accounting.attachments offline_access',
+    response_type: 'code',
+    redirect_uri: process.env.XERO_REDIRECT_URI,
+    state: `xero-connect-${userId}`,
+  });
 
-  console.log('[xero/connect] userId:', userId);
-  console.log('[xero/connect] consentUrl:', consentUrl);
+  const authUrl = `https://login.xero.com/identity/connect/authorize?${params.toString()}`;
 
-  const response = NextResponse.redirect(consentUrl);
+  console.log('[xero/connect] authUrl:', authUrl);
+
+  const response = NextResponse.redirect(authUrl);
   response.cookies.set('xero_oauth_user', userId, {
     httpOnly: true,
     secure: req.nextUrl.protocol === 'https:',

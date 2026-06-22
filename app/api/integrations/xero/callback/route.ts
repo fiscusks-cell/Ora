@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getXeroClient } from '@/lib/xero-client';
 import { encryptTokens, XeroTokenSet } from '@/lib/xero';
 
 export async function GET(req: NextRequest) {
   console.log('[xero/callback] hit - url:', req.url);
   try {
-    if (!process.env.XERO_CLIENT_ID) {
-      return NextResponse.json({ error: 'XERO_CLIENT_ID not configured' }, { status: 503 });
+    if (!process.env.XERO_CLIENT_ID || !process.env.XERO_CLIENT_SECRET || !process.env.XERO_REDIRECT_URI) {
+      return NextResponse.json({ error: 'Xero not configured' }, { status: 503 });
     }
 
-    // Get userId from cookie set during connect
+    // Get userId from cookie (set during connect) or state param
     let userId = req.cookies.get('xero_oauth_user')?.value ?? '';
 
-    // Fallback to session
     if (!userId) {
-      console.log('[xero/callback] No userId in cookie, falling back to session');
+      const state = req.nextUrl.searchParams.get('state') ?? '';
+      userId = state.replace('xero-connect-', '');
+    }
+
+    if (!userId) {
+      console.log('[xero/callback] No userId in cookie or state, falling back to session');
       const session = await auth();
       if (!session?.user) return NextResponse.redirect(new URL('/auth/signin', req.url));
       userId = (session.user as { id: string }).id;
@@ -24,29 +27,64 @@ export async function GET(req: NextRequest) {
 
     console.log('[xero/callback] userId:', userId);
 
-    // Use xero-node SDK to exchange code for tokens
-    const xero = getXeroClient();
-    const tokenSet = await xero.apiCallback(req.url);
-
-    console.log('[xero/callback] Token exchange successful. Has access_token:', !!tokenSet.access_token);
-
-    // Get tenant info
-    await xero.updateTenants();
-    const tenantId = xero.tenants[0]?.tenantId;
-
-    if (!tenantId) {
-      console.error('[xero/callback] No tenants found');
-      throw new Error('No Xero tenants found after OAuth');
+    const code = req.nextUrl.searchParams.get('code');
+    if (!code) {
+      console.error('[xero/callback] Missing code. Params:', req.nextUrl.searchParams.toString());
+      throw new Error('Missing authorization code from Xero');
     }
 
+    // Exchange code for tokens using Basic auth
+    console.log('[xero/callback] Exchanging code for tokens...');
+    console.log('[xero/callback] redirect_uri:', process.env.XERO_REDIRECT_URI);
+
+    const tokenRes = await fetch('https://identity.xero.com/connect/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + Buffer.from(
+          `${process.env.XERO_CLIENT_ID}:${process.env.XERO_CLIENT_SECRET}`
+        ).toString('base64'),
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: process.env.XERO_REDIRECT_URI,
+      }).toString(),
+    });
+
+    if (!tokenRes.ok) {
+      const errBody = await tokenRes.text();
+      console.error('[xero/callback] Token exchange failed:', tokenRes.status, errBody);
+      throw new Error(`Token exchange failed: ${tokenRes.status} ${errBody}`);
+    }
+
+    const tokenData = await tokenRes.json();
+    console.log('[xero/callback] Token exchange OK. Has access_token:', !!tokenData.access_token);
+
+    // Fetch tenant connections
+    const connectionsRes = await fetch('https://api.xero.com/connections', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+
+    if (!connectionsRes.ok) {
+      const connErr = await connectionsRes.text();
+      console.error('[xero/callback] Connections failed:', connectionsRes.status, connErr);
+      throw new Error(`Failed to fetch Xero connections: ${connectionsRes.status}`);
+    }
+
+    const connections = await connectionsRes.json() as { tenantId: string; tenantName?: string }[];
+    console.log('[xero/callback] Connections:', JSON.stringify(connections));
+
+    const tenantId = connections[0]?.tenantId;
+    if (!tenantId) throw new Error('No Xero tenants found after OAuth');
+
     console.log('[xero/callback] tenantId:', tenantId);
-    console.log('[xero/callback] tenantName:', xero.tenants[0]?.tenantName);
 
     const tokens: XeroTokenSet = {
-      access_token: tokenSet.access_token!,
-      refresh_token: tokenSet.refresh_token!,
-      expires_at: tokenSet.expires_at ? tokenSet.expires_at * 1000 : Date.now() + 1800000,
-      id_token: tokenSet.id_token,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      expires_at: Date.now() + tokenData.expires_in * 1000,
+      id_token: tokenData.id_token,
     };
 
     await prisma.user.update({
@@ -66,8 +104,8 @@ export async function GET(req: NextRequest) {
     response.cookies.delete('xero_oauth_user');
     return response;
   } catch (error: any) {
-    console.error('[xero/callback] FATAL error:', error?.message);
-    console.error('[xero/callback] error stack:', error?.stack);
+    console.error('[xero/callback] FATAL:', error?.message);
+    console.error('[xero/callback] stack:', error?.stack);
     return NextResponse.redirect(
       new URL('/dashboard/settings?tab=integrations&xero=error&msg=' +
       encodeURIComponent(error?.message || 'unknown'), req.url),
