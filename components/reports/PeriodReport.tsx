@@ -33,7 +33,7 @@ interface Entry {
   durationSeconds: number | null;
   isBillable: boolean;
   user: { name: string };
-  project: { name: string; hourlyRate: number | string } | null;
+  project: { name: string; hourlyRate: any } | null;
 }
 
 interface ProjectSummary {

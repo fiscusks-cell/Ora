@@ -57,7 +57,7 @@ interface TimeEntry {
     id: string;
     name: string;
     color: string;
-    hourlyRate: string | number;
+    hourlyRate: any;
     isBillable: boolean;
     client: { id: string; name: string; currency: string } | null;
   } | null;
