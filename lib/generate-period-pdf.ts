@@ -9,7 +9,7 @@ interface PeriodEntry {
   durationSeconds: number | null;
   isBillable: boolean;
   user: { name: string };
-  project: { name: string; hourlyRate: number | string; client?: { name?: string } | null } | null;
+  project: { name: string; hourlyRate: any; client?: { name?: string } | null } | null;
   projectId?: string | null;
 }
 
