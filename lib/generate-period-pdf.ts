@@ -9,7 +9,7 @@ interface PeriodEntry {
   durationSeconds: number | null;
   isBillable: boolean;
   user: { name: string };
-  project: { name: string; hourlyRate: number | string; client?: { name?: string } | null } | null;
+  project: { name: string; hourlyRate: number | string | { toNumber: () => number }; client?: { name?: string } | null } | null;
   projectId?: string | null;
 }
 
@@ -55,7 +55,7 @@ export async function generatePeriodPdf(period: PeriodData, orgName?: string): P
     periodStart: period.startDate,
     periodEnd: period.endDate,
     status: period.status,
-    entries: period.entries,
+    entries: period.entries as any[],
     projectSummaries,
     totalSeconds,
     totalAmount,
