@@ -3,10 +3,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
-  LayoutDashboard, Clock, List, FolderKanban, Building2,
-  BarChart3, Users, Settings, PieChart, FileText, LogOut
+  LayoutDashboard, Clock, FolderKanban, Building2,
+  BarChart3, Users, Settings, PieChart, FileText, LogOut, Sun, Moon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/ThemeProvider';
 
 interface NavUser {
   name: string;
@@ -39,6 +40,7 @@ const bottomNavItems = [
 
 export function DashboardNav({ user }: DashboardNavProps) {
   const pathname = usePathname();
+  const { theme, toggle } = useTheme();
   const isAdmin = user.role === 'OWNER' || user.role === 'ADMIN';
 
   const allItems = [
@@ -58,9 +60,13 @@ export function DashboardNav({ user }: DashboardNavProps) {
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                 active
-                  ? 'bg-indigo-700 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'text-white'
+                  : 'hover:bg-white/5'
               )}
+              style={{
+                background: active ? 'var(--sidebar-active)' : undefined,
+                color: active ? '#fff' : 'var(--sidebar-muted)',
+              }}
             >
               <Icon size={18} />
               {label}
@@ -68,7 +74,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           );
         })}
       </nav>
-      <div className="mt-auto border-t border-slate-800 px-3 py-3 space-y-1">
+      <div className="px-3 py-3 space-y-1" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
         {bottomNavItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href);
           return (
@@ -77,10 +83,12 @@ export function DashboardNav({ user }: DashboardNavProps) {
               href={href}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                active
-                  ? 'bg-indigo-700 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                active ? 'text-white' : 'hover:bg-white/5'
               )}
+              style={{
+                background: active ? 'var(--sidebar-active)' : undefined,
+                color: active ? '#fff' : 'var(--sidebar-muted)',
+              }}
             >
               <Icon size={18} />
               {label}
@@ -88,19 +96,29 @@ export function DashboardNav({ user }: DashboardNavProps) {
           );
         })}
 
+        <button
+          onClick={toggle}
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors hover:bg-white/5"
+          style={{ color: 'var(--sidebar-muted)' }}
+        >
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        </button>
+
         <div className="flex items-center gap-3 px-3 py-2.5">
-          <div className="w-7 h-7 rounded-full bg-indigo-700 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0" style={{ background: 'var(--sidebar-active)' }}>
             {user.name?.[0]?.toUpperCase() ?? '?'}
           </div>
           <div className="overflow-hidden flex-1">
-            <p className="text-sm font-medium text-white truncate">{user.name}</p>
-            <p className="text-xs text-slate-500 truncate">{user.organizationName}</p>
+            <p className="text-sm font-medium truncate" style={{ color: 'var(--sidebar-text)' }}>{user.name}</p>
+            <p className="text-xs truncate" style={{ color: 'var(--sidebar-muted)' }}>{user.organizationName}</p>
           </div>
         </div>
 
         <button
           onClick={() => signOut({ callbackUrl: '/auth/signin' })}
-          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg transition-colors hover:bg-white/5"
+          style={{ color: 'var(--sidebar-muted)' }}
         >
           <LogOut className="w-4 h-4" />
           Sign out

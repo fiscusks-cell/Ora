@@ -29,23 +29,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
   };
 
   return (
-    <div className="flex h-screen bg-slate-950">
-      {/* Sidebar — desktop only */}
-      <aside className="hidden md:flex w-60 flex-col bg-slate-900 border-r border-slate-800 flex-shrink-0">
-        <div className="p-5 border-b border-slate-800">
+    <div className="flex h-screen" style={{ background: 'var(--background)' }}>
+      {/* Sidebar — always dark for brand consistency */}
+      <aside className="hidden md:flex w-60 flex-col flex-shrink-0" style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' }}>
+        <div className="p-5" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
           <OraLogo />
         </div>
         <DashboardNav user={navUser} />
       </aside>
 
       {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 h-14 bg-slate-900 border-b border-slate-800">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 h-14" style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--sidebar-border)' }}>
         <MobileNav user={navUser} />
         <OraLogo />
       </div>
 
       {/* Page content */}
-      <main className="flex-1 overflow-auto pt-14 md:pt-0">
+      <main className="flex-1 overflow-auto pt-14 md:pt-0" style={{ background: 'var(--background)' }}>
         {children}
       </main>
     </div>
