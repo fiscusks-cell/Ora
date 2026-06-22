@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 import { OriginLink } from '@/components/ui/origin-button';
 import { PerspectiveClockHero, FeaturesShowcase } from './components/HeroClient';
+import { OraReveal } from '@/components/ui/ora-reveal';
 
 const BG = '#F5F4EF';
 
@@ -111,6 +112,11 @@ export default function LandingPage() {
       {/* Clock */}
       <div className="relative w-full" style={{ height: '480px', background: BG }}>
         <PerspectiveClockHero />
+      </div>
+
+      {/* ORA Brand Reveal */}
+      <div style={{ background: BG }}>
+        <OraReveal />
       </div>
 
       {/* Features */}
