@@ -6,14 +6,23 @@ import { encryptTokens, XeroTokenSet } from '@/lib/xero';
 export async function GET(req: NextRequest) {
   console.log('Xero callback hit - params:', req.url);
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.redirect(new URL('/auth/signin', req.url));
-
-    const userId = (session.user as { id: string }).id;
-
     if (!process.env.XERO_CLIENT_ID) {
       return NextResponse.json({ error: 'XERO_CLIENT_ID not configured' }, { status: 503 });
     }
+
+    // Extract userId from state parameter (passed through OAuth flow)
+    const state = req.nextUrl.searchParams.get('state') ?? '';
+    let userId = state.replace('xero-connect-', '');
+
+    // Fallback to session if state doesn't contain userId
+    if (!userId || userId === state) {
+      console.log('[xero/callback] No userId in state, falling back to session');
+      const session = await auth();
+      if (!session?.user) return NextResponse.redirect(new URL('/auth/signin', req.url));
+      userId = (session.user as { id: string }).id;
+    }
+
+    console.log('[xero/callback] userId:', userId);
 
     const code = req.nextUrl.searchParams.get('code');
     if (!code) {

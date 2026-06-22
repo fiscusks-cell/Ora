@@ -7,6 +7,8 @@ export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const userId = (session.user as { id: string }).id;
+
   const clientId = process.env.XERO_CLIENT_ID;
   if (!clientId) {
     return NextResponse.json({ error: 'XERO_CLIENT_ID not configured' }, { status: 503 });
@@ -22,14 +24,13 @@ export async function GET() {
     client_id: clientId,
     redirect_uri: redirectUri,
     scope: SCOPE,
-    state: 'xero-connect',
+    state: `xero-connect-${userId}`,
   });
 
   const authUrl = `https://login.xero.com/identity/connect/authorize?${params.toString()}`;
 
-  console.log('XERO_CLIENT_ID value:', process.env.XERO_CLIENT_ID);
-  console.log('XERO_REDIRECT_URI value:', process.env.XERO_REDIRECT_URI);
-  console.log('Full auth URL:', authUrl);
+  console.log('[xero/connect] userId:', userId);
+  console.log('[xero/connect] redirect_uri:', redirectUri);
 
   return NextResponse.redirect(authUrl);
 }
