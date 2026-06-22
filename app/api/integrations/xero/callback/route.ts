@@ -30,24 +30,23 @@ export async function GET(req: NextRequest) {
       throw new Error('Missing authorization code from Xero');
     }
 
-    const redirectUri =
-      process.env.XERO_REDIRECT_URI ??
-      `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/integrations/xero/callback`;
-
     console.log('[xero/callback] Exchanging code for tokens...');
-    console.log('[xero/callback] redirect_uri:', redirectUri);
+    console.log('[xero/callback] redirect_uri:', process.env.XERO_REDIRECT_URI);
 
     // Exchange code for tokens
     const tokenRes = await fetch('https://identity.xero.com/connect/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + Buffer.from(
+          `${process.env.XERO_CLIENT_ID}:${process.env.XERO_CLIENT_SECRET}`
+        ).toString('base64'),
+      },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: redirectUri,
-        client_id: process.env.XERO_CLIENT_ID!,
-        client_secret: process.env.XERO_CLIENT_SECRET!,
-      }),
+        redirect_uri: process.env.XERO_REDIRECT_URI!,
+      }).toString(),
     });
 
     if (!tokenRes.ok) {
