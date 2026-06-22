@@ -25,5 +25,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/((?!auth|webhooks).*)'],
+  matcher: ['/dashboard/:path*', '/api/((?!auth|webhooks|integrations/xero/callback|integrations/qbo/callback).*)'],
 };
