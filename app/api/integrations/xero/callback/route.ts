@@ -34,8 +34,14 @@ export async function GET(req: NextRequest) {
     }
 
     // Exchange code for tokens using Basic auth
-    console.log('[xero/callback] Exchanging code for tokens...');
-    console.log('[xero/callback] redirect_uri:', process.env.XERO_REDIRECT_URI);
+    console.log('[xero/callback] request.url:', req.url);
+    console.log('[xero/callback] XERO_REDIRECT_URI env:', process.env.XERO_REDIRECT_URI);
+    const tokenBody = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: process.env.XERO_REDIRECT_URI!,
+    });
+    console.log('[xero/callback] token exchange body:', tokenBody.toString());
 
     const tokenRes = await fetch('https://identity.xero.com/connect/token', {
       method: 'POST',
@@ -45,11 +51,7 @@ export async function GET(req: NextRequest) {
           `${process.env.XERO_CLIENT_ID}:${process.env.XERO_CLIENT_SECRET}`
         ).toString('base64'),
       },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: process.env.XERO_REDIRECT_URI,
-      }).toString(),
+      body: tokenBody.toString(),
     });
 
     if (!tokenRes.ok) {
