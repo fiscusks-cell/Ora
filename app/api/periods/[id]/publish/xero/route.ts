@@ -250,7 +250,7 @@ export async function POST(
     try {
       const pdfPeriod = {
         ...period,
-        entries: period.entries.map(e => ({
+        entries: period.entries.map((e: any) => ({
           ...e,
           project: e.project ? { ...e.project, hourlyRate: Number(e.project.hourlyRate) } : null,
         })),
