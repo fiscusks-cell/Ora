@@ -13,6 +13,7 @@ export async function GET() {
       where: { organizationId: sessionUser.organizationId },
       include: {
         period: { select: { startDate: true, endDate: true } },
+        client: { select: { name: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -20,8 +21,8 @@ export async function GET() {
     const result = invoices.map(inv => ({
       id: inv.id,
       invoiceNumber: inv.invoiceNumber,
-      clientName: inv.clientName,
-      amount: inv.amount,
+      clientName: inv.client?.name ?? 'Unknown Client',
+      amount: Number(inv.amount),
       currency: inv.currency,
       createdAt: inv.createdAt.toISOString(),
       periodStart: inv.period?.startDate?.toISOString() ?? null,

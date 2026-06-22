@@ -48,8 +48,9 @@ model Organization {
   clients     Client[]
   projects    Project[]
   timePeriods TimePeriod[]
-  invites     Invite[]
-  invoices    Invoice[]
+  invites           Invite[]
+  invoices          Invoice[]
+  lastInvoiceNumber Int          @default(0)
 
   @@map("organizations")
 }
@@ -131,6 +132,7 @@ model Client {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   projects     Project[]
+  invoices     Invoice[]
 
   @@index([organizationId])
   @@map("clients")
@@ -227,15 +229,17 @@ model Invoice {
   id             String   @id @default(cuid())
   organizationId String
   periodId       String?
+  clientId       String?
   invoiceNumber  String
-  clientName     String
-  amount         Float
+  amount         Decimal
   currency       String   @default("USD")
   pdfData        Bytes?
+  pdfUrl         String?
   createdAt      DateTime @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   period       TimePeriod?  @relation(fields: [periodId], references: [id], onDelete: SetNull)
+  client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@map("invoices")

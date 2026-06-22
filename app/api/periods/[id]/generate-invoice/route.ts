@@ -130,12 +130,21 @@ export async function POST(
 
     // ── save invoice record ──────────────────────────────────────────────────
 
+    // Resolve clientId from entries
+    let clientId: string | null = null;
+    for (const entry of period.entries) {
+      if (entry.project?.client?.id) {
+        clientId = entry.project.client.id;
+        break;
+      }
+    }
+
     const invoice = await prisma.invoice.create({
       data: {
         organizationId: sessionUser.organizationId,
         periodId: id,
         invoiceNumber,
-        clientName: billTo.name,
+        clientId,
         amount: total,
         currency,
         pdfData: new Uint8Array(pdfBuffer),
