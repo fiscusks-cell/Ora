@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { encryptTokens, XeroTokenSet } from '@/lib/xero';
 
 export async function GET(req: NextRequest) {
+  console.log('Xero callback hit - params:', req.url);
   try {
     const session = await auth();
     if (!session?.user) return NextResponse.redirect(new URL('/auth/signin', req.url));
@@ -98,11 +99,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(
       new URL('/dashboard/settings?tab=integrations&xero=connected', req.url),
     );
-  } catch (err) {
-    console.error('[xero/callback] error:', err);
-    console.error('[xero/callback] error details:', JSON.stringify(err, Object.getOwnPropertyNames(err as object)));
+  } catch (error: any) {
+    console.error('Xero callback FATAL error:', error?.message);
+    console.error('Xero callback error stack:', error?.stack);
     return NextResponse.redirect(
-      new URL('/dashboard/settings?tab=integrations&xero=error', req.url),
+      new URL('/dashboard/settings?tab=integrations&xero=error&msg=' +
+      encodeURIComponent(error?.message || 'unknown'), req.url),
     );
   }
 }
