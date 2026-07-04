@@ -4,8 +4,9 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Clock, FolderKanban, Building2,
-  BarChart3, Users, Settings, PieChart, FileText, LogOut, Sun, Moon
+  BarChart3, Users, Settings, PieChart, FileText, LogOut, Sun, Moon, Plug
 } from 'lucide-react';
+import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -76,7 +77,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
       </nav>
       <div className="px-3 py-3 space-y-1" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
         {bottomNavItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname.startsWith(href);
+          const active = pathname.startsWith(href) && !pathname.includes('tab=integrations');
           return (
             <Link
               key={href}
@@ -95,6 +96,25 @@ export function DashboardNav({ user }: DashboardNavProps) {
             </Link>
           );
         })}
+
+        {/* Integrations link with QB/Xero icons */}
+        {(() => {
+          const active = pathname.startsWith('/dashboard/settings');
+          return (
+            <Link
+              href="/dashboard/settings?tab=integrations"
+              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', !active && 'hover:bg-white/5')}
+              style={{ background: active ? 'var(--sidebar-active)' : undefined, color: active ? '#fff' : 'var(--sidebar-muted)' }}
+            >
+              <Plug size={18} />
+              <span className="flex-1">Integrations</span>
+              <span className="flex items-center gap-1 opacity-60">
+                <SiQuickbooks size={12} />
+                <SiXero size={12} />
+              </span>
+            </Link>
+          );
+        })()}
 
         <button
           onClick={toggle}

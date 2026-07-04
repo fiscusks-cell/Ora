@@ -5,6 +5,7 @@ import { formatDuration, formatCurrency } from '@/lib/utils';
 import { getCurrency } from '@/lib/currency';
 import { format } from 'date-fns';
 import { CheckCircle, Clock, FileText, AlertCircle, Download } from 'lucide-react';
+import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { OriginButton } from '@/components/ui/origin-button';
 
 interface Entry {
@@ -213,14 +214,14 @@ export default function PeriodDetailPage() {
               disabled={actionLoading}
               className="flex items-center gap-2 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
-              <FileText className="w-4 h-4" /> Publish to QuickBooks
+              <SiQuickbooks size={16} /> Publish to QuickBooks
             </OriginButton>
             <OriginButton
               onClick={() => doAction(`/api/periods/${id}/publish/xero`, 'POST')}
               disabled={actionLoading}
               className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
-              <FileText className="w-4 h-4" /> Publish to Xero
+              <SiXero size={16} /> Publish to Xero
             </OriginButton>
             <OriginButton
               onClick={handleGenerateInvoice}

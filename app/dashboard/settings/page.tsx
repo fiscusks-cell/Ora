@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
+import { SiQuickbooks, SiXero } from 'react-icons/si';
 
 type Tab = 'profile' | 'organization' | 'billing' | 'integrations';
 
@@ -222,7 +223,7 @@ export default function SettingsPage() {
           <div className="rounded-xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center font-black text-white text-sm">QB</div>
+                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center"><SiQuickbooks size={24} className="text-white" /></div>
                 <div>
                   <div className="font-semibold" style={{ color: 'var(--text)' }}>QuickBooks Online</div>
                   <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -264,7 +265,7 @@ export default function SettingsPage() {
           <div className="rounded-xl p-6 relative" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center font-black text-white text-sm">X</div>
+                <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center"><SiXero size={24} className="text-white" /></div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold" style={{ color: 'var(--text)' }}>Xero</span>

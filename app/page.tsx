@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
+import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { OriginLink } from '@/components/ui/origin-button';
 import { PerspectiveClockHero, FeaturesShowcase } from './components/HeroClient';
 import { OraReveal } from '@/components/ui/ora-reveal';
@@ -111,10 +112,16 @@ export default function LandingPage() {
           </div>
           <p className="text-slate-400 text-sm mb-8">No credit card required · Free forever on solo plan</p>
 
-          <div className="flex items-center justify-center gap-8 mt-2 mb-10">
+          <div className="flex items-center justify-center gap-10 mt-2 mb-10">
             <p className="text-sm text-slate-400">Integrates with</p>
-            <img src="/Intuit_QuickBooks_logo.png" alt="QuickBooks Online" className="h-10 w-auto object-contain" />
-            <img src="/Xero.jpg" alt="Xero" className="h-10 w-auto object-contain" />
+            <div className="flex flex-col items-center gap-1">
+              <SiQuickbooks size={40} className="text-green-600" />
+              <span className="text-xs text-slate-500">QuickBooks Online</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <SiXero size={40} className="text-sky-500" />
+              <span className="text-xs text-slate-500">Xero</span>
+            </div>
           </div>
         </div>
       </section>
@@ -158,7 +165,11 @@ export default function LandingPage() {
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 flex-shrink-0 text-emerald-500" />
-                      <span className="text-slate-600">{f}</span>
+                      <span className="text-slate-600 flex items-center gap-1.5">
+                        {f}
+                        {f.toLowerCase().includes('quickbooks') && <SiQuickbooks size={14} className="text-green-600 flex-shrink-0" />}
+                        {f.toLowerCase().includes('xero') && <SiXero size={14} className="text-sky-500 flex-shrink-0" />}
+                      </span>
                     </li>
                   ))}
                 </ul>
