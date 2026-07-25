@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { formatDuration, formatCurrency } from '@/lib/utils';
 import { getCurrency } from '@/lib/currency';
 import { format } from 'date-fns';
-import { CheckCircle, Clock, FileText, AlertCircle, Download } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Download } from 'lucide-react';
 import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { OriginButton } from '@/components/ui/origin-button';
 

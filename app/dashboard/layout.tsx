@@ -4,27 +4,16 @@ import { prisma } from '@/lib/prisma';
 import { DashboardNav } from '@/components/layout/DashboardNav';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { OraLogo } from '@/components/layout/OraLogo';
-import { IdleTimerWarning } from '@/components/timer/idle-warning';
-import { fetchRandomPhotos } from '@/lib/unsplash';
-import { UnsplashSlideshow } from '@/components/background/unsplash-slideshow';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect('/auth/signin');
 
   const sessionUser = session.user as {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    organizationId: string;
+    id: string; name: string; email: string; role: string; organizationId: string;
   };
 
-  const org = await prisma.organization.findUnique({
-    where: { id: sessionUser.organizationId },
-  });
-
-  const photos = await fetchRandomPhotos();
+  const org = await prisma.organization.findUnique({ where: { id: sessionUser.organizationId } });
 
   const navUser = {
     name: sessionUser.name || sessionUser.email || 'User',
@@ -34,7 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   };
 
   return (
-    <div className="flex h-screen" style={{ background: 'var(--background)' }}>
+    <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
       {/* Sidebar — always dark for brand consistency */}
       <aside className="hidden md:flex w-60 flex-col flex-shrink-0" style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' }}>
         <div className="p-5" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
@@ -50,11 +39,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
 
       {/* Page content */}
-      <main className="flex-1 overflow-auto pt-14 md:pt-0 relative" style={{ background: 'var(--background)' }}>
-        <UnsplashSlideshow photos={photos} />
+      <main className="flex-1 overflow-auto pt-14 md:pt-0" style={{ background: 'var(--bg)' }}>
         {children}
       </main>
-      <IdleTimerWarning />
     </div>
   );
 }

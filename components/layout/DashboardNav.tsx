@@ -44,10 +44,12 @@ export function DashboardNav({ user }: DashboardNavProps) {
   const { theme, toggle } = useTheme();
   const isAdmin = user.role === 'OWNER' || user.role === 'ADMIN';
 
-  const allItems = [
-    ...navItems,
-    ...(isAdmin ? adminNavItems : []),
-  ];
+  const allItems = [...navItems, ...(isAdmin ? adminNavItems : [])];
+
+  const linkStyle = (active: boolean) => ({
+    background: active ? 'var(--sidebar-active)' : undefined,
+    color: active ? 'var(--sidebar-text)' : 'var(--sidebar-muted)',
+  });
 
   return (
     <div className="flex flex-col h-full">
@@ -58,16 +60,8 @@ export function DashboardNav({ user }: DashboardNavProps) {
             <Link
               key={href}
               href={href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                active
-                  ? 'text-white'
-                  : 'hover:bg-white/5'
-              )}
-              style={{
-                background: active ? 'var(--sidebar-active)' : undefined,
-                color: active ? '#fff' : 'var(--sidebar-muted)',
-              }}
+              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', !active && 'hover:bg-white/5')}
+              style={linkStyle(active)}
             >
               <Icon size={18} />
               {label}
@@ -75,21 +69,17 @@ export function DashboardNav({ user }: DashboardNavProps) {
           );
         })}
       </nav>
+
       <div className="px-3 py-3 space-y-1" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
+        {/* Settings */}
         {bottomNavItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href) && !pathname.includes('tab=integrations');
           return (
             <Link
               key={href}
               href={href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                active ? 'text-white' : 'hover:bg-white/5'
-              )}
-              style={{
-                background: active ? 'var(--sidebar-active)' : undefined,
-                color: active ? '#fff' : 'var(--sidebar-muted)',
-              }}
+              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', !active && 'hover:bg-white/5')}
+              style={linkStyle(active)}
             >
               <Icon size={18} />
               {label}
@@ -97,25 +87,26 @@ export function DashboardNav({ user }: DashboardNavProps) {
           );
         })}
 
-        {/* Integrations link with QB/Xero icons */}
+        {/* Integrations link with QB + Xero mini-icons */}
         {(() => {
-          const active = pathname.startsWith('/dashboard/settings');
+          const active = pathname.includes('tab=integrations');
           return (
             <Link
               href="/dashboard/settings?tab=integrations"
               className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors', !active && 'hover:bg-white/5')}
-              style={{ background: active ? 'var(--sidebar-active)' : undefined, color: active ? '#fff' : 'var(--sidebar-muted)' }}
+              style={linkStyle(active)}
             >
               <Plug size={18} />
               <span className="flex-1">Integrations</span>
-              <span className="flex items-center gap-1 opacity-60">
-                <SiQuickbooks size={12} />
-                <SiXero size={12} />
+              <span className="flex items-center gap-1 opacity-50">
+                <SiQuickbooks size={11} />
+                <SiXero size={11} />
               </span>
             </Link>
           );
         })()}
 
+        {/* Theme toggle */}
         <button
           onClick={toggle}
           className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors hover:bg-white/5"
@@ -125,6 +116,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           {theme === 'dark' ? 'Light mode' : 'Dark mode'}
         </button>
 
+        {/* User info */}
         <div className="flex items-center gap-3 px-3 py-2.5">
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0" style={{ background: 'var(--sidebar-active)' }}>
             {user.name?.[0]?.toUpperCase() ?? '?'}

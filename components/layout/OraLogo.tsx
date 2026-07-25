@@ -4,9 +4,9 @@ interface OraLogoProps {
   className?: string;
 }
 
-export function OraLogo({ size = 32, showText = true, className = '' }: OraLogoProps) {
+export function OraLogo({ size = 48, showText = true, className = '' }: OraLogoProps) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-3 ${className}`}>
       <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="16" cy="16" r="13" stroke="#3730A3" strokeWidth="2.5" fill="none"/>
         <circle cx="16" cy="16" r="8" stroke="#3730A3" strokeWidth="1" fill="none" opacity="0.3"/>
@@ -19,7 +19,7 @@ export function OraLogo({ size = 32, showText = true, className = '' }: OraLogoP
         <circle cx="28" cy="16" r="1" fill="#3730A3" opacity="0.5"/>
       </svg>
       {showText && (
-        <span className="text-xl font-bold text-white tracking-tight">ORA</span>
+        <span className="text-2xl font-bold text-white tracking-tight">ORA</span>
       )}
     </div>
   );
