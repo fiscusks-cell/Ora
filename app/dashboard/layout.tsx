@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+﻿import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { DashboardNav } from '@/components/layout/DashboardNav';
@@ -23,9 +23,25 @@ export default async function DashboardLayout({ children }: { children: React.Re
   };
 
   return (
-    <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
-      {/* Sidebar — always dark for brand consistency */}
-      <aside className="hidden md:flex w-60 flex-col flex-shrink-0" style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' }}>
+    <div className="flex h-screen relative" style={{ background: 'var(--bg)' }}>
+      {/* Fixed background image — opacity controlled per theme via CSS */}
+      <div
+        aria-hidden="true"
+        className="dashboard-bg-image"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          backgroundImage: 'url(/background/minimalist-blue-white-wave-background.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Sidebar — always dark, sits above bg image */}
+      <aside className="hidden md:flex w-60 flex-col flex-shrink-0 relative z-10" style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' }}>
         <div className="p-5" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
           <OraLogo />
         </div>
@@ -38,8 +54,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <OraLogo />
       </div>
 
-      {/* Page content */}
-      <main className="flex-1 overflow-auto pt-14 md:pt-0" style={{ background: 'var(--bg)' }}>
+      {/* Page content — sits above bg image */}
+      <main className="flex-1 overflow-auto pt-14 md:pt-0 relative z-10" style={{ background: 'transparent' }}>
         {children}
       </main>
     </div>
