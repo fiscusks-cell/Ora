@@ -10,6 +10,8 @@ const loginSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/auth/signin',
@@ -40,6 +42,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // After sign-in, always go to /dashboard unless a valid relative callbackUrl is set
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
+      return `${baseUrl}/dashboard`;
+    },
   },
   providers: [
     Credentials({
@@ -48,17 +56,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        const parsed = loginSchema.safeParse(credentials);
-        if (!parsed.success) return null;
+        console.log('[auth] authorize entry point hit');
+        console.log('[auth] authorize called, keys:', credentials ? Object.keys(credentials) : 'null');
+
+        const parsed = loginSchema.safeParse({
+          email: typeof credentials?.email === 'string' ? credentials.email : '',
+          password: typeof credentials?.password === 'string' ? credentials.password : '',
+        });
+
+        if (!parsed.success) {
+          console.log('[auth] invalid credentials shape:', parsed.error.flatten().fieldErrors);
+          return null;
+        }
+
+        console.log('[auth] looking up:', parsed.data.email);
 
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },
         });
-        if (!user?.passwordHash) return null;
+        if (!user) {
+          console.log('[auth] user not found:', parsed.data.email);
+          return null;
+        }
+        if (!user.passwordHash) {
+          console.log('[auth] user has no passwordHash:', parsed.data.email);
+          return null;
+        }
 
+        console.log('[auth] comparing password, hash prefix:', user.passwordHash.slice(0, 7));
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) {
+          console.log('[auth] password mismatch for:', parsed.data.email);
+          return null;
+        }
 
+        console.log('[auth] login success:', user.id);
         return { id: user.id, email: user.email, name: user.name, image: user.avatarUrl };
       },
     }),

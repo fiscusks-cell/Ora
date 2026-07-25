@@ -1,0 +1,181 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { roundForCurrency } from '@/lib/currency';
+
+export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const orgId = (session.user as { organizationId: string }).organizationId;
+
+  const { searchParams } = req.nextUrl;
+  const startDate = searchParams.get('startDate');
+  const endDate = searchParams.get('endDate');
+  const clientId = searchParams.get('clientId') || undefined;
+  const projectId = searchParams.get('projectId') || undefined;
+  const userId = searchParams.get('userId') || undefined;
+  const billable = searchParams.get('billable');
+
+  const dateFilter: Record<string, Date> = {};
+  if (startDate) dateFilter.gte = new Date(startDate);
+  if (endDate) {
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    dateFilter.lte = end;
+  }
+
+  const where: Record<string, unknown> = {
+    user: { organizationId: orgId },
+    stoppedAt: { not: null },
+    ...(Object.keys(dateFilter).length > 0 ? { startedAt: dateFilter } : {}),
+  };
+
+  if (projectId) {
+    where.projectId = projectId;
+  } else if (clientId) {
+    where.project = { clientId };
+  }
+  if (userId) {
+    where.userId = userId;
+  }
+  if (billable === 'true') {
+    where.isBillable = true;
+  } else if (billable === 'false') {
+    where.isBillable = false;
+  }
+
+  const limit = Math.min(parseInt(searchParams.get('limit') ?? '10000', 10), 50000);
+  const offset = parseInt(searchParams.get('offset') ?? '0', 10);
+
+  const entries = await prisma.timeEntry.findMany({
+    where,
+    select: {
+      id: true,
+      userId: true,
+      projectId: true,
+      description: true,
+      startedAt: true,
+      stoppedAt: true,
+      durationSeconds: true,
+      isBillable: true,
+      project: {
+        select: {
+          id: true, name: true, color: true, hourlyRate: true,
+          client: { select: { id: true, name: true, currency: true } },
+        },
+      },
+      user: { select: { id: true, name: true } },
+    },
+    orderBy: { startedAt: 'asc' },
+    take: limit,
+    skip: offset,
+  });
+
+  // byDay aggregation
+  const dayMap = new Map<string, { seconds: number; billableSeconds: number }>();
+  for (const entry of entries) {
+    const day = entry.startedAt.toISOString().slice(0, 10);
+    const existing = dayMap.get(day) ?? { seconds: 0, billableSeconds: 0 };
+    const secs = entry.durationSeconds ?? 0;
+    existing.seconds += secs;
+    if (entry.isBillable) existing.billableSeconds += secs;
+    dayMap.set(day, existing);
+  }
+  const byDay = Array.from(dayMap.entries()).map(([date, v]) => ({ date, ...v }));
+
+  // byProject aggregation
+  type MemberAgg = {
+    userId: string;
+    userName: string;
+    totalSeconds: number;
+    billableSeconds: number;
+    billableAmount: number;
+  };
+  type ProjectAgg = {
+    projectId: string | null;
+    projectName: string;
+    projectColor: string;
+    clientId: string | null;
+    clientName: string | null;
+    clientCurrency: string;
+    totalSeconds: number;
+    billableSeconds: number;
+    billableAmount: number;
+    members: Map<string, MemberAgg>;
+  };
+
+  const projectMap = new Map<string, ProjectAgg>();
+
+  for (const entry of entries) {
+    const key = entry.projectId ?? '__no_project__';
+    const secs = entry.durationSeconds ?? 0;
+    const hourlyRate = entry.project ? Number(entry.project.hourlyRate) : 0;
+    const currency = entry.project?.client?.currency ?? 'USD';
+    const amount = entry.isBillable
+      ? roundForCurrency(hourlyRate * (secs / 3600), currency)
+      : 0;
+
+    if (!projectMap.has(key)) {
+      projectMap.set(key, {
+        projectId: entry.projectId ?? null,
+        projectName: entry.project?.name ?? 'No Project',
+        projectColor: entry.project?.color ?? '#6b7280',
+        clientId: entry.project?.client?.id ?? null,
+        clientName: entry.project?.client?.name ?? null,
+        clientCurrency: currency,
+        totalSeconds: 0,
+        billableSeconds: 0,
+        billableAmount: 0,
+        members: new Map(),
+      });
+    }
+
+    const agg = projectMap.get(key)!;
+    agg.totalSeconds += secs;
+    if (entry.isBillable) {
+      agg.billableSeconds += secs;
+      agg.billableAmount += amount;
+    }
+
+    const memberId = entry.userId;
+    if (!agg.members.has(memberId)) {
+      agg.members.set(memberId, {
+        userId: memberId,
+        userName: entry.user.name ?? 'Unknown',
+        totalSeconds: 0,
+        billableSeconds: 0,
+        billableAmount: 0,
+      });
+    }
+    const member = agg.members.get(memberId)!;
+    member.totalSeconds += secs;
+    if (entry.isBillable) {
+      member.billableSeconds += secs;
+      member.billableAmount += amount;
+    }
+  }
+
+  const byProject = Array.from(projectMap.values()).map((p) => ({
+    projectId: p.projectId,
+    projectName: p.projectName,
+    projectColor: p.projectColor,
+    clientId: p.clientId,
+    clientName: p.clientName,
+    clientCurrency: p.clientCurrency,
+    totalSeconds: p.totalSeconds,
+    billableSeconds: p.billableSeconds,
+    billableAmount: p.billableAmount,
+    members: Array.from(p.members.values()),
+  }));
+
+  const totals = {
+    totalSeconds: entries.reduce((s, e) => s + (e.durationSeconds ?? 0), 0),
+    billableSeconds: entries
+      .filter((e) => e.isBillable)
+      .reduce((s, e) => s + (e.durationSeconds ?? 0), 0),
+    totalAmount: byProject.reduce((s, p) => s + p.billableAmount, 0),
+    activeDays: dayMap.size,
+  };
+
+  return NextResponse.json({ entries, byDay, byProject, totals });
+}

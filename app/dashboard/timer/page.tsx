@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { Play, Square, DollarSign, Trash2 } from 'lucide-react';
+import { OriginButton } from '@/components/ui/origin-button';
+import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -234,19 +236,13 @@ export default function TimerPage() {
 
           {/* Project + billable */}
           <div className="flex gap-3 items-center">
-            <select
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
+            <ProjectCombobox
+              projects={projects}
+              value={projectId || null}
+              onChange={(id) => setProjectId(id ?? '')}
               disabled={isRunning}
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
-            >
-              <option value="">No project</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              placeholder="No project"
+            />
 
             <label className="flex items-center gap-2 cursor-pointer select-none flex-shrink-0">
               <input
@@ -275,7 +271,7 @@ export default function TimerPage() {
           )}
 
           {/* Start / Stop button */}
-          <button
+          <OriginButton
             onClick={isRunning ? handleStop : handleStart}
             disabled={loading}
             className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-base transition-colors disabled:opacity-50 ${
@@ -295,7 +291,7 @@ export default function TimerPage() {
                 Start Timer
               </>
             )}
-          </button>
+          </OriginButton>
         </div>
       </div>
 

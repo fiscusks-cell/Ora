@@ -52,6 +52,7 @@ export async function GET(
         projectName: string;
         projectColor: string;
         clientName: string | null;
+        clientCurrency: string;
         totalSeconds: number;
         billableSeconds: number;
         billableAmount: number;
@@ -64,6 +65,7 @@ export async function GET(
       const projectName = entry.project?.name ?? 'No Project';
       const projectColor = entry.project?.color ?? '#6B7280';
       const clientName = entry.project?.client?.name ?? null;
+      const clientCurrency = entry.project?.client?.currency ?? 'USD';
 
       if (!projectMap.has(key)) {
         projectMap.set(key, {
@@ -71,6 +73,7 @@ export async function GET(
           projectName,
           projectColor,
           clientName,
+          clientCurrency,
           totalSeconds: 0,
           billableSeconds: 0,
           billableAmount: 0,

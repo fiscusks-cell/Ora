@@ -55,8 +55,8 @@ const DEFAULT_FORM: FormState = {
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-function sumSeconds(entries: TimeEntryLite[]): number {
-  return entries.reduce((acc, e) => acc + (e.durationSeconds ?? 0), 0);
+function sumSeconds(entries: TimeEntryLite[] | undefined): number {
+  return (entries ?? []).reduce((acc, e) => acc + (e.durationSeconds ?? 0), 0);
 }
 
 function formatHM(totalSeconds: number): string {
@@ -65,8 +65,8 @@ function formatHM(totalSeconds: number): string {
   return `${h}h ${m}m`;
 }
 
-function calcBillableAmount(entries: TimeEntryLite[]): number {
-  return entries
+function calcBillableAmount(entries: TimeEntryLite[] | undefined): number {
+  return (entries ?? [])
     .filter((e) => e.isBillable && e.project?.hourlyRate)
     .reduce(
       (acc, e) =>

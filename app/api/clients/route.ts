@@ -6,7 +6,7 @@ import { z } from 'zod';
 const createSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email().optional(),
-  currency: z.string().default('USD'),
+  currency: z.string().default('EUR'),
 });
 
 export async function GET() {

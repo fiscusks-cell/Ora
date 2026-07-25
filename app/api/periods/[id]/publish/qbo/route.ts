@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getValidClient, qboApiBase } from '@/lib/qbo';
+import { getCurrency, roundForCurrency } from '@/lib/currency';
+import { generatePeriodPdf } from '@/lib/generate-period-pdf';
 
 export async function POST(
   _req: NextRequest,
@@ -19,6 +21,7 @@ export async function POST(
     const period = await prisma.timePeriod.findFirst({
       where: { id, organizationId: sessionUser.organizationId },
       include: {
+        organization: { select: { name: true } },
         entries: {
           where: { isBillable: true, durationSeconds: { gt: 0 } },
           include: {
@@ -78,6 +81,7 @@ export async function POST(
       projectName: string;
       clientName: string | null;
       qboCustomerId: string | null;
+      clientCurrency: string | null;
       totalHours: number;
       hourlyRate: number;
       amount: number;
@@ -95,6 +99,7 @@ export async function POST(
           projectName: entry.project?.name ?? 'Time',
           clientName: entry.project?.client?.name ?? null,
           qboCustomerId: entry.project?.client?.qboCustomerId ?? null,
+          clientCurrency: (entry.project?.client as { currency?: string } | null)?.currency ?? null,
           totalHours: 0,
           hourlyRate: rate,
           amount: 0,
@@ -130,6 +135,13 @@ export async function POST(
       return createData.Customer.Id;
     }
 
+    // ── detect client currency ────────────────────────────────────────────────
+
+    let clientCurrency: string | null = null;
+    for (const [, g] of byProject) {
+      if (g.clientCurrency) { clientCurrency = g.clientCurrency.toUpperCase(); break; }
+    }
+
     // ── build Invoice Line items ─────────────────────────────────────────────
 
     // Pick the primary customer (first group that has one, or "Time Tracking")
@@ -155,38 +167,138 @@ export async function POST(
       primaryCustomerId = await ensureCustomer('Time Tracking Client', null);
     }
 
-    const lines = Array.from(byProject.values()).map((g, i) => ({
-      Id: String(i + 1),
-      LineNum: i + 1,
-      Description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ $${g.hourlyRate.toFixed(2)}/hr`,
-      Amount: parseFloat(g.amount.toFixed(2)),
-      DetailType: 'SalesItemLineDetail',
-      SalesItemLineDetail: {
-        Qty: parseFloat(g.totalHours.toFixed(4)),
-        UnitPrice: parseFloat(g.hourlyRate.toFixed(2)),
-        ItemRef: { value: '1', name: 'Services' }, // default Services item
-      },
-    }));
+    const currencyMeta = getCurrency(clientCurrency ?? 'USD');
+    const decimals = clientCurrency === 'JPY' ? 0 : 2;
 
-    // ── create QBO Invoice ────────────────────────────────────────────────────
-
-    const invoicePayload = {
-      Line: lines,
-      CustomerRef: { value: primaryCustomerId },
-      DocNumber: `ORA-${id.slice(-8).toUpperCase()}`,
-      TxnDate: new Date().toISOString().slice(0, 10),
-      PrivateNote: `Billing period ${period.startDate.toISOString().slice(0, 10)} – ${period.endDate.toISOString().slice(0, 10)}`,
-    };
-
-    const invoiceRes = await fetch(`${base}/invoice?minorversion=65`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(invoicePayload),
+    const lines = Array.from(byProject.values()).map((g, i) => {
+      const unitPrice = roundForCurrency(g.hourlyRate, clientCurrency ?? 'USD');
+      const lineAmount = roundForCurrency(g.amount, clientCurrency ?? 'USD');
+      return {
+        Id: String(i + 1),
+        LineNum: i + 1,
+        Description: `${g.projectName} — ${g.totalHours.toFixed(2)} hrs @ ${currencyMeta.symbol} ${g.hourlyRate.toFixed(decimals)}/hr`,
+        Amount: lineAmount,
+        DetailType: 'SalesItemLineDetail',
+        SalesItemLineDetail: {
+          Qty: parseFloat(g.totalHours.toFixed(4)),
+          UnitPrice: unitPrice,
+          ItemRef: { value: '1', name: 'Services' },
+        },
+      };
     });
+
+    // ── resolve next DocNumber ────────────────────────────────────────────────
+
+    async function getNextDocNumber(): Promise<number> {
+      try {
+        const qRes = await fetch(
+          `${base}/query?query=${encodeURIComponent('SELECT * FROM Invoice ORDERBY DocNumber DESC MAXRESULTS 1')}&minorversion=65`,
+          { headers },
+        );
+        if (!qRes.ok) return 1001;
+        const qData = (await qRes.json()) as { QueryResponse: { Invoice?: { DocNumber: string }[] } };
+        const invoices = qData.QueryResponse.Invoice ?? [];
+        if (invoices.length === 0) return 1001;
+
+        // Find highest purely-numeric DocNumber
+        let highest = 0;
+        for (const inv of invoices) {
+          const n = parseInt(inv.DocNumber, 10);
+          if (!isNaN(n) && n > highest) highest = n;
+        }
+
+        // If the latest DocNumber wasn't numeric, query for the highest numeric one
+        if (highest === 0) {
+          const q2Res = await fetch(
+            `${base}/query?query=${encodeURIComponent('SELECT * FROM Invoice MAXRESULTS 100')}&minorversion=65`,
+            { headers },
+          );
+          if (q2Res.ok) {
+            const q2Data = (await q2Res.json()) as { QueryResponse: { Invoice?: { DocNumber: string }[] } };
+            for (const inv of q2Data.QueryResponse.Invoice ?? []) {
+              const n = parseInt(inv.DocNumber, 10);
+              if (!isNaN(n) && n > highest) highest = n;
+            }
+          }
+        }
+
+        return highest > 0 ? highest + 1 : 1001;
+      } catch {
+        return 1001;
+      }
+    }
+
+    const nextDocNumber = await getNextDocNumber();
+
+    // ── create QBO Invoice (with one DocNumber-collision retry) ──────────────
+
+    const periodNote = `Billing period ${period.startDate.toISOString().slice(0, 10)} – ${period.endDate.toISOString().slice(0, 10)}`;
+
+    async function attemptCreate(docNumber: number): Promise<Response> {
+      const invoicePayload: Record<string, unknown> = {
+        DocNumber: String(docNumber),
+        Line: lines,
+        CustomerRef: { value: primaryCustomerId },
+        TxnDate: new Date().toISOString().slice(0, 10),
+        PrivateNote: periodNote,
+      };
+
+      if (clientCurrency && clientCurrency !== 'USD') {
+        invoicePayload.CurrencyRef = { value: clientCurrency };
+      }
+
+      return fetch(`${base}/invoice?minorversion=65`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(invoicePayload),
+      });
+    }
+
+    let invoiceRes: Response;
+    try {
+      invoiceRes = await attemptCreate(nextDocNumber);
+
+      // Retry once on DocNumber collision (race condition)
+      if (!invoiceRes.ok) {
+        const peek = await invoiceRes.text();
+        if (peek.toLowerCase().includes('docnumber') && peek.toLowerCase().includes('exist')) {
+          console.warn('[qbo publish] DocNumber collision, retrying with', nextDocNumber + 1);
+          invoiceRes = await attemptCreate(nextDocNumber + 1);
+          // Re-wrap the already-consumed body so the error path below can read it
+          if (!invoiceRes.ok) {
+            const errBody2 = await invoiceRes.text();
+            invoiceRes = new Response(errBody2, { status: invoiceRes.status, headers: invoiceRes.headers });
+          }
+        } else {
+          // Re-wrap the already-consumed body for the error handler below
+          invoiceRes = new Response(peek, { status: invoiceRes.status, headers: invoiceRes.headers });
+        }
+      }
+    } catch (fetchErr) {
+      console.error('[qbo publish] invoice fetch error:', fetchErr);
+      return NextResponse.json({ error: 'Network error contacting QuickBooks' }, { status: 502 });
+    }
 
     if (!invoiceRes.ok) {
       const errBody = await invoiceRes.text();
       console.error('[qbo publish] invoice create failed:', errBody);
+
+      const lower = errBody.toLowerCase();
+      const isCurrencyError =
+        lower.includes('multicurrency') ||
+        lower.includes('currency') ||
+        /"errorcode"\s*:\s*"?(2500|6000)"?/i.test(errBody);
+
+      if (isCurrencyError) {
+        const currencyLabel = clientCurrency ?? 'a non-USD currency';
+        return NextResponse.json(
+          {
+            error: `This client is billed in ${currencyLabel} but your QuickBooks company does not have multicurrency enabled. Please enable it in QBO under Settings → Advanced → Currency, then try again.`,
+          },
+          { status: 422 },
+        );
+      }
+
       return NextResponse.json({ error: 'Failed to create QBO invoice', detail: errBody }, { status: 502 });
     }
 
@@ -194,26 +306,46 @@ export async function POST(
     const qboInvoiceId = invoiceData.Invoice.Id;
     const docNumber = invoiceData.Invoice.DocNumber;
 
-    // ── attach PDF report (best-effort) ──────────────────────────────────────
+    // ── generate and attach PDF report ─────────────────────────────────────────
 
-    // QBO supports attachments via /attachable. We attach if reportPdfUrl is a data URL
-    // or a publicly accessible URL. If absent, skip silently.
-    if (period.reportPdfUrl) {
-      try {
-        const attachPayload = {
-          AttachableRef: [{ EntityRef: { type: 'Invoice', value: qboInvoiceId } }],
-          FileName: `ORA-period-${id.slice(-8)}.pdf`,
-          ContentType: 'application/pdf',
-          FileAccessUri: period.reportPdfUrl,
-        };
-        await fetch(`${base}/attachable?minorversion=65`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(attachPayload),
-        });
-      } catch (attachErr) {
-        console.warn('[qbo publish] PDF attach failed (non-fatal):', attachErr);
+    let pdfAttached = false;
+    try {
+      const pdfPeriod = {
+        ...period,
+        entries: period.entries.map((e: any) => ({
+          ...e,
+          project: e.project ? { ...e.project, hourlyRate: Number(e.project.hourlyRate) } : null,
+        })),
+      };
+      const pdfBuffer = await generatePeriodPdf(pdfPeriod as any, period.organization?.name);
+      const fileName = 'ORA-Time-Report.pdf';
+
+      const metadata = JSON.stringify({
+        AttachableRef: [{
+          EntityRef: { type: 'Invoice', value: qboInvoiceId },
+          IncludeOnSend: true,
+        }],
+        FileName: fileName,
+        ContentType: 'application/pdf',
+      });
+
+      const form = new FormData();
+      form.append('file_metadata', new Blob([metadata], { type: 'application/json' }), 'metadata');
+      form.append('file_content', new Blob([new Uint8Array(pdfBuffer)], { type: 'application/pdf' }), fileName);
+
+      const uploadRes = await fetch(`${base}/upload?minorversion=65`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        body: form,
+      });
+
+      if (uploadRes.ok) {
+        pdfAttached = true;
+      } else {
+        console.error('[qbo publish] PDF upload failed:', await uploadRes.text());
       }
+    } catch (pdfErr) {
+      console.error('[qbo publish] PDF generation/upload failed:', pdfErr);
     }
 
     // ── update TimePeriod ─────────────────────────────────────────────────────
@@ -227,7 +359,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({ ok: true, invoiceId: qboInvoiceId, docNumber });
+    return NextResponse.json({ ok: true, invoiceId: qboInvoiceId, docNumber, pdfAttached });
   } catch (err) {
     console.error('[periods/publish/qbo POST] error:', err);
     const message = err instanceof Error ? err.message : 'Internal server error';

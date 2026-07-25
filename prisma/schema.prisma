@@ -48,7 +48,11 @@ model Organization {
   clients     Client[]
   projects    Project[]
   timePeriods TimePeriod[]
-  invites     Invite[]
+  invites           Invite[]
+  invoices          Invoice[]
+  lastInvoiceNumber Int          @default(0)
+
+  @@map("organizations")
 }
 
 model User {
@@ -74,6 +78,7 @@ model User {
   accounts      Account[]
 
   @@index([organizationId])
+  @@map("users")
 }
 
 model Account {
@@ -93,6 +98,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
@@ -102,6 +108,8 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
 model VerificationToken {
@@ -110,6 +118,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model Client {
@@ -123,8 +132,10 @@ model Client {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   projects     Project[]
+  invoices     Invoice[]
 
   @@index([organizationId])
+  @@map("clients")
 }
 
 model Project {
@@ -144,6 +155,8 @@ model Project {
   timeEntries  TimeEntry[]
 
   @@index([organizationId])
+  @@index([organizationId, clientId])
+  @@map("projects")
 }
 
 model TimeEntry {
@@ -166,6 +179,10 @@ model TimeEntry {
   @@index([userId])
   @@index([projectId])
   @@index([startedAt])
+  @@index([userId, startedAt])
+  @@index([projectId, startedAt])
+  @@index([timePeriodId])
+  @@map("time_entries")
 }
 
 model TimePeriod {
@@ -186,8 +203,11 @@ model TimePeriod {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   entries      TimeEntry[]
+  invoices     Invoice[]
 
   @@index([organizationId])
+  @@index([organizationId, status])
+  @@map("time_periods")
 }
 
 model Invite {
@@ -202,4 +222,25 @@ model Invite {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
+  @@map("invites")
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  organizationId String
+  periodId       String?
+  clientId       String
+  invoiceNumber  String
+  amount         Decimal
+  currency       String       @default("USD")
+  pdfUrl         String?
+  pdfData        Bytes?
+  createdAt      DateTime     @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  period       TimePeriod?  @relation(fields: [periodId], references: [id])
+  client       Client       @relation(fields: [clientId], references: [id])
+
+  @@index([organizationId])
+  @@map("invoices")
 }

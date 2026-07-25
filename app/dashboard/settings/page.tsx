@@ -3,12 +3,14 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
+import { SiQuickbooks, SiXero } from 'react-icons/si';
 
 type Tab = 'profile' | 'organization' | 'billing' | 'integrations';
 
 interface IntegrationStatus {
   connectedQBO: boolean;
   connectedXero: boolean;
+  xeroOrgName: string | null;
 }
 
 export default function SettingsPage() {
@@ -17,8 +19,9 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>(() =>
     searchParams.get('tab') === 'integrations' ? 'integrations' : 'profile'
   );
-  const [integrations, setIntegrations] = useState<IntegrationStatus>({ connectedQBO: false, connectedXero: false });
+  const [integrations, setIntegrations] = useState<IntegrationStatus>({ connectedQBO: false, connectedXero: false, xeroOrgName: null });
   const [qboMsg, setQboMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [xeroMsg, setXeroMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -32,12 +35,22 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((d) => setIntegrations((prev) => ({ ...prev, connectedQBO: !!d.connected })))
       .catch(() => {});
+    fetch('/api/integrations/xero/status')
+      .then((r) => r.json())
+      .then((d) => setIntegrations((prev) => ({ ...prev, connectedXero: !!d.connected, xeroOrgName: d.orgName ?? null })))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     const qbo = searchParams.get('qbo');
     if (qbo === 'connected') setQboMsg({ ok: true, text: 'QuickBooks connected successfully!' });
     if (qbo === 'error') setQboMsg({ ok: false, text: 'QuickBooks connection failed. Please try again.' });
+    const xero = searchParams.get('xero');
+    if (xero === 'connected') setXeroMsg({ ok: true, text: 'Xero connected successfully!' });
+    if (xero === 'error') {
+      const msg = searchParams.get('msg');
+      setXeroMsg({ ok: false, text: msg ? `Xero connection failed: ${msg}` : 'Xero connection failed. Please try again.' });
+    }
   }, [searchParams]);
 
   const handleSaveName = async () => {
@@ -205,7 +218,7 @@ export default function SettingsPage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center font-black text-white text-sm">QB</div>
+                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center"><SiQuickbooks size={22} className="text-white" /></div>
                 <div>
                   <div className="font-semibold text-white">QuickBooks Online</div>
                   <div className="text-sm text-slate-400">
@@ -233,22 +246,59 @@ export default function SettingsPage() {
             )}
           </div>
 
+          {xeroMsg && (
+            <div className={`flex items-center gap-2 text-sm px-4 py-3 rounded-lg border ${
+              xeroMsg.ok
+                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                : 'bg-red-950 text-red-300 border-red-800'
+            }`}>
+              {xeroMsg.ok && <CheckCircle className="w-4 h-4 flex-shrink-0" />}
+              {xeroMsg.text}
+            </div>
+          )}
+
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center font-black text-white text-sm">X</div>
+                <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center"><SiXero size={22} className="text-white" /></div>
                 <div>
                   <div className="font-semibold text-white">Xero</div>
-                  <div className="text-sm text-slate-400">Publish invoices directly to Xero</div>
+                  <div className="text-sm text-slate-400">
+                    {integrations.connectedXero
+                      ? `Connected${integrations.xeroOrgName ? ` to ${integrations.xeroOrgName}` : ''} — invoices will be published to your Xero organisation`
+                      : 'Publish invoices directly to Xero'}
+                  </div>
                 </div>
               </div>
-              <button className="bg-sky-700 hover:bg-sky-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-                Connect
-              </button>
+              {integrations.connectedXero ? (
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5 text-emerald-400 text-sm font-semibold">
+                    <CheckCircle className="w-4 h-4" /> Connected
+                  </span>
+                  <button
+                    onClick={async () => {
+                      const res = await fetch('/api/integrations/xero/disconnect', { method: 'POST' });
+                      if (res.ok) setIntegrations((prev) => ({ ...prev, connectedXero: false }));
+                    }}
+                    className="text-xs text-slate-500 hover:text-red-400 transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              ) : (
+                <a
+                  href="/api/integrations/xero/connect"
+                  className="bg-sky-700 hover:bg-sky-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+                >
+                  Connect
+                </a>
+              )}
             </div>
-            <div className="mt-3 text-xs text-slate-600 bg-slate-800 rounded px-3 py-2">
-              Set XERO_CLIENT_ID and XERO_CLIENT_SECRET in your environment to enable.
-            </div>
+            {!integrations.connectedXero && (
+              <div className="mt-3 text-xs text-slate-600 bg-slate-800 rounded px-3 py-2">
+                Set XERO_CLIENT_ID and XERO_CLIENT_SECRET in your environment to enable.
+              </div>
+            )}
           </div>
         </div>
       )}

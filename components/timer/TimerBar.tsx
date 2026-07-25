@@ -2,11 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useTimerStore } from '@/store/timerStore';
 import { Play, Square } from 'lucide-react';
+import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 
 interface Project {
   id: string;
   name: string;
   color: string;
+  clientName?: string | null;
 }
 
 interface TimerBarProps {
@@ -84,32 +86,14 @@ export function TimerBar({ projects }: TimerBarProps) {
 
   return (
     <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 w-full">
-      {/* Project select */}
-      <div className="relative">
-        <select
-          value={store.projectId ?? ''}
-          onChange={(e) => store.setProjectId(e.target.value || null)}
-          disabled={store.isRunning}
-          className="appearance-none bg-slate-700 border border-slate-600 text-slate-200 text-sm rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed min-w-[140px]"
-        >
-          <option value="">No project</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-        {/* Color indicator */}
-        {store.projectId && (
-          <span
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
-            style={{
-              backgroundColor:
-                projects.find((p) => p.id === store.projectId)?.color ?? '#6366f1',
-            }}
-          />
-        )}
-      </div>
+      {/* Project combobox */}
+      <ProjectCombobox
+        projects={projects}
+        value={store.projectId}
+        onChange={(id) => store.setProjectId(id)}
+        disabled={store.isRunning}
+        placeholder="Project"
+      />
 
       {/* Description */}
       <input

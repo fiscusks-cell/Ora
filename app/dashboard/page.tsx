@@ -31,7 +31,8 @@ function formatHM(totalSeconds: number): string {
 }
 
 function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  const locale = currency === 'JPY' ? 'ja-JP' : 'en-US';
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
 }
 
 // ─── stat card ───────────────────────────────────────────────────────────────
@@ -170,7 +171,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-white">
-          {greeting}, {firstName} 👋
+          {greeting}, {firstName}
         </h1>
         <p className="text-slate-400 text-sm mt-1">Here&apos;s your time tracking overview.</p>
       </div>

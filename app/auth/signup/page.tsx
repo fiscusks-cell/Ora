@@ -3,12 +3,15 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
+import { OriginButton } from '@/components/ui/origin-button';
 
 export default function SignUpPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: '', orgName: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -28,7 +31,7 @@ export default function SignUpPage() {
     const data = await res.json();
 
     if (!res.ok) {
-      setError(data.message || 'Something went wrong');
+      setError(data.error || data.message || 'Something went wrong');
       setLoading(false);
       return;
     }
@@ -41,11 +44,11 @@ export default function SignUpPage() {
 
     setLoading(false);
 
-    if (result?.error) {
-      setError('Account created but login failed. Please sign in.');
-      router.push('/auth/signin');
+    if (!result || result.error) {
+      // Account was created — just send them to sign in
+      window.location.href = '/auth/signin?registered=1';
     } else {
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     }
   }
 
@@ -108,23 +111,32 @@ export default function SignUpPage() {
             </div>
             <div>
               <label className="block text-sm text-slate-400 mb-1.5">Password</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => update('password', e.target.value)}
-                required
-                minLength={8}
-                placeholder="Min 8 characters"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={(e) => update('password', e.target.value)}
+                  required
+                  minLength={8}
+                  placeholder="Min 8 characters"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-            <button
+            <OriginButton
               type="submit"
               disabled={loading}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
             >
               {loading ? 'Creating account…' : 'Create account'}
-            </button>
+            </OriginButton>
           </form>
 
           <div className="mt-4 pt-4 border-t border-slate-800 text-center text-sm text-slate-500">

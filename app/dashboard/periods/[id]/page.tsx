@@ -2,8 +2,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { formatDuration, formatCurrency } from '@/lib/utils';
+import { getCurrency } from '@/lib/currency';
 import { format } from 'date-fns';
-import { CheckCircle, Clock, FileText, AlertCircle } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Download } from 'lucide-react';
+import { SiQuickbooks, SiXero } from 'react-icons/si';
+import { OriginButton } from '@/components/ui/origin-button';
 
 interface Entry {
   id: string;
@@ -12,7 +15,7 @@ interface Entry {
   stoppedAt: string | null;
   durationSeconds: number | null;
   isBillable: boolean;
-  project: { id: string; name: string; color: string; hourlyRate: string; client: { name: string } | null } | null;
+  project: { id: string; name: string; color: string; hourlyRate: string; client: { name: string; currency: string } | null } | null;
   user: { id: string; name: string };
 }
 
@@ -33,6 +36,7 @@ interface Period {
     projectName: string;
     projectColor: string;
     clientName: string | null;
+    clientCurrency: string;
     totalSeconds: number;
     billableAmount: number;
   }>;
@@ -54,6 +58,8 @@ export default function PeriodDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [tab, setTab] = useState<'summary' | 'entries'>('summary');
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [invoiceGenerated, setInvoiceGenerated] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/periods/${id}`);
@@ -63,20 +69,57 @@ export default function PeriodDetailPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const [successMsg, setSuccessMsg] = useState('');
+
   const doAction = async (url: string, method = 'PATCH') => {
     setActionLoading(true);
     setMessage('');
+    setSuccessMsg('');
     const res = await fetch(url, { method });
     const data = await res.json();
-    if (!res.ok) setMessage(data.error || data.message || 'Action failed');
-    else await load();
+    if (!res.ok) {
+      setMessage(data.error || data.message || 'Action failed');
+    } else {
+      if (data.pdfAttached === true) {
+        setSuccessMsg('Invoice created + PDF attached');
+      } else if (data.pdfAttached === false) {
+        setSuccessMsg('Invoice created (PDF attachment failed)');
+      }
+      await load();
+    }
     setActionLoading(false);
+  };
+
+  const handleGenerateInvoice = async () => {
+    setInvoiceLoading(true);
+    setMessage('');
+    try {
+      const res = await fetch(`/api/periods/${id}/generate-invoice`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json();
+        setMessage(data.error || 'Failed to generate invoice');
+        return;
+      }
+      const invNum = res.headers.get('X-Invoice-Number') || 'invoice';
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${invNum}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setInvoiceGenerated(invNum);
+    } catch {
+      setMessage('Failed to generate invoice');
+    } finally {
+      setInvoiceLoading(false);
+    }
   };
 
   if (loading) return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
   if (!period) return <div className="p-8 text-slate-400">Period not found</div>;
 
-  const totalSeconds = period.stats?.totalSeconds ?? period.entries.reduce((s, e) => s + (e.durationSeconds || 0), 0);
+  const totalSeconds = period.stats?.totalSeconds ?? (period.entries ?? []).reduce((s, e) => s + (e.durationSeconds || 0), 0);
   const totalAmount = period.stats?.totalBillableAmount ?? 0;
   const s = STATUS_LABEL[period.status];
 
@@ -104,7 +147,7 @@ export default function PeriodDetailPage() {
           </div>
           <div>
             <div className="text-xs text-slate-500">Entries</div>
-            <div className="text-xl font-bold text-white">{period.entries.length}</div>
+            <div className="text-xl font-bold text-white">{(period.entries ?? []).length}</div>
           </div>
         </div>
       </div>
@@ -115,7 +158,18 @@ export default function PeriodDetailPage() {
           <div className="text-sm text-emerald-300">
             Published {period.publishedAt ? format(new Date(period.publishedAt), 'MMM d, yyyy') : ''}
             {period.qboInvoiceId && <span className="ml-3">· QBO: {period.qboInvoiceId}</span>}
-            {period.xeroInvoiceId && <span className="ml-3">· Xero: {period.xeroInvoiceId}</span>}
+            {period.xeroInvoiceId && (
+              <span className="ml-3">
+                · <a
+                    href={`https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=${period.xeroInvoiceId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-300 underline hover:text-emerald-200"
+                  >
+                    View in Xero
+                  </a>
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -127,42 +181,61 @@ export default function PeriodDetailPage() {
         </div>
       )}
 
+      {successMsg && (
+        <div className="bg-emerald-950 border border-emerald-800 text-emerald-300 text-sm px-3 py-2 rounded-lg mb-4 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 flex-shrink-0" />
+          {successMsg}
+        </div>
+      )}
+
       <div className="flex gap-3 mb-8">
         {period.status === 'OPEN' && (
-          <button
+          <OriginButton
             onClick={() => doAction(`/api/periods/${id}/submit`)}
-            disabled={actionLoading || period.entries.length === 0}
+            disabled={actionLoading || (period.entries ?? []).length === 0}
             className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
           >
             <Clock className="w-4 h-4" /> Submit for Approval
-          </button>
+          </OriginButton>
         )}
         {period.status === 'PENDING_APPROVAL' && (
-          <button
+          <OriginButton
             onClick={() => doAction(`/api/periods/${id}/approve`)}
             disabled={actionLoading}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
           >
             <CheckCircle className="w-4 h-4" /> Approve Period
-          </button>
+          </OriginButton>
         )}
         {period.status === 'APPROVED' && (
           <>
-            <button
+            <OriginButton
               onClick={() => doAction(`/api/periods/${id}/publish/qbo`, 'POST')}
               disabled={actionLoading}
               className="flex items-center gap-2 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
-              <FileText className="w-4 h-4" /> Publish to QuickBooks
-            </button>
-            <button
+              <SiQuickbooks size={16} /> Publish to QuickBooks
+            </OriginButton>
+            <OriginButton
               onClick={() => doAction(`/api/periods/${id}/publish/xero`, 'POST')}
               disabled={actionLoading}
               className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
-              <FileText className="w-4 h-4" /> Publish to Xero
-            </button>
+              <SiXero size={16} /> Publish to Xero
+            </OriginButton>
+            <OriginButton
+              onClick={handleGenerateInvoice}
+              disabled={invoiceLoading}
+              className="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            >
+              <Download className="w-4 h-4" /> {invoiceLoading ? 'Generating…' : 'Download Invoice PDF'}
+            </OriginButton>
           </>
+        )}
+        {invoiceGenerated && (
+          <div className="flex items-center gap-2 text-sm text-emerald-400">
+            <CheckCircle className="w-4 h-4" /> {invoiceGenerated} generated
+          </div>
         )}
       </div>
 
@@ -197,7 +270,7 @@ export default function PeriodDetailPage() {
                   </div>
                   <div>
                     <div className="text-xs text-slate-500">Amount</div>
-                    <div className="text-sm font-semibold text-white">{formatCurrency(p.billableAmount)}</div>
+                    <div className="text-sm font-semibold text-white">{formatCurrency(p.billableAmount, p.clientCurrency)}</div>
                   </div>
                 </div>
               </div>
@@ -215,7 +288,7 @@ export default function PeriodDetailPage() {
 
       {tab === 'entries' && (
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-          {period.entries.length === 0 ? (
+          {(period.entries ?? []).length === 0 ? (
             <div className="text-center text-slate-500 py-8">No entries in this period</div>
           ) : (
             <table className="w-full">
@@ -227,7 +300,7 @@ export default function PeriodDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {period.entries.map(e => (
+                {(period.entries ?? []).map(e => (
                   <tr key={e.id} className="border-b border-slate-800/50 last:border-0">
                     <td className="px-4 py-3 text-sm text-slate-400">{format(new Date(e.startedAt), 'MMM d')}</td>
                     <td className="px-4 py-3 text-sm text-slate-200 max-w-xs truncate">{e.description || <span className="text-slate-500 italic">—</span>}</td>

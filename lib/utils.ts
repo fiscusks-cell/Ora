@@ -24,7 +24,5 @@ export function generateSlug(name: string): string {
     .substring(0, 50);
 }
 
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
-}
+export { CURRENCIES, type CurrencyCode, DEFAULT_CURRENCY, getCurrency, formatCurrency, roundForCurrency } from './currency';
 
