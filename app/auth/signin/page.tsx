@@ -3,7 +3,7 @@ import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { OriginButton } from '@/components/ui/origin-button';
 
 function OraLogo() {
@@ -122,6 +122,10 @@ function SignInForm() {
 export default function SignInPage() {
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+      <Link href="/" className="fixed top-4 left-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-200 transition-colors">
+        <ChevronLeft className="w-4 h-4" />
+        Home
+      </Link>
       <div className="w-full max-w-sm">
         <OraLogo />
         <Suspense fallback={null}>

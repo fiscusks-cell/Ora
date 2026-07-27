@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { OriginButton } from '@/components/ui/origin-button';
 
 export default function SignUpPage() {
@@ -54,6 +54,10 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+      <Link href="/" className="fixed top-4 left-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-200 transition-colors">
+        <ChevronLeft className="w-4 h-4" />
+        Home
+      </Link>
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-2 mb-8">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
