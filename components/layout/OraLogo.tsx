@@ -19,7 +19,7 @@ export function OraLogo({ size = 48, showText = true, className = '' }: OraLogoP
         <circle cx="28" cy="16" r="1" fill="#3730A3" opacity="0.5"/>
       </svg>
       {showText && (
-        <span className="text-2xl text-white tracking-tight">ORA</span>
+        <span className="text-2xl text-white tracking-tight" style={{ fontFamily: 'var(--font-syne)' }}>ORA</span>
       )}
     </div>
   );
