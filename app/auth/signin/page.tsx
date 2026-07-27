@@ -148,9 +148,7 @@ export default function SignInPage() {
             <SignInForm />
           </Suspense>
         </div>
-        <p className={`${mono.className} text-center text-[12px] tracking-[-0.02em] text-[#8b95a1] mt-6`}>
-          Demo: demo@ora.app / password123
-        </p>
+
       </div>
     </div>
   );
