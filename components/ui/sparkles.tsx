@@ -97,12 +97,14 @@ export function Sparkles({
   maxSize = 2,
   speed = 1.5,
 }: SparklesAmbientProps) {
-  // Default true so prefers-reduced-motion users never flash particles during hydration
-  const [reducedMotion, setReducedMotion] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState<boolean>(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  );
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(mq.matches);
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
@@ -143,8 +145,8 @@ export function Sparkles({
     <div
       className="fixed inset-0 z-0 pointer-events-none"
       style={{
-        maskImage: 'radial-gradient(50% 50%, transparent, white)',
-        WebkitMaskImage: 'radial-gradient(50% 50%, transparent, white)',
+        maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, white 60%, transparent 100%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, white 60%, transparent 100%)',
       }}
       aria-hidden="true"
     >
