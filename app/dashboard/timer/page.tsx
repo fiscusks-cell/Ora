@@ -3,11 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { Play, Square, DollarSign, Trash2 } from 'lucide-react';
-import { JetBrains_Mono } from 'next/font/google';
 import { OriginButton } from '@/components/ui/origin-button';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
-
-const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400'] });
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -278,7 +275,7 @@ export default function TimerPage() {
         {/* Giant clock display */}
         <div className="text-center mb-8">
           <span
-            className={`${jetbrainsMono.className} text-7xl md:text-9xl tabular-nums tracking-tight select-none ${
+            className={`font-mono text-7xl md:text-9xl tabular-nums tracking-tight select-none ${
               isRunning ? 'text-emerald-400' : 'text-slate-600'
             }`}
           >

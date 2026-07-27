@@ -1,10 +1,6 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Inter_Tight, JetBrains_Mono } from 'next/font/google';
-
-const interTight = Inter_Tight({ subsets: ['latin'], weight: ['400'] });
-const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400'] });
 
 // ─── palette ─────────────────────────────────────────────────────────────────
 
@@ -120,7 +116,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
       <div className="h-7 flex items-end justify-center pb-1.5">
         {plan.highlight && (
           <span
-            className={`${mono.className} text-[11px] tracking-[-0.02em]`}
+            className={`font-mono text-[11px] tracking-[-0.02em]`}
             style={{ color: C.indigo }}
           >
             Most popular
@@ -138,7 +134,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
       >
         {/* Plan name */}
         <p
-          className={`${mono.className} text-[12px] tracking-[0.04em] mb-4`}
+          className={`font-mono text-[12px] tracking-[0.04em] mb-4`}
           style={{ color: C.muted }}
         >
           {plan.name}
@@ -147,13 +143,13 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
         {/* Price */}
         <div className="mb-1 flex items-end gap-1">
           <span
-            className={`${mono.className} text-[48px] leading-none tracking-[-0.04em]`}
+            className={`font-mono text-[48px] leading-none tracking-[-0.04em]`}
             style={{ color: C.text }}
           >
             ${price}
           </span>
           <span
-            className={`${mono.className} text-[13px] tracking-[-0.02em] pb-1`}
+            className={`font-mono text-[13px] tracking-[-0.02em] pb-1`}
             style={{ color: C.muted }}
           >
             /month
@@ -161,7 +157,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
         </div>
         {yearly && plan.monthlyPrice > 0 && (
           <p
-            className={`${mono.className} text-[11px] tracking-[-0.02em] mb-1`}
+            className={`font-mono text-[11px] tracking-[-0.02em] mb-1`}
             style={{ color: C.muted }}
           >
             billed ${yearlyTotal}/year
@@ -170,7 +166,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
 
         {/* Description */}
         <p
-          className={`${interTight.className} text-[14px] leading-normal tracking-[-0.001em] font-normal mt-2 mb-6`}
+          className={`text-[14px] leading-normal tracking-[-0.001em] font-normal mt-2 mb-6`}
           style={{ color: C.muted }}
         >
           {plan.desc}
@@ -182,7 +178,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
           style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}
         >
           <span
-            className={`${mono.className} text-[14px] tracking-[-0.02em]`}
+            className={`font-mono text-[14px] tracking-[-0.02em]`}
             style={{ color: C.text }}
           >
             {plan.seats}
@@ -195,7 +191,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
             <li key={f} className="flex items-start gap-2">
               <CheckIcon />
               <span
-                className={`${interTight.className} text-[14px] leading-normal tracking-[-0.001em] font-normal`}
+                className={`text-[14px] leading-normal tracking-[-0.001em] font-normal`}
                 style={{ color: C.muted }}
               >
                 {f}
@@ -207,7 +203,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
         {/* CTA */}
         <Link
           href={plan.href}
-          className={`${mono.className} block text-center text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors`}
+          className={`font-mono block text-center text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors`}
           style={
             plan.highlight
               ? { background: C.indigo, color: '#ffffff' }
@@ -247,7 +243,7 @@ export function PricingSection() {
       <div className="max-w-[1200px] mx-auto">
         {/* Eyebrow */}
         <p
-          className={`${mono.className} text-[12px] tracking-[0.06em] text-center mb-3`}
+          className={`font-mono text-[12px] tracking-[0.06em] text-center mb-3`}
           style={{ color: C.indigo }}
         >
           PRICING
@@ -255,13 +251,13 @@ export function PricingSection() {
 
         {/* Heading */}
         <h2
-          className={`${interTight.className} text-[40px] md:text-[48px] leading-tight tracking-[-0.022em] font-normal text-center mb-3`}
+          className={`text-[40px] md:text-[48px] leading-tight tracking-[-0.022em] font-normal text-center mb-3`}
           style={{ color: C.text }}
         >
           Simple, transparent pricing
         </h2>
         <p
-          className={`${interTight.className} text-[18px] leading-normal tracking-[-0.001em] font-normal text-center mb-10`}
+          className={`text-[18px] leading-normal tracking-[-0.001em] font-normal text-center mb-10`}
           style={{ color: C.muted }}
         >
           Start free. Upgrade when you need more users or integrations.
@@ -275,7 +271,7 @@ export function PricingSection() {
           >
             <button
               onClick={() => setYearly(false)}
-              className={`${mono.className} text-[13px] tracking-[-0.02em] px-4 py-1.5 rounded-[6px] transition-colors`}
+              className={`font-mono text-[13px] tracking-[-0.02em] px-4 py-1.5 rounded-[6px] transition-colors`}
               style={
                 !yearly
                   ? { background: C.text, color: '#ffffff' }
@@ -286,7 +282,7 @@ export function PricingSection() {
             </button>
             <button
               onClick={() => setYearly(true)}
-              className={`${mono.className} text-[13px] tracking-[-0.02em] px-4 py-1.5 rounded-[6px] transition-colors flex items-center gap-2`}
+              className={`font-mono text-[13px] tracking-[-0.02em] px-4 py-1.5 rounded-[6px] transition-colors flex items-center gap-2`}
               style={
                 yearly
                   ? { background: C.text, color: '#ffffff' }
@@ -313,7 +309,7 @@ export function PricingSection() {
 
         {/* Footnote */}
         <p
-          className={`${mono.className} text-center text-[12px] tracking-[-0.02em] mt-10`}
+          className={`font-mono text-center text-[12px] tracking-[-0.02em] mt-10`}
           style={{ color: C.muted }}
         >
           All paid plans include a 14-day free trial. No credit card required.

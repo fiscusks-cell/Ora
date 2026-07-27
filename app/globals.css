@@ -26,7 +26,8 @@
   --error: #dc2626;
   --error-bg: #fef2f2;
   --error-border: #fecaca;
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-inter-tight);
+  --font-mono: var(--font-mono-jetbrains);
   --gradient-start: #f8f7f4;
   --gradient-end: #efeee8;
   --skeleton-from: #e5e5e5;
@@ -60,7 +61,8 @@
   --error: #ef4444;
   --error-bg: #450a0a;
   --error-border: #991b1b;
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-inter-tight);
+  --font-mono: var(--font-mono-jetbrains);
   --gradient-start: #0f0f0f;
   --gradient-end: #141414;
   --skeleton-from: #1e293b;

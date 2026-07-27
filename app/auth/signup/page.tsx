@@ -3,17 +3,13 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
-import { Inter_Tight, JetBrains_Mono } from 'next/font/google';
 import { OriginButton } from '@/components/ui/origin-button';
 import { Sparkles } from '@/components/ui/sparkles';
-
-const interTight = Inter_Tight({ subsets: ['latin'], weight: ['400'] });
-const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400'] });
 
 const inputCls =
   'w-full bg-[#f7f7f5] dark:bg-[#1a1f26] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[8px] px-3 py-2.5 text-sm text-[#1a1f26] dark:text-white placeholder-[#8b95a1] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
 const btnCls =
-  'w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none';
+  'font-mono w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none';
 
 export default function SignUpPage() {
   const [form, setForm] = useState({ name: '', orgName: '', email: '', password: '' });
@@ -49,13 +45,13 @@ export default function SignUpPage() {
     }
   }
 
-  const labelCls = `${mono.className} text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2`;
+  const labelCls = 'font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
 
   return (
     <div className="min-h-screen bg-[#f7f7f5] dark:bg-[#1a1f26] flex items-center justify-center px-4 py-8">
       <Link
         href="/"
-        className={`${mono.className} fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors`}
+        className="font-mono fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
       >
         ← Home
       </Link>
@@ -69,19 +65,19 @@ export default function SignUpPage() {
             <line x1="16" y1="16" x2="21" y2="19" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" />
             <circle cx="16" cy="16" r="1.5" fill="#6366F1" />
           </svg>
-          <span className={`${interTight.className} text-xl tracking-[-0.04em] text-[#1a1f26] dark:text-white`}>ORA</span>
+          <span className="text-xl tracking-[-0.04em] text-[#1a1f26] dark:text-white">ORA</span>
         </div>
 
         <div className="bg-white dark:bg-[#212832] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[20px] p-10">
-          <h1 className={`${interTight.className} text-[36px] leading-tight tracking-[-0.022em] font-normal text-[#1a1f26] dark:text-white text-center mb-2`}>
+          <h1 className="text-[36px] leading-tight tracking-[-0.022em] font-normal text-[#1a1f26] dark:text-white text-center mb-2">
             Create account
           </h1>
-          <p className={`${interTight.className} text-[18px] leading-normal tracking-[-0.001em] font-normal text-[#8b95a1] text-center mb-8`}>
+          <p className="text-[18px] leading-normal tracking-[-0.001em] font-normal text-[#8b95a1] text-center mb-8">
             Free forever for solo users
           </p>
 
           {error && (
-            <div className={`${mono.className} bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6`}>
+            <div className="font-mono bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
               {error}
             </div>
           )}
@@ -141,13 +137,13 @@ export default function SignUpPage() {
                 </button>
               </div>
             </div>
-            <OriginButton type="submit" disabled={loading} className={`${mono.className} ${btnCls}`}>
+            <OriginButton type="submit" disabled={loading} className={btnCls}>
               {loading ? 'Creating account…' : 'Create account'}
             </OriginButton>
           </form>
 
           <div className="mt-8 pt-6 border-t border-[#d4d6cf] dark:border-[#3a4550] text-center">
-            <span className={`${mono.className} text-[13px] tracking-[-0.02em] text-[#8b95a1]`}>
+            <span className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1]">
               Already have an account?{' '}
               <Link href="/auth/signin" className="text-indigo-400 hover:text-indigo-300 hover:underline">
                 Sign in

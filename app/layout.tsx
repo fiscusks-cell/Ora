@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter_Tight, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/components/providers';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const interTight = Inter_Tight({ subsets: ['latin'], weight: ['400'], variable: '--font-inter-tight' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400'], variable: '--font-mono-jetbrains' });
 
 export const metadata: Metadata = {
   title: 'ORA — Time, tracked. Invoices, done.',
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable} data-theme="dark">
+    <html lang="en" className={`${interTight.variable} ${jetbrainsMono.variable}`} data-theme="dark">
       <body className="font-sans antialiased min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <Providers>
           {children}
