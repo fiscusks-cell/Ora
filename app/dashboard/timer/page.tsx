@@ -7,7 +7,7 @@ import { JetBrains_Mono } from 'next/font/google';
 import { OriginButton } from '@/components/ui/origin-button';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 
-const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['800'] });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400'] });
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
