@@ -1,7 +1,11 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { Particles, ParticlesProvider } from '@tsparticles/react'
+import { loadSlim } from '@tsparticles/slim'
+import { MoveDirection, OutMode } from '@tsparticles/engine'
+import type { ISourceOptions } from '@tsparticles/engine'
 
 type SparklesProps = {
   id?: string
@@ -74,4 +78,79 @@ export const SparklesCore = ({
       style={{ background }}
     />
   )
+}
+
+// ─── tsparticles-backed ambient sparkles ─────────────────────────────────────
+
+interface SparklesAmbientProps {
+  particleColor?: string;
+  particleDensity?: number;
+  minSize?: number;
+  maxSize?: number;
+  speed?: number;
+}
+
+export function Sparkles({
+  particleColor = '#4f46e5',
+  particleDensity = 40,
+  minSize = 1,
+  maxSize = 2,
+  speed = 1.5,
+}: SparklesAmbientProps) {
+  // Default true so prefers-reduced-motion users never flash particles during hydration
+  const [reducedMotion, setReducedMotion] = useState(true);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const options: ISourceOptions = useMemo(
+    () => ({
+      background: { color: { value: 'transparent' } },
+      fpsLimit: 60,
+      particles: {
+        color: { value: particleColor },
+        number: { value: particleDensity, density: { enable: true } },
+        opacity: { value: { min: 0.1, max: 0.6 } },
+        size: { value: { min: minSize, max: maxSize } },
+        move: {
+          enable: true,
+          speed,
+          direction: MoveDirection.none,
+          random: true,
+          outModes: { default: OutMode.out },
+        },
+        links: { enable: false },
+      },
+      detectRetina: true,
+      interactivity: {
+        events: {
+          onHover: { enable: false },
+          onClick: { enable: false },
+        },
+      },
+    }),
+    [particleColor, particleDensity, minSize, maxSize, speed],
+  );
+
+  if (reducedMotion) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-0 pointer-events-none"
+      style={{
+        maskImage: 'radial-gradient(50% 50%, transparent, white)',
+        WebkitMaskImage: 'radial-gradient(50% 50%, transparent, white)',
+      }}
+      aria-hidden="true"
+    >
+      <ParticlesProvider init={loadSlim}>
+        <Particles id="ora-sparkles" options={options} className="h-full w-full" />
+      </ParticlesProvider>
+    </div>
+  );
 }

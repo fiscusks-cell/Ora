@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { Inter_Tight, JetBrains_Mono } from 'next/font/google';
 import { OriginButton } from '@/components/ui/origin-button';
+import { Sparkles } from '@/components/ui/sparkles';
 
 const interTight = Inter_Tight({ subsets: ['latin'], weight: ['400'] });
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400'] });
@@ -135,11 +136,12 @@ export default function SignInPage() {
     <div className="min-h-screen bg-[#f7f7f5] dark:bg-[#1a1f26] flex items-center justify-center px-4">
       <Link
         href="/"
-        className={`${mono.className} fixed top-5 left-5 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors`}
+        className={`${mono.className} fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors`}
       >
         ← Home
       </Link>
-      <div className="w-full max-w-sm">
+      <Sparkles particleColor="#4f46e5" particleDensity={40} minSize={1} maxSize={2} speed={1.5} />
+      <div className="relative z-10 w-full max-w-sm">
         <OraLogo />
         <div className="bg-white dark:bg-[#212832] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[20px] p-10">
           <Suspense fallback={null}>
