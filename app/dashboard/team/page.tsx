@@ -107,7 +107,7 @@ export default function TeamPage() {
       header: 'Member',
       render: (m) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 select-none" style={{ background: 'var(--accent)' }}>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-mono text-sm flex-shrink-0 select-none" style={{ background: 'var(--accent)' }}>
             {avatarInitial(m)}
           </div>
           <span className="font-medium truncate max-w-[140px]" style={{ color: 'var(--text)' }}>
@@ -128,7 +128,7 @@ export default function TeamPage() {
       header: 'Role',
       render: (m) => (
         <span
-          className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+          className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full"
           style={{
             background: m.role === 'OWNER'
               ? 'color-mix(in srgb, #f59e0b 15%, transparent)'
@@ -163,7 +163,7 @@ export default function TeamPage() {
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-black" style={{ color: 'var(--text)' }}>Team Members</h1>
+          <h1 className="text-2xl font-normal" style={{ color: 'var(--text)' }}>Team Members</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>Manage members and permissions</p>
         </div>
         {!accessError && (
@@ -175,7 +175,7 @@ export default function TeamPage() {
               setInviteEmail('');
               setInviteRole('MEMBER');
             }}
-            className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
             style={{ background: 'var(--accent)' }}
           >
             <Plus className="w-4 h-4" />
@@ -187,7 +187,7 @@ export default function TeamPage() {
       {accessError ? (
         <div className="text-center py-20" style={{ color: 'var(--text-secondary)' }}>
           <ShieldCheck className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
-          <p className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Access restricted</p>
+          <p className="text-lg mb-2" style={{ color: 'var(--text)' }}>Access restricted</p>
           <p className="text-sm">{accessError}</p>
         </div>
       ) : (
@@ -229,7 +229,7 @@ export default function TeamPage() {
         >
           <div className="rounded-2xl p-6 w-full max-w-md shadow-2xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Invite Team Member</h2>
+              <h2 className="text-lg font-normal" style={{ color: 'var(--text)' }}>Invite Team Member</h2>
               <button onClick={() => setShowInvite(false)} className="p-1 rounded transition-colors" style={{ color: 'var(--text-muted)' }}>
                 <X className="w-5 h-5" />
               </button>
@@ -247,7 +247,7 @@ export default function TeamPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                <label className="block text-sm font-mono mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Email address <span style={{ color: 'var(--error)' }}>*</span>
                 </label>
                 <input
@@ -261,7 +261,7 @@ export default function TeamPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Role</label>
+                <label className="block text-sm font-mono mb-1.5" style={{ color: 'var(--text-secondary)' }}>Role</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as MemberRole)}
@@ -276,11 +276,11 @@ export default function TeamPage() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowInvite(false)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
+              <button onClick={() => setShowInvite(false)} className="flex-1 py-2.5 rounded-lg text-sm font-mono transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
               <button
                 onClick={handleInvite}
                 disabled={!inviteEmail.trim() || inviting}
-                className="flex-1 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 text-white py-2.5 rounded-lg text-sm font-mono transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: 'var(--accent)' }}
               >
                 {inviting ? 'Sending...' : 'Send Invite'}

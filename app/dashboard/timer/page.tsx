@@ -268,7 +268,7 @@ export default function TimerPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-8">
-      <h1 className="text-2xl font-black text-white">Timer</h1>
+      <h1 className="text-2xl font-normal text-white">Timer</h1>
 
       {/* ── Timer card ─────────────────────────────────────────────────── */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
@@ -368,7 +368,7 @@ export default function TimerPage() {
           <OriginButton
             onClick={isRunning ? handleStop : () => handleStart()}
             disabled={loading}
-            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-base transition-colors disabled:opacity-50 ${
+            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-mono text-base transition-colors disabled:opacity-50 ${
               isRunning
                 ? 'bg-red-600 hover:bg-red-500 text-white'
                 : 'bg-emerald-600 hover:bg-emerald-500 text-white'
@@ -392,7 +392,7 @@ export default function TimerPage() {
       {/* ── Today's entries ─────────────────────────────────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+          <h2 className="text-sm font-mono text-slate-400 uppercase tracking-wider">
             Today
           </h2>
           <span className="text-sm font-mono text-slate-400 tabular-nums">

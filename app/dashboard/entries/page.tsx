@@ -276,7 +276,7 @@ export default function EntriesPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-black mb-8" style={{ color: 'var(--text)' }}>Time Entries</h1>
+      <h1 className="text-2xl font-normal mb-8" style={{ color: 'var(--text)' }}>Time Entries</h1>
 
       {loading ? (
         <div className="space-y-3">
@@ -310,7 +310,7 @@ export default function EntriesPage() {
               <section key={wk}>
                 {/* Week header */}
                 <div className="flex items-center justify-between py-2 mb-1 border-b-2" style={{ borderColor: 'var(--border)' }}>
-                  <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="text-sm font-mono uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                     {label}
                   </span>
                   <div className="flex items-center gap-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -329,7 +329,7 @@ export default function EntriesPage() {
                       <div key={dk}>
                         {/* Day sub-header */}
                         <div className="flex items-center justify-between py-1.5 mb-0.5">
-                          <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                          <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
                             {format(new Date(dk), 'EEEE, MMMM d')}
                           </span>
                           <span className="text-xs font-mono tabular-nums" style={{ color: 'var(--text-muted)' }}>

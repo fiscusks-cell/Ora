@@ -56,9 +56,9 @@ function StatCard({
           : 'bg-slate-900 border-slate-800'
       }`}
     >
-      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">{label}</p>
+      <p className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">{label}</p>
       <p
-        className={`text-3xl font-black tabular-nums ${
+        className={`text-3xl font-mono tabular-nums ${
           highlight ? 'text-emerald-400' : 'text-white'
         }`}
       >
@@ -170,7 +170,7 @@ export default async function DashboardPage() {
     <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-white">
+        <h1 className="text-2xl font-normal text-white">
           {greeting}, {firstName}
         </h1>
         <p className="text-slate-400 text-sm mt-1">Here&apos;s your time tracking overview.</p>
@@ -181,7 +181,7 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-3 bg-amber-950 border border-amber-800 rounded-xl px-5 py-4">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-amber-300">Timer is running</p>
+            <p className="text-sm text-amber-300">Timer is running</p>
             <p className="text-xs text-amber-500">
               Started at {format(activeEntry.startedAt, 'h:mm a')} ·{' '}
               <a href="/dashboard/timer" className="underline underline-offset-2 hover:text-amber-300">
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
 
       {/* Recent entries */}
       <div>
-        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+        <h2 className="text-sm font-mono text-slate-400 uppercase tracking-wider mb-4">
           Recent entries
         </h2>
 
@@ -229,7 +229,7 @@ export default async function DashboardPage() {
                 >
                   {/* Date header */}
                   <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-900/80">
-                    <span className="text-sm font-semibold text-slate-300">
+                    <span className="text-sm font-mono text-slate-300">
                       {format(new Date(dateKey + 'T12:00:00'), 'EEEE, MMMM d')}
                     </span>
                     <span className="text-sm font-mono text-slate-400 tabular-nums">

@@ -29,7 +29,7 @@ export default function LandingPage() {
         <OraLogo />
         <div className="flex items-center gap-4">
           <Link href="/auth/signin" className="text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors">Sign in</Link>
-          <Link href="/auth/signup" className="px-4 py-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold rounded-lg transition-colors">Get started</Link>
+          <Link href="/auth/signup" className="px-4 py-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors">Get started</Link>
         </div>
       </nav>
 
