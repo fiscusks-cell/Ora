@@ -100,6 +100,11 @@ function SignInForm() {
             </button>
           </div>
         </div>
+        <div className="flex justify-end">
+          <Link href="/auth/forgot-password" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+            Forgot password?
+          </Link>
+        </div>
         <OriginButton
           type="submit"
           disabled={loading}
