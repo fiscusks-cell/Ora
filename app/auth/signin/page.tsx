@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { OriginButton } from '@/components/ui/origin-button';
-import { SparklesCore } from '@/components/ui/sparkles';
+import { AuthParticles } from '@/components/ui/auth-particles';
 
 const inputCls =
   'w-full bg-[#f7f7f5] dark:bg-[#1a1f26] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[8px] px-3 py-2.5 text-sm text-[#1a1f26] dark:text-white placeholder-[#8b95a1] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
@@ -136,7 +136,7 @@ export default function SignInPage() {
       >
         ← Home
       </Link>
-      <SparklesCore className="fixed inset-0 z-0 pointer-events-none" background="transparent" particleColor="#4f46e5" particleDensity={40} minSize={1} maxSize={2} speed={1.5} />
+      <AuthParticles />
       <div className="relative z-10 w-full max-w-sm">
         <OraLogo />
         <div className="bg-white dark:bg-[#212832] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[20px] p-10">
