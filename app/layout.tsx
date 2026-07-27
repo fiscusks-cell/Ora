@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans, JetBrains_Mono, Syne } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/components/providers';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-jakarta-sans' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400'], variable: '--font-mono-jetbrains' });
+const syne = Syne({ subsets: ['latin'], weight: ['700', '800'], variable: '--font-syne' });
 
 export const metadata: Metadata = {
   title: 'ORA — Time, tracked. Invoices, done.',
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable} data-theme="dark">
+    <html lang="en" className={`${jakarta.variable} ${jetbrainsMono.variable} ${syne.variable}`} data-theme="dark">
       <body className="font-sans antialiased min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <Providers>
           {children}

@@ -130,14 +130,14 @@ export default function PeriodsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-black text-white">Reports &amp; Periods</h1>
+          <h1 className="text-2xl font-normal text-white">Reports &amp; Periods</h1>
           <p className="text-sm text-slate-400 mt-0.5">
             Manage billing periods and submit for approval
           </p>
         </div>
         <button
           onClick={() => setShowDialog(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" />
           Create Period
@@ -164,7 +164,7 @@ export default function PeriodsPage() {
                   (h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider"
+                      className="px-4 py-3 text-xs font-mono text-slate-400 uppercase tracking-wider"
                     >
                       {h}
                     </th>
@@ -181,7 +181,7 @@ export default function PeriodsPage() {
                     key={p.id}
                     className="border-b border-slate-800/50 last:border-0 hover:bg-slate-800/30 transition-colors"
                   >
-                    <td className="px-4 py-3 text-white font-medium">
+                    <td className="px-4 py-3 text-white font-mono">
                       {format(new Date(p.startDate), 'MMM d')} –{' '}
                       {format(new Date(p.endDate), 'MMM d, yyyy')}
                     </td>
@@ -190,7 +190,7 @@ export default function PeriodsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`text-xs font-semibold px-2.5 py-1 rounded ${
+                        className={`text-xs font-mono px-2.5 py-1 rounded ${
                           STATUS_STYLES[p.status]
                         }`}
                       >
@@ -206,7 +206,7 @@ export default function PeriodsPage() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/dashboard/periods/${p.id}`}
-                        className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors text-xs font-medium"
+                        className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors text-xs font-mono"
                       >
                         View
                         <ExternalLink className="w-3 h-3" />
@@ -231,7 +231,7 @@ export default function PeriodsPage() {
           <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">Create Billing Period</h2>
+              <h2 className="text-lg font-normal text-white">Create Billing Period</h2>
               <button
                 onClick={() => setShowDialog(false)}
                 className="text-slate-500 hover:text-white transition-colors p-1 rounded"
@@ -243,7 +243,7 @@ export default function PeriodsPage() {
             <div className="space-y-4">
               {/* Type */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Period type</label>
+                <label className="block text-sm font-mono text-slate-400 mb-1.5">Period type</label>
                 <select
                   value={form.type}
                   onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
@@ -258,7 +258,7 @@ export default function PeriodsPage() {
 
               {/* Start date */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">
+                <label className="block text-sm font-mono text-slate-400 mb-1.5">
                   Start date <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -271,7 +271,7 @@ export default function PeriodsPage() {
 
               {/* End date */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">
+                <label className="block text-sm font-mono text-slate-400 mb-1.5">
                   End date <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -288,14 +288,14 @@ export default function PeriodsPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowDialog(false)}
-                className="flex-1 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                className="flex-1 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 py-2.5 rounded-lg text-sm font-mono transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!form.startDate || !form.endDate || saving}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-mono transition-colors"
               >
                 {saving ? 'Creating…' : 'Create Period'}
               </button>

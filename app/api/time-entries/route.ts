@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const filterUserId = searchParams.get('userId');
     const filterProjectId = searchParams.get('projectId');
+    const filterClientId = searchParams.get('clientId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
         user: { organizationId },
         ...(filterUserId ? { userId: filterUserId } : {}),
         ...(filterProjectId ? { projectId: filterProjectId } : {}),
+        ...(filterClientId ? { project: { clientId: filterClientId } } : {}),
         ...(startDate || endDate
           ? {
               startedAt: {

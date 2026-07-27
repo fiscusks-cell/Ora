@@ -26,7 +26,8 @@
   --error: #dc2626;
   --error-bg: #fef2f2;
   --error-border: #fecaca;
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-jakarta-sans);
+  --font-mono: var(--font-mono-jetbrains);
   --gradient-start: #f8f7f4;
   --gradient-end: #efeee8;
   --skeleton-from: #e5e5e5;
@@ -60,7 +61,8 @@
   --error: #ef4444;
   --error-bg: #450a0a;
   --error-border: #991b1b;
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-jakarta-sans);
+  --font-mono: var(--font-mono-jetbrains);
   --gradient-start: #0f0f0f;
   --gradient-end: #141414;
   --skeleton-from: #1e293b;
@@ -72,6 +74,7 @@ body {
   background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
   color: var(--foreground);
   min-height: 100vh;
+  font-family: var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 @keyframes pulse-dot {
@@ -157,11 +160,11 @@ canvas { display: block; }
 
 /* ── Dashboard background image opacity ───────────────────── */
 .dashboard-bg-image {
-  opacity: 0.12;
+  opacity: 0.15;
 }
 [data-theme="light"] .dashboard-bg-image {
-  opacity: 0.20;
+  opacity: 0.25;
 }
 [data-theme="dark"] .dashboard-bg-image {
-  opacity: 0.10;
+  opacity: 0.20;
 }

@@ -225,6 +225,17 @@ model Invite {
   @@map("invites")
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("password_reset_tokens")
+}
+
 model Invoice {
   id             String   @id @default(cuid())
   organizationId String

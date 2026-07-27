@@ -211,8 +211,8 @@ function downloadCSV(rows: string[][], filename: string) {
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-      <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-xs text-slate-500 font-mono uppercase tracking-wide mb-1">{label}</p>
+      <p className="text-2xl font-mono text-white">{value}</p>
     </div>
   );
 }
@@ -734,12 +734,12 @@ export default function ReportsPage() {
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Reports</h1>
+        <h1 className="text-2xl font-normal text-white">Reports</h1>
         <div className="flex gap-2">
           {activeTab !== 'my_reports' && (
             <button
               onClick={openSaveModal}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-lg border border-slate-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-mono rounded-lg border border-slate-700 transition-colors"
             >
               <Bookmark size={15} />
               Save Report
@@ -749,7 +749,7 @@ export default function ReportsPage() {
             <button
               onClick={activeTab === 'summary' ? exportSummaryCSV : exportDetailedCSV}
               disabled={!data || data.entries.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg border border-slate-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-mono rounded-lg border border-slate-700 transition-colors"
             >
               <Download size={15} />
               Export CSV
@@ -763,7 +763,7 @@ export default function ReportsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-white font-semibold">Save Report</h2>
+              <h2 className="text-white font-normal">Save Report</h2>
               <button onClick={() => setShowSaveModal(false)} className="text-slate-400 hover:text-white">
                 <X size={18} />
               </button>
@@ -790,7 +790,7 @@ export default function ReportsPage() {
               <button
                 onClick={saveReport}
                 disabled={!saveReportName.trim()}
-                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-mono rounded-lg transition-colors"
               >
                 Save
               </button>
@@ -805,7 +805,7 @@ export default function ReportsPage() {
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            className={`px-4 py-1.5 rounded-lg text-sm font-mono transition-colors whitespace-nowrap ${
               activeTab === tab.value
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -823,7 +823,7 @@ export default function ReportsPage() {
             <button
               key={p.value}
               onClick={() => setPreset(p.value)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap border ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-mono transition-colors whitespace-nowrap border ${
                 preset === p.value
                   ? 'bg-slate-700 border-slate-600 text-white'
                   : 'border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
@@ -884,7 +884,7 @@ export default function ReportsPage() {
 
           {!loading && data && data.entries.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-              <p className="text-lg font-medium text-slate-400">No time entries found</p>
+              <p className="text-lg text-slate-400">No time entries found</p>
               <p className="text-sm mt-1">Try adjusting the date range or filters</p>
             </div>
           )}
@@ -893,7 +893,7 @@ export default function ReportsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-6">
               {/* Bar chart */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                <h2 className="text-sm font-semibold text-slate-300 mb-4">Hours by Day</h2>
+                <h2 className="text-sm font-mono text-slate-300 mb-4">Hours by Day</h2>
                 <ResponsiveContainer width="100%" height={350}>
                   <BarChart
                     data={barData}
@@ -936,7 +936,7 @@ export default function ReportsPage() {
 
               {/* Donut chart */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                <h2 className="text-sm font-semibold text-slate-300 mb-4">By Project</h2>
+                <h2 className="text-sm font-mono text-slate-300 mb-4">By Project</h2>
                 <div className="relative" style={{ minHeight: 300 }}>
                   <ResponsiveContainer width="100%" height={350}>
                     <PieChart>
@@ -986,7 +986,7 @@ export default function ReportsPage() {
                     className="absolute top-0 left-0 right-0 flex flex-col items-center justify-center pointer-events-none"
                     style={{ height: 200 }}
                   >
-                    <span className="text-xl font-bold text-white">
+                    <span className="text-xl font-mono text-white">
                       {fmtHours(data.totals.totalSeconds)}
                     </span>
                     <span className="text-xs text-slate-500">total</span>
@@ -1002,11 +1002,11 @@ export default function ReportsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-800">
-                    <th className="text-left px-4 py-3 text-slate-400 font-medium">Project</th>
-                    <th className="text-left px-4 py-3 text-slate-400 font-medium hidden md:table-cell">Client</th>
-                    <th className="text-right px-4 py-3 text-slate-400 font-medium">Duration</th>
-                    <th className="text-right px-4 py-3 text-slate-400 font-medium hidden sm:table-cell">%</th>
-                    <th className="text-right px-4 py-3 text-slate-400 font-medium">Amount</th>
+                    <th className="text-left px-4 py-3 text-slate-400 font-mono">Project</th>
+                    <th className="text-left px-4 py-3 text-slate-400 font-mono hidden md:table-cell">Client</th>
+                    <th className="text-right px-4 py-3 text-slate-400 font-mono">Duration</th>
+                    <th className="text-right px-4 py-3 text-slate-400 font-mono hidden sm:table-cell">%</th>
+                    <th className="text-right px-4 py-3 text-slate-400 font-mono">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1034,7 +1034,7 @@ export default function ReportsPage() {
                                 className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                 style={{ backgroundColor: proj.projectColor }}
                               />
-                              <span className="text-white font-medium truncate">{proj.projectName}</span>
+                              <span className="text-white truncate">{proj.projectName}</span>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-slate-400 hidden md:table-cell">
@@ -1086,13 +1086,13 @@ export default function ReportsPage() {
                     );
                   })}
                   <tr className="bg-slate-800/40">
-                    <td className="px-4 py-3 text-white font-semibold">Total</td>
+                    <td className="px-4 py-3 text-white font-mono">Total</td>
                     <td className="hidden md:table-cell" />
-                    <td className="px-4 py-3 text-right text-white font-semibold font-mono">
+                    <td className="px-4 py-3 text-right text-white font-mono">
                       {fmtHours(data.totals.totalSeconds)}
                     </td>
                     <td className="px-4 py-3 text-right text-slate-400 hidden sm:table-cell">100%</td>
-                    <td className="px-4 py-3 text-right text-white font-semibold">
+                    <td className="px-4 py-3 text-right text-white font-mono">
                       {formatCurrency(data.totals.totalAmount, defaultCurrency)}
                     </td>
                   </tr>
@@ -1127,7 +1127,7 @@ export default function ReportsPage() {
 
           {!loading && data && data.entries.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-              <p className="text-lg font-medium text-slate-400">No entries for this period</p>
+              <p className="text-lg text-slate-400">No entries for this period</p>
               <p className="text-sm mt-1">Try adjusting the date range or filters</p>
             </div>
           )}
@@ -1154,7 +1154,7 @@ export default function ReportsPage() {
                       ).map(([col, label]) => (
                         <th
                           key={col}
-                          className="px-4 py-3 text-left text-slate-400 font-medium cursor-pointer select-none hover:text-slate-200 whitespace-nowrap"
+                          className="px-4 py-3 text-left text-slate-400 font-mono cursor-pointer select-none hover:text-slate-200 whitespace-nowrap"
                           onClick={() => handleSort(col)}
                         >
                           {label}
@@ -1335,7 +1335,7 @@ export default function ReportsPage() {
                               onClick={() =>
                                 void commitEditValue(entry, 'isBillable', entry.isBillable ? 'false' : 'true')
                               }
-                              className={`text-xs font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                              className={`text-xs font-mono px-2 py-0.5 rounded-full transition-colors ${
                                 entry.isBillable
                                   ? 'bg-emerald-900/50 text-emerald-400 hover:bg-emerald-800/50'
                                   : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
@@ -1428,19 +1428,19 @@ export default function ReportsPage() {
               <table className="text-xs min-w-max w-full">
                 <thead>
                   <tr className="border-b border-slate-800">
-                    <th className="px-4 py-3 text-left text-slate-400 font-medium sticky left-0 bg-slate-900 min-w-[140px]">
+                    <th className="px-4 py-3 text-left text-slate-400 font-mono sticky left-0 bg-slate-900 min-w-[140px]">
                       Member
                     </th>
                     {workloadDays.map((day) => (
                       <th
                         key={day.toISOString()}
-                        className="px-2 py-3 text-center text-slate-400 font-medium min-w-[64px]"
+                        className="px-2 py-3 text-center text-slate-400 font-mono min-w-[64px]"
                       >
                         <div>{format(day, 'EEE')}</div>
                         <div className="text-slate-600 font-normal">{format(day, 'MMM d')}</div>
                       </th>
                     ))}
-                    <th className="px-4 py-3 text-right text-slate-400 font-medium whitespace-nowrap">
+                    <th className="px-4 py-3 text-right text-slate-400 font-mono whitespace-nowrap">
                       Total
                     </th>
                   </tr>
@@ -1456,7 +1456,7 @@ export default function ReportsPage() {
                       return (
                         <tr key={member.id} className="border-b border-slate-800/60">
                           <td className="px-4 py-2 sticky left-0 bg-slate-900">
-                            <div className="text-slate-200 font-medium">{member.name ?? member.email}</div>
+                            <div className="text-slate-200">{member.name ?? member.email}</div>
                             <div className="text-slate-600 text-xs">{member.role}</div>
                           </td>
                           {workloadDays.map((day) => {
@@ -1466,14 +1466,14 @@ export default function ReportsPage() {
                             return (
                               <td key={key} className="px-1 py-2 text-center">
                                 <div
-                                  className={`mx-auto rounded-md flex items-center justify-center font-medium h-8 w-14 ${workloadCellClass(secs)}`}
+                                  className={`mx-auto rounded-md flex items-center justify-center font-mono h-8 w-14 ${workloadCellClass(secs)}`}
                                 >
                                   {h > 0 ? `${h.toFixed(1)}h` : '—'}
                                 </div>
                               </td>
                             );
                           })}
-                          <td className="px-4 py-2 text-right text-slate-200 font-mono font-medium">
+                          <td className="px-4 py-2 text-right text-slate-200 font-mono">
                             {fmtHours(rowTotal)}
                           </td>
                         </tr>
@@ -1525,10 +1525,10 @@ export default function ReportsPage() {
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
+                      <p className="text-xs text-slate-500 font-mono uppercase tracking-wide mb-1">
                         Most Profitable Client
                       </p>
-                      <p className="text-xl font-bold text-white truncate">
+                      <p className="text-xl text-white truncate">
                         {mostProfitable?.clientName ?? mostProfitable?.projectName ?? '—'}
                       </p>
                       {mostProfitable && (
@@ -1538,11 +1538,11 @@ export default function ReportsPage() {
                       )}
                     </div>
                     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
+                      <p className="text-xs text-slate-500 font-mono uppercase tracking-wide mb-1">
                         Overall Billable %
                       </p>
                       <p
-                        className={`text-2xl font-bold ${
+                        className={`text-2xl font-mono ${
                           billPct >= 80 ? 'text-emerald-400' : billPct >= 50 ? 'text-amber-400' : 'text-red-400'
                         }`}
                       >
@@ -1550,10 +1550,10 @@ export default function ReportsPage() {
                       </p>
                     </div>
                     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
+                      <p className="text-xs text-slate-500 font-mono uppercase tracking-wide mb-1">
                         Total Revenue
                       </p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-2xl font-mono text-white">
                         {formatCurrency(totalRevenue, defaultCurrency)}
                       </p>
                     </div>
@@ -1563,7 +1563,7 @@ export default function ReportsPage() {
 
               {profitRows.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-                  <p className="text-lg font-medium text-slate-400">No data for this period</p>
+                  <p className="text-lg text-slate-400">No data for this period</p>
                   <p className="text-sm mt-1">Try adjusting the date range or filters</p>
                 </div>
               )}
@@ -1573,12 +1573,12 @@ export default function ReportsPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-slate-800">
-                        <th className="text-left px-4 py-3 text-slate-400 font-medium">Project</th>
-                        <th className="text-left px-4 py-3 text-slate-400 font-medium hidden md:table-cell">Client</th>
-                        <th className="text-right px-4 py-3 text-slate-400 font-medium">Tracked Hours</th>
-                        <th className="text-right px-4 py-3 text-slate-400 font-medium hidden sm:table-cell">Billable Hours</th>
-                        <th className="text-right px-4 py-3 text-slate-400 font-medium">Billable %</th>
-                        <th className="text-right px-4 py-3 text-slate-400 font-medium">Amount</th>
+                        <th className="text-left px-4 py-3 text-slate-400 font-mono">Project</th>
+                        <th className="text-left px-4 py-3 text-slate-400 font-mono hidden md:table-cell">Client</th>
+                        <th className="text-right px-4 py-3 text-slate-400 font-mono">Tracked Hours</th>
+                        <th className="text-right px-4 py-3 text-slate-400 font-mono hidden sm:table-cell">Billable Hours</th>
+                        <th className="text-right px-4 py-3 text-slate-400 font-mono">Billable %</th>
+                        <th className="text-right px-4 py-3 text-slate-400 font-mono">Amount</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1600,7 +1600,7 @@ export default function ReportsPage() {
                                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                   style={{ backgroundColor: proj.projectColor }}
                                 />
-                                <span className="text-white font-medium truncate">{proj.projectName}</span>
+                                <span className="text-white truncate">{proj.projectName}</span>
                               </div>
                             </td>
                             <td className="px-4 py-3 text-slate-400 hidden md:table-cell">
@@ -1612,7 +1612,7 @@ export default function ReportsPage() {
                             <td className="px-4 py-3 text-right text-slate-200 font-mono hidden sm:table-cell">
                               {fmtHours(proj.billableSeconds)}
                             </td>
-                            <td className={`px-4 py-3 text-right font-medium ${billColor}`}>
+                            <td className={`px-4 py-3 text-right font-mono ${billColor}`}>
                               {billPct.toFixed(1)}%
                             </td>
                             <td className="px-4 py-3 text-right text-slate-200">
@@ -1634,18 +1634,18 @@ export default function ReportsPage() {
                           overallPct >= 80 ? 'text-emerald-400' : overallPct >= 50 ? 'text-amber-400' : 'text-red-400';
                         return (
                           <tr className="bg-slate-800/40">
-                            <td className="px-4 py-3 text-white font-semibold">Total</td>
+                            <td className="px-4 py-3 text-white font-mono">Total</td>
                             <td className="hidden md:table-cell" />
-                            <td className="px-4 py-3 text-right text-white font-semibold font-mono">
+                            <td className="px-4 py-3 text-right text-white font-mono">
                               {fmtHours(totalTracked)}
                             </td>
-                            <td className="px-4 py-3 text-right text-white font-semibold font-mono hidden sm:table-cell">
+                            <td className="px-4 py-3 text-right text-white font-mono hidden sm:table-cell">
                               {fmtHours(totalBillable)}
                             </td>
-                            <td className={`px-4 py-3 text-right font-semibold ${billColor}`}>
+                            <td className={`px-4 py-3 text-right font-mono ${billColor}`}>
                               {overallPct.toFixed(1)}%
                             </td>
-                            <td className="px-4 py-3 text-right text-white font-semibold">
+                            <td className="px-4 py-3 text-right text-white font-mono">
                               {formatCurrency(totalRevenue, defaultCurrency)}
                             </td>
                           </tr>
@@ -1666,9 +1666,9 @@ export default function ReportsPage() {
           {savedReports.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-slate-500">
               <Bookmark size={40} className="mb-4 text-slate-700" />
-              <p className="text-lg font-medium text-slate-400">No saved reports yet</p>
+              <p className="text-lg text-slate-400">No saved reports yet</p>
               <p className="text-sm mt-1">
-                Click <span className="text-indigo-400 font-medium">Save Report</span> on any tab to bookmark your filters and date range.
+                Click <span className="text-indigo-400">Save Report</span> on any tab to bookmark your filters and date range.
               </p>
             </div>
           )}
@@ -1687,9 +1687,9 @@ export default function ReportsPage() {
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-white font-semibold truncate">{report.name}</span>
+                    <span className="text-white truncate">{report.name}</span>
                     <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 capitalize ${
+                      className={`text-xs font-mono px-2 py-0.5 rounded-full flex-shrink-0 capitalize ${
                         tabColors[report.tab] ?? 'bg-slate-800 text-slate-400'
                       }`}
                     >
@@ -1709,7 +1709,7 @@ export default function ReportsPage() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => runReport(report)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-mono rounded-lg transition-colors"
                   >
                     <Play size={13} />
                     Run
