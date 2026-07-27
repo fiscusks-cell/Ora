@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { CheckCircle } from 'lucide-react';
 import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { OriginLink } from '@/components/ui/origin-button';
 import { PerspectiveClockHero, FeaturesShowcase } from './components/HeroClient';
 import { OraReveal } from '@/components/ui/ora-reveal';
+import { PricingSection } from '@/components/pricing-section';
 
 const BG = '#F5F4EF';
 
@@ -21,12 +21,6 @@ function OraLogo() {
     </div>
   );
 }
-
-const plans = [
-  { name: 'Free', price: '$0', period: '/month', desc: 'Perfect to get started', features: ['1 user', '3 projects', 'Timer + manual entry', 'Basic reports'], cta: 'Get started', href: '/auth/signup', highlight: false },
-  { name: 'Pro', price: '$12', period: '/month', desc: 'For solo freelancers', features: ['1 user', 'Unlimited projects', 'QuickBooks + Xero', 'PDF reports', 'Priority support'], cta: 'Start Pro', href: '/auth/signup?plan=pro', highlight: true },
-  { name: 'Team', price: '$49', period: '/month', desc: 'For small agencies', features: ['Up to 15 users', 'All Pro features', 'Team workload view', 'Approval workflows', 'Admin controls'], cta: 'Start Team', href: '/auth/signup?plan=team', highlight: false },
-];
 
 export default function LandingPage() {
   return (
@@ -96,48 +90,9 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="py-24 px-6" style={{ background: BG }}>
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black text-slate-900 text-center mb-4">Simple, transparent pricing</h2>
-          <p className="text-slate-500 text-center mb-16 text-lg">Start free. Upgrade when you need integrations or team features.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={['rounded-2xl p-8 flex flex-col bg-white', plan.highlight ? 'ring-2 ring-slate-900' : ''].join(' ')}
-                style={{ border: '1px solid #E2E8F0' }}
-              >
-                <div className="mb-6">
-                  <div className="text-lg font-bold text-slate-900 mb-1">{plan.name}</div>
-                  <div className="flex items-end gap-1 mb-2">
-                    <span className="text-4xl font-black text-slate-900">{plan.price}</span>
-                    <span className="text-slate-400 text-sm pb-1">{plan.period}</span>
-                  </div>
-                  <p className="text-slate-500 text-sm">{plan.desc}</p>
-                </div>
-                <ul className="space-y-3 flex-1 mb-8">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="w-4 h-4 flex-shrink-0 text-emerald-500" />
-                      <span className="text-slate-600 flex items-center gap-1.5">
-                        {f}
-                        {f.toLowerCase().includes('quickbooks') && <SiQuickbooks size={13} className="text-green-600 flex-shrink-0" />}
-                        {f.toLowerCase().includes('xero') && <SiXero size={13} className="text-sky-500 flex-shrink-0" />}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <OriginLink
-                  href={plan.href}
-                  className={['block text-center font-bold py-3 rounded-xl text-sm transition-colors', plan.highlight ? 'bg-slate-900 text-white hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'].join(' ')}
-                >
-                  {plan.cta}
-                </OriginLink>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div style={{ background: BG }}>
+        <PricingSection />
+      </div>
 
       {/* CTA */}
       <section className="py-24 px-6 bg-slate-900">
