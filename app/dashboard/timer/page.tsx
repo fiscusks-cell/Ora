@@ -17,6 +17,12 @@ interface Project {
   color: string;
   hourlyRate: number;
   isBillable: boolean;
+  client: { id: string; name: string } | null;
+}
+
+interface RecentDesc {
+  description: string;
+  projectName: string;
 }
 
 interface TimeEntry {
@@ -61,7 +67,7 @@ export default function TimerPage() {
   const [loading, setLoading] = useState(false);
 
   // Feature 3: recent descriptions dropdown
-  const [recentDescs, setRecentDescs] = useState<string[]>([]);
+  const [recentDescs, setRecentDescs] = useState<RecentDesc[]>([]);
   const [showDescs, setShowDescs] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -239,18 +245,19 @@ export default function TimerPage() {
     }
   };
 
-  // Feature 3: load recent descriptions for selected project on focus
+  // Feature 3: load recent descriptions for the selected project's client on focus
   const handleDescFocus = async () => {
-    if (!projectId) return;
-    const res = await fetch(`/api/time-entries?projectId=${projectId}`);
+    const clientId = selectedProject?.client?.id;
+    if (!clientId) return;
+    const res = await fetch(`/api/time-entries?clientId=${clientId}`);
     if (!res.ok) return;
     const entries: TimeEntry[] = await res.json();
     const seen = new Set<string>();
-    const unique: string[] = [];
+    const unique: RecentDesc[] = [];
     for (const e of entries) {
       if (e.description && !seen.has(e.description) && unique.length < 3) {
         seen.add(e.description);
-        unique.push(e.description);
+        unique.push({ description: e.description, projectName: e.project?.name ?? '' });
       }
     }
     setRecentDescs(unique);
@@ -302,19 +309,22 @@ export default function TimerPage() {
             {showDescs && recentDescs.length > 0 && (
               <div className="absolute z-20 w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden">
                 <p className="text-xs text-slate-500 px-3 pt-2 pb-1">Recent</p>
-                {recentDescs.map((desc, i) => (
+                {recentDescs.map((item, i) => (
                   <button
                     key={i}
                     type="button"
                     onMouseDown={(e) => {
                       e.preventDefault();
-                      setDescription(desc);
-                      handleDescriptionChange(desc);
+                      setDescription(item.description);
+                      handleDescriptionChange(item.description);
                       setShowDescs(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
+                    className="w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors flex items-baseline gap-1.5 min-w-0"
                   >
-                    {desc}
+                    <span className="text-sm text-slate-200 truncate">{item.description}</span>
+                    {item.projectName && (
+                      <span className="text-xs text-slate-500 flex-shrink-0">— {item.projectName}</span>
+                    )}
                   </button>
                 ))}
               </div>
