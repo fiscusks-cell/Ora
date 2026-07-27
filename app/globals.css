@@ -74,6 +74,7 @@ body {
   background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
   color: var(--foreground);
   min-height: 100vh;
+  font-family: var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 @keyframes pulse-dot {

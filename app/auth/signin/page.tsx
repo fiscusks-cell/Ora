@@ -136,7 +136,7 @@ export default function SignInPage() {
       >
         ← Home
       </Link>
-      <SparklesCore className="fixed inset-0 -z-10 pointer-events-none" background="transparent" particleColor="#4f46e5" particleDensity={40} minSize={1} maxSize={2} speed={1.5} />
+      <SparklesCore className="fixed inset-0 z-0 pointer-events-none" background="transparent" particleColor="#4f46e5" particleDensity={40} minSize={1} maxSize={2} speed={1.5} />
       <div className="relative z-10 w-full max-w-sm">
         <OraLogo />
         <div className="bg-white dark:bg-[#212832] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[20px] p-10">
