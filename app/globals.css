@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 body {
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
@@ -11,7 +11,6 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
-
 .pulse-dot {
   animation: pulse-dot 1.5s ease-in-out infinite;
 }
