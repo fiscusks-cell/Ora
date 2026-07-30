@@ -4,7 +4,7 @@ import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { OriginButton } from '@/components/ui/origin-button';
-import { AuthParticles } from '@/components/ui/auth-particles';
+import { AuthVideoBackground } from '@/components/auth/auth-video-background';
 
 const inputCls =
   'w-full bg-[#f7f7f5] dark:bg-[#1a1f26] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[8px] px-3 py-2.5 text-sm text-[#1a1f26] dark:text-white placeholder-[#8b95a1] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
@@ -48,14 +48,14 @@ export default function SignUpPage() {
   const labelCls = 'font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
 
   return (
-    <div className="min-h-screen bg-[#f7f7f5] dark:bg-[#1a1f26] flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <Link
         href="/"
         className="font-mono fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
       >
         ← Home
       </Link>
-      <AuthParticles />
+      <AuthVideoBackground />
       <div className="relative z-10 w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-10">
@@ -68,7 +68,7 @@ export default function SignUpPage() {
           <span className="text-xl tracking-[-0.04em] text-[#1a1f26] dark:text-white">ORA</span>
         </div>
 
-        <div className="bg-white dark:bg-[#212832] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[20px] p-10">
+        <div className="relative z-10 bg-white dark:bg-[#212832] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[20px] p-10">
           <h1 className="text-[36px] leading-tight tracking-[-0.022em] font-normal text-[#1a1f26] dark:text-white text-center mb-2">
             Create account
           </h1>
