@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: 'ORA <noreply@ora.app>',
+          from: 'ORA <noreply@timetrack-ora.com>',
           to: email,
           subject: 'Reset your ORA password',
           html: `
