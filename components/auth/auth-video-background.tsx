@@ -34,24 +34,8 @@ function useThemeAttribute() {
   return theme;
 }
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const read = () => setReduced(query.matches);
-
-    read();
-    query.addEventListener("change", read);
-    return () => query.removeEventListener("change", read);
-  }, []);
-
-  return reduced;
-}
-
 export function AuthVideoBackground() {
   const theme = useThemeAttribute();
-  const reducedMotion = useReducedMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const useLight = HAS_LIGHT_VARIANT && theme === "light";
@@ -66,7 +50,7 @@ export function AuthVideoBackground() {
     el.muted = true;
     el.setAttribute("muted", "");
     el.play().catch((err) => console.log("video autoplay rejected:", err));
-  }, [base, reducedMotion]);
+  }, [base]);
 
   // Abyssal Ink over the clip so white type stays legible; Bone White when the
   // light theme is running the dark clip, which needs a heavier veil.
@@ -77,25 +61,21 @@ export function AuthVideoBackground() {
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {reducedMotion ? (
-        <img src={poster} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <video
-          ref={videoRef}
-          key={base}
-          className="h-full w-full object-cover"
-          poster={poster}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          disablePictureInPicture
-        >
-          <source src={`${base}.webm`} type="video/webm" />
-          <source src={`${base}.mp4`} type="video/mp4" />
-        </video>
-      )}
+      <video
+        ref={videoRef}
+        key={base}
+        className="h-full w-full object-cover"
+        poster={poster}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        disablePictureInPicture
+      >
+        <source src={`${base}.webm`} type="video/webm" />
+        <source src={`${base}.mp4`} type="video/mp4" />
+      </video>
 
       <div className="absolute inset-0" style={{ background: scrim }} />
     </div>
