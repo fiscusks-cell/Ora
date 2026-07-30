@@ -26,7 +26,7 @@
   --error: #dc2626;
   --error-bg: #fef2f2;
   --error-border: #fecaca;
-  --font-mono: var(--font-mono-jetbrains);
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
   --gradient-start: #f8f7f4;
   --gradient-end: #efeee8;
   --skeleton-from: #e5e5e5;
@@ -60,7 +60,7 @@
   --error: #ef4444;
   --error-bg: #450a0a;
   --error-border: #991b1b;
-  --font-mono: var(--font-mono-jetbrains);
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
   --gradient-start: #0f0f0f;
   --gradient-end: #141414;
   --skeleton-from: #1e293b;
@@ -72,7 +72,7 @@ body {
   background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
   color: var(--foreground);
   min-height: 100vh;
-  font-family: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 @keyframes pulse-dot {
