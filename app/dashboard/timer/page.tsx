@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Play, Square, DollarSign, Trash2 } from 'lucide-react';
 import { OriginButton } from '@/components/ui/origin-button';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
+import { useTimerStore } from '@/store/timerStore';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -55,6 +56,11 @@ export default function TimerPage() {
   const [elapsed, setElapsed] = useState(0);
   const [entryId, setEntryId] = useState<string | null>(null);
 
+  // Subscribe to store pause/resume so this page's local interval stays in sync
+  const storePaused = useTimerStore((state) => state.isPaused);
+  const storeStartedAt = useTimerStore((state) => state.startedAt);
+  const wasPausedRef = useRef(false);
+
   const [projectId, setProjectId] = useState('');
   const [description, setDescription] = useState('');
   const [isBillable, setIsBillable] = useState(true);
@@ -97,10 +103,13 @@ export default function TimerPage() {
       const start = new Date(active.startedAt);
       setEntryId(active.id);
       setStartedAt(start);
-      setIsRunning(true);
-      setElapsed(Math.floor((Date.now() - start.getTime()) / 1000));
       setDescription(active.description ?? '');
       setProjectId(active.project?.id ?? '');
+      // Don't override paused state — the idle warning handles it
+      if (!useTimerStore.getState().isPaused) {
+        setIsRunning(true);
+        setElapsed(Math.floor((Date.now() - start.getTime()) / 1000));
+      }
     }
   }, []);
 
@@ -124,6 +133,32 @@ export default function TimerPage() {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [isRunning, startedAt]);
+
+  // ── store pause/resume sync ───────────────────────────────────────────────
+  // When the idle-warning pauses the store, stop this page's local interval too
+
+  useEffect(() => {
+    if (storePaused) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setElapsed(36000);
+      setIsRunning(false);
+      wasPausedRef.current = true;
+    }
+  }, [storePaused]);
+
+  // When the user resumes from the modal, restart local interval with adjusted startedAt
+  useEffect(() => {
+    if (!storePaused && wasPausedRef.current && storeStartedAt) {
+      wasPausedRef.current = false;
+      const start = new Date(storeStartedAt);
+      setStartedAt(start);
+      setIsRunning(true);
+      // The timer tick effect above will restart the interval
+    }
+  }, [storePaused, storeStartedAt]);
 
   // ── start / stop ──────────────────────────────────────────────────────────
 
@@ -276,12 +311,14 @@ export default function TimerPage() {
         <div className="text-center mb-8">
           <span
             className={`font-mono text-7xl md:text-9xl tabular-nums tracking-tight select-none ${
-              isRunning ? 'text-emerald-400' : 'text-slate-600'
+              storePaused ? 'text-amber-400' : isRunning ? 'text-emerald-400' : 'text-slate-600'
             }`}
           >
             {formatElapsed(elapsed)}
           </span>
-          {!isRunning && (
+          {storePaused ? (
+            <p className="text-amber-500/70 text-sm mt-3">Timer paused — respond to the prompt above</p>
+          ) : !isRunning && (
             <p className="text-slate-500 text-sm mt-3">
               Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 font-mono text-xs">Space</kbd> or click Start
             </p>
@@ -367,14 +404,21 @@ export default function TimerPage() {
           {/* Start / Stop button */}
           <OriginButton
             onClick={isRunning ? handleStop : () => handleStart()}
-            disabled={loading}
+            disabled={loading || storePaused}
             className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-mono text-base transition-colors disabled:opacity-50 ${
-              isRunning
+              storePaused
+                ? 'bg-amber-500/20 text-amber-400 cursor-not-allowed'
+                : isRunning
                 ? 'bg-red-600 hover:bg-red-500 text-white'
                 : 'bg-emerald-600 hover:bg-emerald-500 text-white'
             }`}
           >
-            {isRunning ? (
+            {storePaused ? (
+              <>
+                <Square className="w-5 h-5" />
+                Paused
+              </>
+            ) : isRunning ? (
               <>
                 <Square className="w-5 h-5" />
                 Stop Timer

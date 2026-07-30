@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useTimerStore } from '@/store/timerStore';
-import { Play, Square } from 'lucide-react';
+import { Play, Square, PauseCircle } from 'lucide-react';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 
 interface Project {
@@ -15,10 +15,22 @@ interface TimerBarProps {
   projects: Project[];
 }
 
-function useElapsed(startedAt: Date | null, isRunning: boolean): string {
+function useElapsed(
+  startedAt: Date | null,
+  isRunning: boolean,
+  isPaused: boolean,
+  pausedAt: Date | null,
+): string {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
+    // When paused, show frozen elapsed at the exact moment of pause
+    if (isPaused && startedAt && pausedAt) {
+      setElapsed(
+        Math.floor((new Date(pausedAt).getTime() - new Date(startedAt).getTime()) / 1000),
+      );
+      return;
+    }
     if (!isRunning || !startedAt) {
       setElapsed(0);
       return;
@@ -28,7 +40,7 @@ function useElapsed(startedAt: Date | null, isRunning: boolean): string {
     setElapsed(getElapsed());
     const interval = setInterval(() => setElapsed(getElapsed()), 1000);
     return () => clearInterval(interval);
-  }, [isRunning, startedAt]);
+  }, [isRunning, isPaused, startedAt, pausedAt]);
 
   const h = Math.floor(elapsed / 3600);
   const m = Math.floor((elapsed % 3600) / 60);
@@ -40,7 +52,7 @@ export function TimerBar({ projects }: TimerBarProps) {
   const store = useTimerStore();
   const [isBillable, setIsBillable] = useState(true);
   const [loading, setLoading] = useState(false);
-  const elapsed = useElapsed(store.startedAt, store.isRunning);
+  const elapsed = useElapsed(store.startedAt, store.isRunning, store.isPaused, store.pausedAt);
 
   async function handleStart() {
     if (loading) return;
@@ -91,7 +103,7 @@ export function TimerBar({ projects }: TimerBarProps) {
         projects={projects}
         value={store.projectId}
         onChange={(id) => store.setProjectId(id)}
-        disabled={store.isRunning}
+        disabled={store.isRunning || store.isPaused}
         placeholder="Project"
       />
 
@@ -110,41 +122,55 @@ export function TimerBar({ projects }: TimerBarProps) {
           type="checkbox"
           checked={isBillable}
           onChange={(e) => setIsBillable(e.target.checked)}
-          disabled={store.isRunning}
+          disabled={store.isRunning || store.isPaused}
           className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900 disabled:opacity-60"
         />
         Billable
       </label>
 
-      {/* Elapsed display when running */}
-      {store.isRunning && (
-        <span className="font-mono text-sm text-emerald-400 tabular-nums shrink-0">
+      {/* Elapsed display when running or paused */}
+      {(store.isRunning || store.isPaused) && (
+        <span
+          className={`font-mono text-sm tabular-nums shrink-0 ${
+            store.isPaused ? 'text-amber-400' : 'text-emerald-400'
+          }`}
+        >
           {elapsed}
         </span>
       )}
 
-      {/* Start / Stop button */}
-      <button
-        onClick={store.isRunning ? handleStop : handleStart}
-        disabled={loading}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed ${
-          store.isRunning
-            ? 'bg-red-600 hover:bg-red-500 text-white'
-            : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-        }`}
-      >
-        {store.isRunning ? (
-          <>
-            <Square size={14} fill="currentColor" />
-            Stop
-          </>
-        ) : (
-          <>
-            <Play size={14} fill="currentColor" />
-            Start
-          </>
-        )}
-      </button>
+      {/* Start / Stop / Paused button */}
+      {store.isPaused ? (
+        <button
+          disabled
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold shrink-0 opacity-70 cursor-not-allowed text-amber-400 bg-amber-400/10 border border-amber-400/20"
+        >
+          <PauseCircle size={14} />
+          Paused
+        </button>
+      ) : (
+        <button
+          onClick={store.isRunning ? handleStop : handleStart}
+          disabled={loading}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed ${
+            store.isRunning
+              ? 'bg-red-600 hover:bg-red-500 text-white'
+              : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+          }`}
+        >
+          {store.isRunning ? (
+            <>
+              <Square size={14} fill="currentColor" />
+              Stop
+            </>
+          ) : (
+            <>
+              <Play size={14} fill="currentColor" />
+              Start
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }
