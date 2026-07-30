@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Full-viewport looping video background for the signin / signup pages.
@@ -52,10 +52,21 @@ function useReducedMotion() {
 export function AuthVideoBackground() {
   const theme = useThemeAttribute();
   const reducedMotion = useReducedMotion();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const useLight = HAS_LIGHT_VARIANT && theme === "light";
   const base = useLight ? "/auth/auth-bg-light" : "/auth/auth-bg";
   const poster = `${base}-poster.jpg`;
+
+  // Force the DOM content attribute (not just the IDL property) so Safari's
+  // autoplay policy sees muted=true and permits autoplay on the mp4 fallback.
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.muted = true;
+    el.setAttribute("muted", "");
+    el.play().catch((err) => console.log("video autoplay rejected:", err));
+  }, [base, reducedMotion]);
 
   // Abyssal Ink over the clip so white type stays legible; Bone White when the
   // light theme is running the dark clip, which needs a heavier veil.
@@ -70,6 +81,7 @@ export function AuthVideoBackground() {
         <img src={poster} alt="" className="h-full w-full object-cover" />
       ) : (
         <video
+          ref={videoRef}
           key={base}
           className="h-full w-full object-cover"
           poster={poster}
