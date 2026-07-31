@@ -310,7 +310,7 @@ export default function TimerPage() {
         {/* Giant clock display */}
         <div className="text-center mb-8">
           <span
-            className={`font-mono text-7xl md:text-9xl tabular-nums tracking-tight select-none ${
+            className={`text-7xl md:text-9xl tabular-nums tracking-tight select-none ${
               storePaused ? 'text-amber-400' : isRunning ? 'text-emerald-400' : 'text-slate-600'
             }`}
           >
@@ -405,7 +405,7 @@ export default function TimerPage() {
           <OriginButton
             onClick={isRunning ? handleStop : () => handleStart()}
             disabled={loading || storePaused}
-            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-mono text-base transition-colors disabled:opacity-50 ${
+            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-base transition-colors disabled:opacity-50 ${
               storePaused
                 ? 'bg-amber-500/20 text-amber-400 cursor-not-allowed'
                 : isRunning
@@ -436,10 +436,10 @@ export default function TimerPage() {
       {/* ── Today's entries ─────────────────────────────────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-mono text-slate-400 uppercase tracking-wider">
+          <h2 className="text-sm text-slate-400 uppercase tracking-wider">
             Today
           </h2>
-          <span className="text-sm font-mono text-slate-400 tabular-nums">
+          <span className="text-sm text-slate-400 tabular-nums">
             {formatHM(todayTotal)}
           </span>
         </div>
@@ -490,7 +490,7 @@ export default function TimerPage() {
                   </span>
 
                   {/* Duration */}
-                  <span className="text-sm font-mono text-slate-300 tabular-nums flex-shrink-0">
+                  <span className="text-sm text-slate-300 tabular-nums flex-shrink-0">
                     {formatHM(seconds)}
                   </span>
 

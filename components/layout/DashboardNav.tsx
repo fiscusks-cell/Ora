@@ -60,7 +60,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
             <Link
               key={href}
               href={href}
-              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-mono transition-colors', !active && 'hover:bg-white/5')}
+              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors', !active && 'hover:bg-white/5')}
               style={linkStyle(active)}
             >
               <Icon size={18} />
@@ -78,7 +78,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
             <Link
               key={href}
               href={href}
-              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-mono transition-colors', !active && 'hover:bg-white/5')}
+              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors', !active && 'hover:bg-white/5')}
               style={linkStyle(active)}
             >
               <Icon size={18} />
@@ -93,7 +93,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           return (
             <Link
               href="/dashboard/settings?tab=integrations"
-              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-mono transition-colors', !active && 'hover:bg-white/5')}
+              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors', !active && 'hover:bg-white/5')}
               style={linkStyle(active)}
             >
               <Plug size={18} />
@@ -118,7 +118,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
 
         {/* User info */}
         <div className="flex items-center gap-3 px-3 py-2.5">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-mono shrink-0" style={{ background: 'var(--sidebar-active)' }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs shrink-0" style={{ background: 'var(--sidebar-active)' }}>
             {user.name?.[0]?.toUpperCase() ?? '?'}
           </div>
           <div className="overflow-hidden flex-1">

@@ -85,7 +85,7 @@ export default function SettingsPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2.5 text-sm font-mono transition-colors border-b-2 -mb-px ${
+            className={`px-4 py-2.5 text-sm transition-colors border-b-2 -mb-px ${
               tab === t.id ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
@@ -100,7 +100,7 @@ export default function SettingsPage() {
             <h2 className="text-base font-normal text-white mb-4">Personal information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-mono text-slate-400 mb-1.5">Display name</label>
+                <label className="block text-sm text-slate-400 mb-1.5">Display name</label>
                 <input
                   value={name}
                   onChange={e => setName(e.target.value)}
@@ -108,7 +108,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-mono text-slate-400 mb-1.5">Email</label>
+                <label className="block text-sm text-slate-400 mb-1.5">Email</label>
                 <input
                   readOnly
                   value={session?.user?.email || ''}
@@ -119,7 +119,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSaveName}
                 disabled={saving}
-                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
               >
                 {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save changes'}
               </button>
@@ -132,7 +132,7 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <input type="password" placeholder="Current password" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               <input type="password" placeholder="New password (min 8 chars)" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors">Update password</button>
+              <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">Update password</button>
             </div>
           </div>
         </div>
@@ -142,18 +142,18 @@ export default function SettingsPage() {
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
           <h2 className="text-base font-normal text-white mb-4">Organization settings</h2>
           <div>
-            <label className="block text-sm font-mono text-slate-400 mb-1.5">Organization name</label>
+            <label className="block text-sm text-slate-400 mb-1.5">Organization name</label>
             <input className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
-            <label className="block text-sm font-mono text-slate-400 mb-1.5">Default billing period</label>
+            <label className="block text-sm text-slate-400 mb-1.5">Default billing period</label>
             <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500">
               <option value="WEEKLY">Weekly</option>
               <option value="BIWEEKLY">Bi-weekly</option>
               <option value="MONTHLY">Monthly</option>
             </select>
           </div>
-          <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors">Save</button>
+          <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">Save</button>
         </div>
       )}
 
@@ -163,33 +163,33 @@ export default function SettingsPage() {
             <h2 className="text-base font-normal text-white mb-2">Current plan</h2>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-mono text-white">Free</div>
+                <div className="text-2xl text-white">Free</div>
                 <p className="text-sm text-slate-400 mt-1">1 user · 3 projects · no integrations</p>
               </div>
-              <span className="bg-slate-800 text-slate-400 text-xs px-3 py-1.5 rounded-full font-mono">Current plan</span>
+              <span className="bg-slate-800 text-slate-400 text-xs px-3 py-1.5 rounded-full">Current plan</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-slate-900 border border-indigo-800 rounded-xl p-5">
-              <div className="font-mono text-white mb-1">Pro</div>
-              <div className="text-2xl font-mono text-white mb-2">$12<span className="text-sm font-normal text-slate-400">/mo</span></div>
+              <div className="text-white mb-1">Pro</div>
+              <div className="text-2xl text-white mb-2">$12<span className="text-sm font-normal text-slate-400">/mo</span></div>
               <ul className="text-xs text-slate-400 space-y-1 mb-4">
                 <li>✓ Unlimited projects</li>
                 <li>✓ QuickBooks & Xero</li>
                 <li>✓ PDF reports</li>
               </ul>
-              <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-mono py-2 rounded-lg">Upgrade</button>
+              <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm py-2 rounded-lg">Upgrade</button>
             </div>
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-              <div className="font-mono text-white mb-1">Team</div>
-              <div className="text-2xl font-mono text-white mb-2">$49<span className="text-sm font-normal text-slate-400">/mo</span></div>
+              <div className="text-white mb-1">Team</div>
+              <div className="text-2xl text-white mb-2">$49<span className="text-sm font-normal text-slate-400">/mo</span></div>
               <ul className="text-xs text-slate-400 space-y-1 mb-4">
                 <li>✓ Up to 15 users</li>
                 <li>✓ All Pro features</li>
                 <li>✓ Approval workflow</li>
               </ul>
-              <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-mono py-2 rounded-lg">Upgrade</button>
+              <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm py-2 rounded-lg">Upgrade</button>
             </div>
           </div>
 
@@ -227,13 +227,13 @@ export default function SettingsPage() {
                 </div>
               </div>
               {integrations.connectedQBO ? (
-                <span className="flex items-center gap-1.5 text-emerald-400 text-sm font-mono">
+                <span className="flex items-center gap-1.5 text-emerald-400 text-sm">
                   <CheckCircle className="w-4 h-4" /> Connected
                 </span>
               ) : (
                 <a
                   href="/api/integrations/qbo/connect"
-                  className="bg-green-700 hover:bg-green-600 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+                  className="bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
                 >
                   Connect
                 </a>
@@ -272,7 +272,7 @@ export default function SettingsPage() {
               </div>
               {integrations.connectedXero ? (
                 <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1.5 text-emerald-400 text-sm font-mono">
+                  <span className="flex items-center gap-1.5 text-emerald-400 text-sm">
                     <CheckCircle className="w-4 h-4" /> Connected
                   </span>
                   <button
@@ -288,7 +288,7 @@ export default function SettingsPage() {
               ) : (
                 <a
                   href="/api/integrations/xero/connect"
-                  className="bg-sky-700 hover:bg-sky-600 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+                  className="bg-sky-700 hover:bg-sky-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
                 >
                   Connect
                 </a>

@@ -35,7 +35,7 @@ export function TimerDisplay({ seconds: initialSeconds, isRunning, startedAt }: 
   const formatted = [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
 
   return (
-    <div className={`font-mono text-7xl font-bold tabular-nums tracking-tight ${isRunning ? 'text-emerald-400' : 'text-slate-300'}`}>
+    <div className={`text-7xl font-bold tabular-nums tracking-tight ${isRunning ? 'text-emerald-400' : 'text-slate-300'}`}>
       {formatted}
     </div>
   );

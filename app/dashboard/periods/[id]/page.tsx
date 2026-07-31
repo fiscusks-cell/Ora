@@ -133,21 +133,21 @@ export default function PeriodDetailPage() {
               {format(new Date(period.startDate), 'MMM d')} – {format(new Date(period.endDate), 'MMM d, yyyy')}
             </h1>
           </div>
-          <span className={`text-xs font-mono px-3 py-1.5 rounded-full ${s.color}`}>{s.label}</span>
+          <span className={`text-xs px-3 py-1.5 rounded-full ${s.color}`}>{s.label}</span>
         </div>
 
         <div className="flex gap-6">
           <div>
-            <div className="text-xs font-mono text-slate-500">Total Hours</div>
-            <div className="text-xl font-mono text-white tabular-nums">{formatDuration(totalSeconds)}</div>
+            <div className="text-xs text-slate-500">Total Hours</div>
+            <div className="text-xl text-white tabular-nums">{formatDuration(totalSeconds)}</div>
           </div>
           <div>
-            <div className="text-xs font-mono text-slate-500">Billable Amount</div>
-            <div className="text-xl font-mono text-white">{formatCurrency(totalAmount)}</div>
+            <div className="text-xs text-slate-500">Billable Amount</div>
+            <div className="text-xl text-white">{formatCurrency(totalAmount)}</div>
           </div>
           <div>
-            <div className="text-xs font-mono text-slate-500">Entries</div>
-            <div className="text-xl font-mono text-white">{(period.entries ?? []).length}</div>
+            <div className="text-xs text-slate-500">Entries</div>
+            <div className="text-xl text-white">{(period.entries ?? []).length}</div>
           </div>
         </div>
       </div>
@@ -193,7 +193,7 @@ export default function PeriodDetailPage() {
           <OriginButton
             onClick={() => doAction(`/api/periods/${id}/submit`)}
             disabled={actionLoading || (period.entries ?? []).length === 0}
-            className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
           >
             <Clock className="w-4 h-4" /> Submit for Approval
           </OriginButton>
@@ -202,7 +202,7 @@ export default function PeriodDetailPage() {
           <OriginButton
             onClick={() => doAction(`/api/periods/${id}/approve`)}
             disabled={actionLoading}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
           >
             <CheckCircle className="w-4 h-4" /> Approve Period
           </OriginButton>
@@ -212,21 +212,21 @@ export default function PeriodDetailPage() {
             <OriginButton
               onClick={() => doAction(`/api/periods/${id}/publish/qbo`, 'POST')}
               disabled={actionLoading}
-              className="flex items-center gap-2 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
             >
               <SiQuickbooks size={16} /> Publish to QuickBooks
             </OriginButton>
             <OriginButton
               onClick={() => doAction(`/api/periods/${id}/publish/xero`, 'POST')}
               disabled={actionLoading}
-              className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
             >
               <SiXero size={16} /> Publish to Xero
             </OriginButton>
             <OriginButton
               onClick={handleGenerateInvoice}
               disabled={invoiceLoading}
-              className="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
             >
               <Download className="w-4 h-4" /> {invoiceLoading ? 'Generating…' : 'Download Invoice PDF'}
             </OriginButton>
@@ -244,7 +244,7 @@ export default function PeriodDetailPage() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-sm font-mono capitalize transition-colors border-b-2 -mb-px ${
+            className={`px-4 py-2.5 text-sm capitalize transition-colors border-b-2 -mb-px ${
               tab === t ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-white'
             }`}
           >
@@ -266,21 +266,21 @@ export default function PeriodDetailPage() {
                 <div className="flex gap-6 text-right">
                   <div>
                     <div className="text-xs text-slate-500">Hours</div>
-                    <div className="text-sm font-mono text-slate-300">{formatDuration(p.totalSeconds)}</div>
+                    <div className="text-sm text-slate-300">{formatDuration(p.totalSeconds)}</div>
                   </div>
                   <div>
                     <div className="text-xs text-slate-500">Amount</div>
-                    <div className="text-sm font-mono text-white">{formatCurrency(p.billableAmount, p.clientCurrency)}</div>
+                    <div className="text-sm text-white">{formatCurrency(p.billableAmount, p.clientCurrency)}</div>
                   </div>
                 </div>
               </div>
             </div>
           ))}
           <div className="flex justify-between items-center pt-4 border-t border-slate-800">
-            <span className="font-mono text-white">Total</span>
+            <span className="text-white">Total</span>
             <div className="flex gap-6">
-              <span className="font-mono text-white">{formatDuration(totalSeconds)}</span>
-              <span className="font-mono text-white">{formatCurrency(totalAmount)}</span>
+              <span className="text-white">{formatDuration(totalSeconds)}</span>
+              <span className="text-white">{formatCurrency(totalAmount)}</span>
             </div>
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function PeriodDetailPage() {
               <thead>
                 <tr className="border-b border-slate-800">
                   {['Date', 'Description', 'Project', 'User', 'Duration', 'Billable'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-mono text-slate-400 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-4 py-3 text-xs text-slate-400 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -313,7 +313,7 @@ export default function PeriodDetailPage() {
                       ) : '—'}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-400">{e.user.name}</td>
-                    <td className="px-4 py-3 text-sm font-mono text-slate-300 tabular-nums">{formatDuration(e.durationSeconds || 0)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-300 tabular-nums">{formatDuration(e.durationSeconds || 0)}</td>
                     <td className="px-4 py-3 text-sm">
                       {e.isBillable ? <span className="text-emerald-400">Yes</span> : <span className="text-slate-600">No</span>}
                     </td>

@@ -123,7 +123,7 @@ function EntryRow({
       </span>
 
       {/* duration */}
-      <span className="text-sm font-mono tabular-nums w-14 text-right flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
+      <span className="text-sm tabular-nums w-14 text-right flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
         {fmtHM(entry.durationSeconds ?? 0)}
       </span>
 
@@ -310,14 +310,14 @@ export default function EntriesPage() {
               <section key={wk}>
                 {/* Week header */}
                 <div className="flex items-center justify-between py-2 mb-1 border-b-2" style={{ borderColor: 'var(--border)' }}>
-                  <span className="text-sm font-mono uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="text-sm uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                     {label}
                   </span>
                   <div className="flex items-center gap-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {weekAmount > 0 && (
-                      <span className="font-mono tabular-nums">${weekAmount.toFixed(2)}</span>
+                      <span className="tabular-nums">${weekAmount.toFixed(2)}</span>
                     )}
-                    <span className="font-mono tabular-nums">{fmtHM(weekTotal)}</span>
+                    <span className="tabular-nums">{fmtHM(weekTotal)}</span>
                   </div>
                 </div>
 
@@ -329,10 +329,10 @@ export default function EntriesPage() {
                       <div key={dk}>
                         {/* Day sub-header */}
                         <div className="flex items-center justify-between py-1.5 mb-0.5">
-                          <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                             {format(new Date(dk), 'EEEE, MMMM d')}
                           </span>
-                          <span className="text-xs font-mono tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                          <span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>
                             {fmtHM(dayTotal)}
                           </span>
                         </div>

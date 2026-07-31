@@ -102,7 +102,7 @@ export default function ProjectsPage() {
       render: (p) => {
         const currency = getCurrency(p.client?.currency ?? 'USD');
         const decimals = p.client?.currency === 'JPY' ? 0 : 2;
-        return <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>{currency.symbol} {Number(p.hourlyRate).toFixed(decimals)}</span>;
+        return <span className="" style={{ color: 'var(--text-secondary)' }}>{currency.symbol} {Number(p.hourlyRate).toFixed(decimals)}</span>;
       },
     },
     {
@@ -127,7 +127,7 @@ export default function ProjectsPage() {
               {showArchived ? 'Hide archived' : 'Show archived'}
             </button>
           )}
-          <button onClick={openNew} className="flex items-center gap-2 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors" style={{ background: 'var(--accent)' }}>
+          <button onClick={openNew} className="flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg transition-colors" style={{ background: 'var(--accent)' }}>
             <Plus className="w-4 h-4" />
             New Project
           </button>
@@ -163,11 +163,11 @@ export default function ProjectsPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-mono mb-1.5" style={{ color: 'var(--text-secondary)' }}>Project name <span style={{ color: 'var(--error)' }}>*</span></label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Project name <span style={{ color: 'var(--error)' }}>*</span></label>
                 <input type="text" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties} placeholder="e.g. Website Redesign" autoFocus />
               </div>
               <div>
-                <label className="block text-sm font-mono mb-1.5" style={{ color: 'var(--text-secondary)' }}>Client</label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Client</label>
                 <select value={form.clientId} onChange={(e) => setForm((f) => ({ ...f, clientId: e.target.value }))} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text-secondary)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}>
                   <option value="">No client</option>
                   {clients.map((c) => (<option key={c.id} value={c.id}>{c.name} ({getCurrency(c.currency).label})</option>))}
@@ -197,7 +197,7 @@ export default function ProjectsPage() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-mono mb-2" style={{ color: 'var(--text-secondary)' }}>Color</label>
+                <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Color</label>
                 <div className="flex gap-2 flex-wrap">
                   {COLOR_OPTIONS.map((color) => (
                     <button key={color} type="button" onClick={() => setForm((f) => ({ ...f, color }))} className={`w-8 h-8 rounded-full transition-all ${form.color === color ? 'scale-125 ring-2 ring-white ring-offset-2' : 'hover:scale-110'}`} style={{ backgroundColor: color, '--tw-ring-offset-color': 'var(--card)' } as React.CSSProperties} title={color} />
@@ -205,7 +205,7 @@ export default function ProjectsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-mono mb-1.5" style={{ color: 'var(--text-secondary)' }}>Hourly rate{selectedClient ? ` (${getCurrency(selectedClient.currency).label})` : ''}</label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Hourly rate{selectedClient ? ` (${getCurrency(selectedClient.currency).label})` : ''}</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm select-none" style={{ color: 'var(--text-muted)' }}>{rateSymbol}</span>
                   <input type="number" min="0" step="0.01" value={form.hourlyRate} onChange={(e) => setForm((f) => ({ ...f, hourlyRate: e.target.value }))} className="w-full rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties} placeholder="0.00" />
@@ -221,8 +221,8 @@ export default function ProjectsPage() {
               </label>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={closeDialog} className="flex-1 py-2.5 rounded-lg text-sm font-mono transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
-              <button onClick={handleSubmit} disabled={!form.name.trim() || saving} className="flex-1 text-white py-2.5 rounded-lg text-sm font-mono transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)' }}>{saving ? 'Saving...' : editProject ? 'Save changes' : 'Create project'}</button>
+              <button onClick={closeDialog} className="flex-1 py-2.5 rounded-lg text-sm transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
+              <button onClick={handleSubmit} disabled={!form.name.trim() || saving} className="flex-1 text-white py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)' }}>{saving ? 'Saving...' : editProject ? 'Save changes' : 'Create project'}</button>
             </div>
           </div>
         </div>

@@ -62,21 +62,21 @@ export default function InvoicesPage() {
             <thead>
               <tr className="border-b border-slate-800">
                 {['Invoice #', 'Client', 'Period', 'Amount', 'Date', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-mono text-slate-400 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-3 text-xs text-slate-400 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {(invoices ?? []).map(inv => (
                 <tr key={inv.id} className="border-b border-slate-800/50 last:border-0 hover:bg-slate-800/30">
-                  <td className="px-4 py-3 text-sm font-mono text-indigo-400">{inv.invoiceNumber}</td>
+                  <td className="px-4 py-3 text-sm text-indigo-400">{inv.invoiceNumber}</td>
                   <td className="px-4 py-3 text-sm text-slate-200">{inv.clientName}</td>
                   <td className="px-4 py-3 text-sm text-slate-400">
                     {inv.periodStart && inv.periodEnd
                       ? `${format(new Date(inv.periodStart), 'MMM d')} – ${format(new Date(inv.periodEnd), 'MMM d, yyyy')}`
                       : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm font-mono text-white">{formatCurrency(inv.amount, inv.currency)}</td>
+                  <td className="px-4 py-3 text-sm text-white">{formatCurrency(inv.amount, inv.currency)}</td>
                   <td className="px-4 py-3 text-sm text-slate-400">{format(new Date(inv.createdAt), 'MMM d, yyyy')}</td>
                   <td className="px-4 py-3 text-right">
                     <button

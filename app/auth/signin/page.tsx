@@ -9,9 +9,9 @@ import { AuthVideoBackground } from '@/components/auth/auth-video-background';
 
 const inputCls =
   'w-full bg-[#f7f7f5] dark:bg-[#1a1f26] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[8px] px-3 py-2.5 text-sm text-[#1a1f26] dark:text-white placeholder-[#8b95a1] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
-const labelCls = 'font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
+const labelCls = 'text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
 const btnCls =
-  'font-mono w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none';
+  'w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none';
 
 function OraLogo() {
   return (
@@ -60,12 +60,12 @@ function SignInForm() {
       </p>
 
       {justRegistered && !error && (
-        <div className="font-mono bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
+        <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
           Account created — sign in to continue.
         </div>
       )}
       {error && (
-        <div className="font-mono bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
           {error}
         </div>
       )}
@@ -105,7 +105,7 @@ function SignInForm() {
         <div className="flex justify-end -mt-1">
           <Link
             href="/auth/forgot-password"
-            className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+            className="text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
           >
             Forgot password?
           </Link>
@@ -116,7 +116,7 @@ function SignInForm() {
       </form>
 
       <div className="mt-8 pt-6 border-t border-[#d4d6cf] dark:border-[#3a4550] text-center">
-        <span className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1]">
+        <span className="text-[13px] tracking-[-0.02em] text-[#8b95a1]">
           No account?{' '}
           <Link href="/auth/signup" className="text-indigo-400 hover:text-indigo-300 hover:underline">
             Create one free
@@ -132,7 +132,7 @@ export default function SignInPage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <Link
         href="/"
-        className="font-mono fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+        className="fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
       >
         ← Home
       </Link>

@@ -131,7 +131,7 @@ export function TimerBar({ projects }: TimerBarProps) {
       {/* Elapsed display when running or paused */}
       {(store.isRunning || store.isPaused) && (
         <span
-          className={`font-mono text-sm tabular-nums shrink-0 ${
+          className={`text-sm tabular-nums shrink-0 ${
             store.isPaused ? 'text-amber-400' : 'text-emerald-400'
           }`}
         >
