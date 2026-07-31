@@ -17,7 +17,7 @@ function OraLogo() {
         <line x1="16" y1="16" x2="21" y2="19" stroke="#1e293b" strokeWidth="2" strokeLinecap="round" />
         <circle cx="16" cy="16" r="1.5" fill="#FFE600" />
       </svg>
-      <span className="text-2xl font-black tracking-tight text-slate-900" style={{ fontFamily: 'var(--font-syne)' }}>ORA</span>
+      <span className="text-2xl font-black tracking-tight text-slate-900" style={{ fontFamily: 'var(--font-inter)' }}>ORA</span>
     </div>
   );
 }
@@ -46,7 +46,7 @@ export default function LandingPage() {
       {/* Hero heading + CTAs */}
       <section className="py-16" style={{ background: BG }}>
         <div className="text-center px-4 max-w-5xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-tight mb-6" style={{ fontFamily: 'var(--font-syne)' }}>
+          <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-tight mb-6" style={{ fontFamily: 'var(--font-inter)' }}>
             Time tracker for<br />
             <span className="bg-gradient-to-r from-yellow-500 via-amber-400 to-emerald-500 bg-clip-text text-transparent">
               Freelancers and More
