@@ -51,7 +51,6 @@ export function ProjectCombobox({
     [onChange],
   );
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     function handler(e: MouseEvent) {
@@ -64,7 +63,6 @@ export function ProjectCombobox({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  // Focus input when opened
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
@@ -79,7 +77,6 @@ export function ProjectCombobox({
     }
     if (e.key === ' ' && !query) {
       e.preventDefault();
-      // Space with empty query just shows all — already open
     }
   }
 
@@ -90,9 +87,11 @@ export function ProjectCombobox({
         type="button"
         disabled={disabled}
         onClick={openDropdown}
-        className={`flex items-center gap-2 h-9 bg-slate-700 border border-slate-600 rounded-lg px-3 text-sm transition-colors min-w-[160px] max-w-[220px] disabled:opacity-60 disabled:cursor-not-allowed ${
-          open ? 'ring-2 ring-indigo-500 border-indigo-500' : 'hover:border-slate-500'
-        }`}
+        className={`flex items-center gap-2 h-9 rounded-lg px-3 text-sm transition-colors min-w-[160px] max-w-[220px] disabled:opacity-60 disabled:cursor-not-allowed ${open ? 'ring-2 ring-indigo-500' : ''}`}
+        style={{
+          background: 'var(--surface-raised)',
+          border: `1px solid ${open ? '#6366f1' : 'var(--border)'}`,
+        }}
       >
         {selected ? (
           <>
@@ -100,12 +99,13 @@ export function ProjectCombobox({
               className="w-2.5 h-2.5 rounded-full flex-shrink-0"
               style={{ backgroundColor: selected.color }}
             />
-            <span className="text-slate-100 truncate flex-1 text-left font-medium">
+            <span className="truncate flex-1 text-left font-medium" style={{ color: 'var(--text)' }}>
               {selected.name}
             </span>
             {!disabled && (
               <X
-                className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 flex-shrink-0"
+                className="w-3.5 h-3.5 flex-shrink-0"
+                style={{ color: 'var(--text-muted)' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   select(null);
@@ -115,17 +115,25 @@ export function ProjectCombobox({
           </>
         ) : (
           <>
-            <span className="text-slate-500 flex-1 text-left">{placeholder}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+            <span className="flex-1 text-left" style={{ color: 'var(--text-muted)' }}>
+              {placeholder}
+            </span>
+            <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
           </>
         )}
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 top-full mt-1 left-0 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
-          {/* Search input */}
-          <div className="p-2 border-b border-slate-700">
+        <div
+          className="absolute z-50 top-full mt-1 left-0 w-64 rounded-xl shadow-lg overflow-hidden"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+          }}
+        >
+          {/* Search */}
+          <div className="p-2" style={{ borderBottom: '1px solid var(--border)' }}>
             <input
               ref={inputRef}
               type="text"
@@ -133,48 +141,57 @@ export function ProjectCombobox({
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search projects…"
-              className="w-full bg-slate-700 text-slate-100 placeholder-slate-500 text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              style={{
+                background: 'var(--surface-raised)',
+                color: 'var(--text)',
+                border: '1px solid var(--border)',
+              }}
             />
           </div>
 
-          {/* Options list */}
+          {/* Options */}
           <ul className="max-h-56 overflow-y-auto py-1">
-            {/* No project option */}
             <li>
               <button
                 type="button"
                 onClick={() => select(null)}
-                className={`w-full text-left px-3 py-2 flex items-center gap-2.5 hover:bg-slate-700 transition-colors ${
-                  !value ? 'bg-slate-700/50' : ''
-                }`}
+                className={`w-full text-left px-3 py-2 flex items-center gap-2.5 hover:bg-white/5 transition-colors ${!value ? 'bg-white/5' : ''}`}
               >
-                <span className="w-2.5 h-2.5 rounded-full border border-slate-600 flex-shrink-0" />
-                <span className="text-sm text-slate-400 italic">No project</span>
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ border: '1px solid var(--border)' }}
+                />
+                <span className="text-sm italic" style={{ color: 'var(--text-muted)' }}>
+                  No project
+                </span>
               </button>
             </li>
 
             {filtered.length === 0 ? (
-              <li className="px-3 py-4 text-center text-sm text-slate-500">No matches</li>
+              <li className="px-3 py-4 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+                No matches
+              </li>
             ) : (
               filtered.map((p) => (
                 <li key={p.id}>
                   <button
                     type="button"
                     onClick={() => select(p.id)}
-                    className={`w-full text-left px-3 py-2 flex items-start gap-2.5 hover:bg-slate-700 transition-colors ${
-                      value === p.id ? 'bg-slate-700/50' : ''
-                    }`}
+                    className={`w-full text-left px-3 py-2 flex items-start gap-2.5 hover:bg-white/5 transition-colors ${value === p.id ? 'bg-white/5' : ''}`}
                   >
                     <span
                       className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5"
                       style={{ backgroundColor: p.color }}
                     />
                     <span className="flex flex-col min-w-0">
-                      <span className="text-sm font-semibold text-slate-100 truncate">
+                      <span className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
                         {p.name}
                       </span>
                       {p.clientName && (
-                        <span className="text-xs text-slate-500 truncate">{p.clientName}</span>
+                        <span className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                          {p.clientName}
+                        </span>
                       )}
                     </span>
                   </button>

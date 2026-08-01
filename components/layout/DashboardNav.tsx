@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Clock, FolderKanban, Building2,
-  BarChart3, Users, Settings, PieChart, FileText, LogOut, Sun, Moon, Plug
+  BarChart3, Users, Settings, PieChart, FileText, Sun, Moon, Plug, LogOut,
 } from 'lucide-react';
 import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { cn } from '@/lib/utils';
@@ -21,22 +21,27 @@ interface DashboardNavProps {
   user: NavUser;
 }
 
-const navItems = [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NavItem = { href: string; label: string; icon: any };
+
+const topItems: NavItem[] = [
+  { href: '/dashboard/timer', label: 'Time Tracker', icon: Clock },
+];
+
+const analyzeItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/timer', label: 'Timer', icon: Clock },
-  { href: '/dashboard/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/dashboard/clients', label: 'Clients', icon: Building2 },
   { href: '/dashboard/periods', label: 'Reports & Periods', icon: BarChart3 },
   { href: '/dashboard/reports', label: 'Reports', icon: PieChart },
   { href: '/dashboard/invoices', label: 'Invoices', icon: FileText },
 ];
 
-const adminNavItems = [
-  { href: '/dashboard/team', label: 'Team', icon: Users },
+const manageItems: NavItem[] = [
+  { href: '/dashboard/projects', label: 'Projects', icon: FolderKanban },
+  { href: '/dashboard/clients', label: 'Clients', icon: Building2 },
 ];
 
-const bottomNavItems = [
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+const adminItems: NavItem[] = [
+  { href: '/dashboard/team', label: 'Team', icon: Users },
 ];
 
 export function DashboardNav({ user }: DashboardNavProps) {
@@ -44,57 +49,95 @@ export function DashboardNav({ user }: DashboardNavProps) {
   const { theme, toggle } = useTheme();
   const isAdmin = user.role === 'OWNER' || user.role === 'ADMIN';
 
-  const allItems = [...navItems, ...(isAdmin ? adminNavItems : [])];
+  function isActive(href: string) {
+    return href === '/dashboard' ? pathname === href : pathname.startsWith(href);
+  }
 
-  const linkStyle = (active: boolean) => ({
-    background: active ? 'var(--sidebar-active)' : undefined,
-    color: active ? 'var(--sidebar-text)' : 'var(--sidebar-muted)',
-  });
+  function navLink({ href, label, icon: Icon }: NavItem) {
+    const active = isActive(href);
+    return (
+      <Link
+        key={href}
+        href={href}
+        className={cn(
+          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+          !active && 'hover:bg-white/5',
+        )}
+        style={{
+          boxShadow: active ? 'inset 3px 0 0 var(--accent)' : undefined,
+          color: active ? 'var(--sidebar-text)' : 'var(--sidebar-muted)',
+        }}
+      >
+        <Icon size={18} />
+        {label}
+      </Link>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {allItems.map(({ href, label, icon: Icon }) => {
-          const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors', !active && 'hover:bg-white/5')}
-              style={linkStyle(active)}
-            >
-              <Icon size={18} />
-              {label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 px-3 py-4">
+        {/* Ungrouped */}
+        <div className="space-y-1">{topItems.map(navLink)}</div>
+
+        {/* Analyze */}
+        <p
+          className="px-3 pt-6 pb-1 text-[10px] uppercase tracking-[0.1em]"
+          style={{ color: 'var(--sidebar-muted)' }}
+        >
+          Analyze
+        </p>
+        <div className="space-y-1">{analyzeItems.map(navLink)}</div>
+
+        {/* Manage */}
+        <p
+          className="px-3 pt-6 pb-1 text-[10px] uppercase tracking-[0.1em]"
+          style={{ color: 'var(--sidebar-muted)' }}
+        >
+          Manage
+        </p>
+        <div className="space-y-1">
+          {[...manageItems, ...(isAdmin ? adminItems : [])].map(navLink)}
+        </div>
       </nav>
 
       <div className="px-3 py-3 space-y-1" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
         {/* Settings */}
-        {bottomNavItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname.startsWith(href) && !pathname.includes('tab=integrations');
+        {(() => {
+          const active =
+            pathname.startsWith('/dashboard/settings') && !pathname.includes('tab=integrations');
           return (
             <Link
-              key={href}
-              href={href}
-              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors', !active && 'hover:bg-white/5')}
-              style={linkStyle(active)}
+              href="/dashboard/settings"
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+                !active && 'hover:bg-white/5',
+              )}
+              style={{
+                boxShadow: active ? 'inset 3px 0 0 var(--accent)' : undefined,
+                color: active ? 'var(--sidebar-text)' : 'var(--sidebar-muted)',
+              }}
             >
-              <Icon size={18} />
-              {label}
+              <Settings size={18} />
+              Settings
             </Link>
           );
-        })}
+        })()}
 
-        {/* Integrations link with QB + Xero mini-icons */}
+        {/* Integrations */}
         {(() => {
           const active = pathname.includes('tab=integrations');
           return (
             <Link
               href="/dashboard/settings?tab=integrations"
-              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors', !active && 'hover:bg-white/5')}
-              style={linkStyle(active)}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+                !active && 'hover:bg-white/5',
+              )}
+              style={{
+                boxShadow: active ? 'inset 3px 0 0 var(--accent)' : undefined,
+                color: active ? 'var(--sidebar-text)' : 'var(--sidebar-muted)',
+              }}
             >
               <Plug size={18} />
               <span className="flex-1">Integrations</span>
@@ -118,12 +161,19 @@ export function DashboardNav({ user }: DashboardNavProps) {
 
         {/* User info */}
         <div className="flex items-center gap-3 px-3 py-2.5">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs shrink-0" style={{ background: 'var(--sidebar-active)' }}>
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs shrink-0"
+            style={{ background: 'var(--sidebar-active)' }}
+          >
             {user.name?.[0]?.toUpperCase() ?? '?'}
           </div>
           <div className="overflow-hidden flex-1">
-            <p className="text-sm font-medium truncate" style={{ color: 'var(--sidebar-text)' }}>{user.name}</p>
-            <p className="text-xs truncate" style={{ color: 'var(--sidebar-muted)' }}>{user.organizationName}</p>
+            <p className="text-sm font-medium truncate" style={{ color: 'var(--sidebar-text)' }}>
+              {user.name}
+            </p>
+            <p className="text-xs truncate" style={{ color: 'var(--sidebar-muted)' }}>
+              {user.organizationName}
+            </p>
           </div>
         </div>
 
