@@ -42,7 +42,7 @@ export default function InvoicesPage() {
   if (loading) return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-normal text-white">Invoices</h1>

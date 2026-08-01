@@ -275,7 +275,7 @@ export default function EntriesPage() {
     .sort(([a], [b]) => b.localeCompare(a));
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto">
+    <div className="p-6 md:p-8">
       <h1 className="text-2xl font-normal mb-8" style={{ color: 'var(--text)' }}>Time Entries</h1>
 
       {loading ? (

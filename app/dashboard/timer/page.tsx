@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
@@ -302,7 +302,7 @@ export default function TimerPage() {
   const selectedProject = projects.find((p) => p.id === projectId);
 
   return (
-    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-8">
+    <div className="p-6 md:p-8 space-y-8">
       <h1 className="text-2xl font-normal text-white">Timer</h1>
 
       {/* ── Timer card ─────────────────────────────────────────────────── */}

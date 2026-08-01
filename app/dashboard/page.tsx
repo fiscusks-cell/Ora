@@ -167,7 +167,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8">
+    <div className="p-6 md:p-8 space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-normal text-white">
