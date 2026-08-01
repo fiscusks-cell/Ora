@@ -55,7 +55,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
 
       {/* Page content — sits above bg image */}
-      <main className="flex-1 overflow-auto pt-14 md:pt-0 relative z-10" style={{ background: 'transparent' }}>
+      <main className="ora-fade flex-1 overflow-auto pt-14 md:pt-0 relative z-10" style={{ background: 'transparent' }}>
         {children}
       </main>
     </div>

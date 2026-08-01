@@ -129,7 +129,7 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="ora-fade min-h-screen flex items-center justify-center px-4">
       <Link
         href="/"
         className="fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
