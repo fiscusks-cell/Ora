@@ -56,9 +56,9 @@ function StatCard({
           : 'bg-slate-900 border-slate-800'
       }`}
     >
-      <p className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">{label}</p>
+      <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">{label}</p>
       <p
-        className={`text-3xl font-mono tabular-nums ${
+        className={`text-3xl tabular-nums ${
           highlight ? 'text-emerald-400' : 'text-white'
         }`}
       >
@@ -167,7 +167,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8">
+    <div className="p-6 md:p-8 space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-normal text-white">
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
 
       {/* Recent entries */}
       <div>
-        <h2 className="text-sm font-mono text-slate-400 uppercase tracking-wider mb-4">
+        <h2 className="text-sm text-slate-400 uppercase tracking-wider mb-4">
           Recent entries
         </h2>
 
@@ -229,10 +229,10 @@ export default async function DashboardPage() {
                 >
                   {/* Date header */}
                   <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-900/80">
-                    <span className="text-sm font-mono text-slate-300">
+                    <span className="text-sm text-slate-300">
                       {format(new Date(dateKey + 'T12:00:00'), 'EEEE, MMMM d')}
                     </span>
-                    <span className="text-sm font-mono text-slate-400 tabular-nums">
+                    <span className="text-sm text-slate-400 tabular-nums">
                       {formatHM(dayTotal)}
                     </span>
                   </div>
@@ -284,7 +284,7 @@ export default async function DashboardPage() {
                         </span>
 
                         {/* Duration */}
-                        <span className="text-sm font-mono text-slate-300 tabular-nums flex-shrink-0">
+                        <span className="text-sm text-slate-300 tabular-nums flex-shrink-0">
                           {formatHM(entrySeconds)}
                         </span>
 

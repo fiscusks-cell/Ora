@@ -33,14 +33,13 @@ export default function PricingPage() {
           <Link
             href="/auth/signin"
             className="text-[13px] text-[#8b95a1] hover:text-[#1a1f26] transition-colors"
-            style={{ fontFamily: 'var(--font-mono, monospace)' }}
           >
             Sign in
           </Link>
           <Link
             href="/auth/signup"
             className="text-[13px] px-4 py-2 rounded-[8px] text-white transition-colors"
-            style={{ background: '#4f46e5', fontFamily: 'var(--font-mono, monospace)' }}
+            style={{ background: '#4f46e5' }}
           >
             Get started
           </Link>

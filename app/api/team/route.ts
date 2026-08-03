@@ -13,38 +13,55 @@ export async function GET() {
     }
 
     const organizationId = (session.user as { organizationId: string }).organizationId;
-
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
-    const members = await prisma.user.findMany({
-      where: { organizationId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        avatarUrl: true,
-        createdAt: true,
-        timeEntries: {
-          where: {
-            startedAt: { gte: startOfMonth },
-            stoppedAt: { not: null },
+    const [members, invites] = await Promise.all([
+      prisma.user.findMany({
+        where: { organizationId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatarUrl: true,
+          createdAt: true,
+          timeEntries: {
+            where: { startedAt: { gte: startOfMonth }, stoppedAt: { not: null } },
+            select: { durationSeconds: true },
           },
-          select: { durationSeconds: true },
         },
-      },
-      orderBy: { name: 'asc' },
-    });
+        orderBy: { name: 'asc' },
+      }),
+      prisma.invite.findMany({
+        where: { organizationId },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
-    const result = members.map(({ timeEntries, ...member }) => ({
-      ...member,
+    const now = new Date();
+
+    const memberRows = members.map(({ timeEntries, ...m }) => ({
+      kind: 'member' as const,
+      status: 'ACTIVE' as const,
+      ...m,
+      createdAt: m.createdAt.toISOString(),
       hoursThisMonth:
         Math.round(
-          (timeEntries.reduce((sum, e) => sum + (e.durationSeconds ?? 0), 0) / 3600) * 100,
+          (timeEntries.reduce((s, e) => s + (e.durationSeconds ?? 0), 0) / 3600) * 100,
         ) / 100,
     }));
 
-    return NextResponse.json(result);
+    const inviteRows = invites.map((i) => ({
+      kind: 'invite' as const,
+      status: (i.expiresAt > now ? 'PENDING' : 'EXPIRED') as 'PENDING' | 'EXPIRED',
+      id: i.id,
+      email: i.email,
+      role: i.role,
+      expiresAt: i.expiresAt.toISOString(),
+      createdAt: i.createdAt.toISOString(),
+    }));
+
+    return NextResponse.json([...memberRows, ...inviteRows]);
   } catch (err) {
     console.error('[team GET] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

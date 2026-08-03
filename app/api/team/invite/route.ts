@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { Resend } from 'resend';
+import { sendInviteEmail } from '@/lib/send-invite-email';
 
 const schema = z.object({
   email: z.string().email(),
@@ -53,47 +53,30 @@ export async function POST(req: NextRequest) {
       data: { email, organizationId, role: inviteRole, expiresAt },
     });
 
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const resend = new Resend(process.env.RESEND_API_KEY);
-        const org = await prisma.organization.findUnique({ where: { id: organizationId } });
-        const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invite.token}`;
+    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ??
+      process.env.NEXTAUTH_URL ??
+      'http://localhost:3000';
+    const inviteUrl = `${appUrl}/invite/${invite.token}`;
 
-        await resend.emails.send({
-          from: 'ORA <noreply@ora.app>',
-          to: email,
-          subject: `You've been invited to ${org?.name ?? 'an organization'} on ORA`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-              <h2>You've been invited to join ${org?.name ?? 'an organization'} on ORA</h2>
-              <p>Click the link below to accept your invitation. It expires in 7 days.</p>
-              <a href="${inviteUrl}" style="display:inline-block;padding:12px 24px;background:#3730A3;color:#fff;border-radius:6px;text-decoration:none;">
-                Accept Invitation
-              </a>
-              <p style="margin-top:16px;color:#6B7280;font-size:14px;">
-                Or copy this URL: ${inviteUrl}
-              </p>
-            </div>
-          `,
-        });
+    const { error: sendError } = await sendInviteEmail({
+      email,
+      orgName: org?.name ?? 'your organization',
+      inviteUrl,
+    });
 
-        return NextResponse.json({ ok: true, invite });
-      } catch (emailErr) {
-        console.error('[team/invite] failed to send invite email:', emailErr);
-        // Invite was created — return success even if email failed
-        return NextResponse.json({
-          ok: true,
-          invite,
-          warning: 'Invite created but email delivery failed',
-        });
-      }
+    if (sendError) {
+      console.error('[team/invite] Resend error:', sendError);
+      // Roll back — a phantom invite blocks re-sending for 7 days
+      await prisma.invite.delete({ where: { id: invite.id } });
+      return NextResponse.json(
+        { error: 'Failed to send invitation email. Please try again.' },
+        { status: 502 },
+      );
     }
 
-    return NextResponse.json({
-      ok: true,
-      invite,
-      message: 'Invite created (email not sent - no RESEND_API_KEY)',
-    });
+    return NextResponse.json({ ok: true, invite });
   } catch (err) {
     console.error('[team/invite POST] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

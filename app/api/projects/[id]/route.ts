@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/authz';
 import { z } from 'zod';
 
 const updateSchema = z.object({
@@ -17,10 +17,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    const authz = await requireAuth(['OWNER', 'ADMIN']);
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId } = authz;
     const { id } = await params;
 
     const project = await prisma.project.findFirst({ where: { id, organizationId } });
@@ -63,10 +62,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    const authz = await requireAuth(['OWNER', 'ADMIN']);
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId } = authz;
     const { id } = await params;
 
     const project = await prisma.project.findFirst({ where: { id, organizationId } });

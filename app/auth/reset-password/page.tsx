@@ -24,12 +24,12 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="text-center py-2">
-        <p className="font-mono text-[13px] tracking-[-0.02em] text-red-500 mb-6">
+        <p className="text-[13px] tracking-[-0.02em] text-red-500 mb-6">
           Invalid reset link — no token found.
         </p>
         <Link
           href="/auth/forgot-password"
-          className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+          className="text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
         >
           Request a new link
         </Link>
@@ -77,14 +77,14 @@ function ResetPasswordForm() {
         <h2 className="text-[28px] leading-tight tracking-[-0.022em] font-normal text-[#1a1f26] dark:text-white mb-3">
           Password reset
         </h2>
-        <p className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1]">
+        <p className="text-[13px] tracking-[-0.02em] text-[#8b95a1]">
           Redirecting you to sign in…
         </p>
       </div>
     );
   }
 
-  const labelCls = 'font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
+  const labelCls = 'text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
 
   return (
     <>
@@ -96,7 +96,7 @@ function ResetPasswordForm() {
       </p>
 
       {error && (
-        <div className="font-mono bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
           {error}
         </div>
       )}
@@ -155,7 +155,7 @@ function ResetPasswordForm() {
           ].map(({ ok, label }) => (
             <li
               key={label}
-              className={`font-mono flex items-center gap-1.5 text-[12px] tracking-[-0.02em] ${ok ? 'text-emerald-500' : 'text-[#8b95a1]'}`}
+              className={`flex items-center gap-1.5 text-[12px] tracking-[-0.02em] ${ok ? 'text-emerald-500' : 'text-[#8b95a1]'}`}
             >
               <span>{ok ? '✓' : '·'}</span> {label}
             </li>
@@ -165,7 +165,7 @@ function ResetPasswordForm() {
         <OriginButton
           type="submit"
           disabled={loading}
-          className="font-mono w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none"
+          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none"
         >
           {loading ? 'Saving…' : 'Reset password'}
         </OriginButton>
@@ -174,7 +174,7 @@ function ResetPasswordForm() {
       <div className="mt-8 pt-6 border-t border-[#d4d6cf] dark:border-[#3a4550] text-center">
         <Link
           href="/auth/signin"
-          className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+          className="text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
         >
           Back to sign in
         </Link>
@@ -188,7 +188,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-[#f7f7f5] dark:bg-[#1a1f26] flex items-center justify-center px-4">
       <Link
         href="/"
-        className="font-mono fixed top-5 left-5 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+        className="fixed top-5 left-5 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
       >
         ← Home
       </Link>

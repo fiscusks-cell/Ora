@@ -105,7 +105,7 @@ export function IdleTimerWarning() {
             </h3>
             <p className="text-sm mt-1.5 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               Your timer has been paused after 10 hours. The session will auto-stop in{' '}
-              <span className="font-mono font-semibold">{countdown}s</span> if you don&apos;t respond.
+              <span className="font-semibold">{countdown}s</span> if you don&apos;t respond.
             </p>
           </div>
         </div>

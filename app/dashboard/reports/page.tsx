@@ -211,8 +211,8 @@ function downloadCSV(rows: string[][], filename: string) {
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-      <p className="text-xs text-slate-500 font-mono uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-2xl font-mono text-white">{value}</p>
+      <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">{label}</p>
+      <p className="text-2xl text-white">{value}</p>
     </div>
   );
 }
@@ -731,7 +731,7 @@ export default function ReportsPage() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-normal text-white">Reports</h1>
@@ -739,7 +739,7 @@ export default function ReportsPage() {
           {activeTab !== 'my_reports' && (
             <button
               onClick={openSaveModal}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-mono rounded-lg border border-slate-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm rounded-lg border border-slate-700 transition-colors"
             >
               <Bookmark size={15} />
               Save Report
@@ -749,7 +749,7 @@ export default function ReportsPage() {
             <button
               onClick={activeTab === 'summary' ? exportSummaryCSV : exportDetailedCSV}
               disabled={!data || data.entries.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-mono rounded-lg border border-slate-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded-lg border border-slate-700 transition-colors"
             >
               <Download size={15} />
               Export CSV
@@ -790,7 +790,7 @@ export default function ReportsPage() {
               <button
                 onClick={saveReport}
                 disabled={!saveReportName.trim()}
-                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-mono rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
               >
                 Save
               </button>
@@ -805,7 +805,7 @@ export default function ReportsPage() {
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-mono transition-colors whitespace-nowrap ${
+            className={`px-4 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap ${
               activeTab === tab.value
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -823,7 +823,7 @@ export default function ReportsPage() {
             <button
               key={p.value}
               onClick={() => setPreset(p.value)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-mono transition-colors whitespace-nowrap border ${
+              className={`px-3 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap border ${
                 preset === p.value
                   ? 'bg-slate-700 border-slate-600 text-white'
                   : 'border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
@@ -893,7 +893,7 @@ export default function ReportsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-6">
               {/* Bar chart */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                <h2 className="text-sm font-mono text-slate-300 mb-4">Hours by Day</h2>
+                <h2 className="text-sm text-slate-300 mb-4">Hours by Day</h2>
                 <ResponsiveContainer width="100%" height={350}>
                   <BarChart
                     data={barData}
@@ -936,7 +936,7 @@ export default function ReportsPage() {
 
               {/* Donut chart */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                <h2 className="text-sm font-mono text-slate-300 mb-4">By Project</h2>
+                <h2 className="text-sm text-slate-300 mb-4">By Project</h2>
                 <div className="relative" style={{ minHeight: 300 }}>
                   <ResponsiveContainer width="100%" height={350}>
                     <PieChart>
@@ -986,7 +986,7 @@ export default function ReportsPage() {
                     className="absolute top-0 left-0 right-0 flex flex-col items-center justify-center pointer-events-none"
                     style={{ height: 200 }}
                   >
-                    <span className="text-xl font-mono text-white">
+                    <span className="text-xl text-white">
                       {fmtHours(data.totals.totalSeconds)}
                     </span>
                     <span className="text-xs text-slate-500">total</span>
@@ -1002,11 +1002,11 @@ export default function ReportsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-800">
-                    <th className="text-left px-4 py-3 text-slate-400 font-mono">Project</th>
-                    <th className="text-left px-4 py-3 text-slate-400 font-mono hidden md:table-cell">Client</th>
-                    <th className="text-right px-4 py-3 text-slate-400 font-mono">Duration</th>
-                    <th className="text-right px-4 py-3 text-slate-400 font-mono hidden sm:table-cell">%</th>
-                    <th className="text-right px-4 py-3 text-slate-400 font-mono">Amount</th>
+                    <th className="text-left px-4 py-3 text-slate-400">Project</th>
+                    <th className="text-left px-4 py-3 text-slate-400 hidden md:table-cell">Client</th>
+                    <th className="text-right px-4 py-3 text-slate-400">Duration</th>
+                    <th className="text-right px-4 py-3 text-slate-400 hidden sm:table-cell">%</th>
+                    <th className="text-right px-4 py-3 text-slate-400">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1040,7 +1040,7 @@ export default function ReportsPage() {
                           <td className="px-4 py-3 text-slate-400 hidden md:table-cell">
                             {proj.clientName ?? <span className="text-slate-600">—</span>}
                           </td>
-                          <td className="px-4 py-3 text-right text-slate-200 font-mono">
+                          <td className="px-4 py-3 text-right text-slate-200">
                             {fmtHours(proj.totalSeconds)}
                           </td>
                           <td className="px-4 py-3 text-right text-slate-400 hidden sm:table-cell">
@@ -1066,7 +1066,7 @@ export default function ReportsPage() {
                                   <span className="text-slate-400">{member.userName}</span>
                                 </td>
                                 <td className="px-4 py-2.5 hidden md:table-cell" />
-                                <td className="px-4 py-2.5 text-right text-slate-400 font-mono">
+                                <td className="px-4 py-2.5 text-right text-slate-400">
                                   {fmtHours(member.totalSeconds)}
                                 </td>
                                 <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">
@@ -1086,13 +1086,13 @@ export default function ReportsPage() {
                     );
                   })}
                   <tr className="bg-slate-800/40">
-                    <td className="px-4 py-3 text-white font-mono">Total</td>
+                    <td className="px-4 py-3 text-white">Total</td>
                     <td className="hidden md:table-cell" />
-                    <td className="px-4 py-3 text-right text-white font-mono">
+                    <td className="px-4 py-3 text-right text-white">
                       {fmtHours(data.totals.totalSeconds)}
                     </td>
                     <td className="px-4 py-3 text-right text-slate-400 hidden sm:table-cell">100%</td>
-                    <td className="px-4 py-3 text-right text-white font-mono">
+                    <td className="px-4 py-3 text-right text-white">
                       {formatCurrency(data.totals.totalAmount, defaultCurrency)}
                     </td>
                   </tr>
@@ -1154,7 +1154,7 @@ export default function ReportsPage() {
                       ).map(([col, label]) => (
                         <th
                           key={col}
-                          className="px-4 py-3 text-left text-slate-400 font-mono cursor-pointer select-none hover:text-slate-200 whitespace-nowrap"
+                          className="px-4 py-3 text-left text-slate-400 cursor-pointer select-none hover:text-slate-200 whitespace-nowrap"
                           onClick={() => handleSort(col)}
                         >
                           {label}
@@ -1258,7 +1258,7 @@ export default function ReportsPage() {
 
                           {/* Start */}
                           <td
-                            className="px-4 py-3 font-mono whitespace-nowrap cursor-pointer"
+                            className="px-4 py-3 whitespace-nowrap cursor-pointer"
                             onClick={() => startEdit(entry.id, 'startedAt', fmtTime(entry.startedAt))}
                           >
                             {editingCell?.entryId === entry.id && editingCell.field === 'startedAt' ? (
@@ -1277,7 +1277,7 @@ export default function ReportsPage() {
 
                           {/* End */}
                           <td
-                            className="px-4 py-3 font-mono whitespace-nowrap cursor-pointer"
+                            className="px-4 py-3 whitespace-nowrap cursor-pointer"
                             onClick={() =>
                               startEdit(entry.id, 'stoppedAt', entry.stoppedAt ? fmtTime(entry.stoppedAt) : '')
                             }
@@ -1300,7 +1300,7 @@ export default function ReportsPage() {
 
                           {/* Duration */}
                           <td
-                            className="px-4 py-3 font-mono whitespace-nowrap cursor-pointer"
+                            className="px-4 py-3 whitespace-nowrap cursor-pointer"
                             onClick={() => {
                               const secs = entry.durationSeconds ?? 0;
                               const h = Math.floor(secs / 3600);
@@ -1335,7 +1335,7 @@ export default function ReportsPage() {
                               onClick={() =>
                                 void commitEditValue(entry, 'isBillable', entry.isBillable ? 'false' : 'true')
                               }
-                              className={`text-xs font-mono px-2 py-0.5 rounded-full transition-colors ${
+                              className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
                                 entry.isBillable
                                   ? 'bg-emerald-900/50 text-emerald-400 hover:bg-emerald-800/50'
                                   : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
@@ -1428,19 +1428,19 @@ export default function ReportsPage() {
               <table className="text-xs min-w-max w-full">
                 <thead>
                   <tr className="border-b border-slate-800">
-                    <th className="px-4 py-3 text-left text-slate-400 font-mono sticky left-0 bg-slate-900 min-w-[140px]">
+                    <th className="px-4 py-3 text-left text-slate-400 sticky left-0 bg-slate-900 min-w-[140px]">
                       Member
                     </th>
                     {workloadDays.map((day) => (
                       <th
                         key={day.toISOString()}
-                        className="px-2 py-3 text-center text-slate-400 font-mono min-w-[64px]"
+                        className="px-2 py-3 text-center text-slate-400 min-w-[64px]"
                       >
                         <div>{format(day, 'EEE')}</div>
                         <div className="text-slate-600 font-normal">{format(day, 'MMM d')}</div>
                       </th>
                     ))}
-                    <th className="px-4 py-3 text-right text-slate-400 font-mono whitespace-nowrap">
+                    <th className="px-4 py-3 text-right text-slate-400 whitespace-nowrap">
                       Total
                     </th>
                   </tr>
@@ -1466,14 +1466,14 @@ export default function ReportsPage() {
                             return (
                               <td key={key} className="px-1 py-2 text-center">
                                 <div
-                                  className={`mx-auto rounded-md flex items-center justify-center font-mono h-8 w-14 ${workloadCellClass(secs)}`}
+                                  className={`mx-auto rounded-md flex items-center justify-center h-8 w-14 ${workloadCellClass(secs)}`}
                                 >
                                   {h > 0 ? `${h.toFixed(1)}h` : '—'}
                                 </div>
                               </td>
                             );
                           })}
-                          <td className="px-4 py-2 text-right text-slate-200 font-mono">
+                          <td className="px-4 py-2 text-right text-slate-200">
                             {fmtHours(rowTotal)}
                           </td>
                         </tr>
@@ -1525,7 +1525,7 @@ export default function ReportsPage() {
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                      <p className="text-xs text-slate-500 font-mono uppercase tracking-wide mb-1">
+                      <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">
                         Most Profitable Client
                       </p>
                       <p className="text-xl text-white truncate">
@@ -1538,11 +1538,11 @@ export default function ReportsPage() {
                       )}
                     </div>
                     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                      <p className="text-xs text-slate-500 font-mono uppercase tracking-wide mb-1">
+                      <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">
                         Overall Billable %
                       </p>
                       <p
-                        className={`text-2xl font-mono ${
+                        className={`text-2xl ${
                           billPct >= 80 ? 'text-emerald-400' : billPct >= 50 ? 'text-amber-400' : 'text-red-400'
                         }`}
                       >
@@ -1550,10 +1550,10 @@ export default function ReportsPage() {
                       </p>
                     </div>
                     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                      <p className="text-xs text-slate-500 font-mono uppercase tracking-wide mb-1">
+                      <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">
                         Total Revenue
                       </p>
-                      <p className="text-2xl font-mono text-white">
+                      <p className="text-2xl text-white">
                         {formatCurrency(totalRevenue, defaultCurrency)}
                       </p>
                     </div>
@@ -1573,12 +1573,12 @@ export default function ReportsPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-slate-800">
-                        <th className="text-left px-4 py-3 text-slate-400 font-mono">Project</th>
-                        <th className="text-left px-4 py-3 text-slate-400 font-mono hidden md:table-cell">Client</th>
-                        <th className="text-right px-4 py-3 text-slate-400 font-mono">Tracked Hours</th>
-                        <th className="text-right px-4 py-3 text-slate-400 font-mono hidden sm:table-cell">Billable Hours</th>
-                        <th className="text-right px-4 py-3 text-slate-400 font-mono">Billable %</th>
-                        <th className="text-right px-4 py-3 text-slate-400 font-mono">Amount</th>
+                        <th className="text-left px-4 py-3 text-slate-400">Project</th>
+                        <th className="text-left px-4 py-3 text-slate-400 hidden md:table-cell">Client</th>
+                        <th className="text-right px-4 py-3 text-slate-400">Tracked Hours</th>
+                        <th className="text-right px-4 py-3 text-slate-400 hidden sm:table-cell">Billable Hours</th>
+                        <th className="text-right px-4 py-3 text-slate-400">Billable %</th>
+                        <th className="text-right px-4 py-3 text-slate-400">Amount</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1606,13 +1606,13 @@ export default function ReportsPage() {
                             <td className="px-4 py-3 text-slate-400 hidden md:table-cell">
                               {proj.clientName ?? <span className="text-slate-600">—</span>}
                             </td>
-                            <td className="px-4 py-3 text-right text-slate-200 font-mono">
+                            <td className="px-4 py-3 text-right text-slate-200">
                               {fmtHours(proj.totalSeconds)}
                             </td>
-                            <td className="px-4 py-3 text-right text-slate-200 font-mono hidden sm:table-cell">
+                            <td className="px-4 py-3 text-right text-slate-200 hidden sm:table-cell">
                               {fmtHours(proj.billableSeconds)}
                             </td>
-                            <td className={`px-4 py-3 text-right font-mono ${billColor}`}>
+                            <td className={`px-4 py-3 text-right ${billColor}`}>
                               {billPct.toFixed(1)}%
                             </td>
                             <td className="px-4 py-3 text-right text-slate-200">
@@ -1634,18 +1634,18 @@ export default function ReportsPage() {
                           overallPct >= 80 ? 'text-emerald-400' : overallPct >= 50 ? 'text-amber-400' : 'text-red-400';
                         return (
                           <tr className="bg-slate-800/40">
-                            <td className="px-4 py-3 text-white font-mono">Total</td>
+                            <td className="px-4 py-3 text-white">Total</td>
                             <td className="hidden md:table-cell" />
-                            <td className="px-4 py-3 text-right text-white font-mono">
+                            <td className="px-4 py-3 text-right text-white">
                               {fmtHours(totalTracked)}
                             </td>
-                            <td className="px-4 py-3 text-right text-white font-mono hidden sm:table-cell">
+                            <td className="px-4 py-3 text-right text-white hidden sm:table-cell">
                               {fmtHours(totalBillable)}
                             </td>
-                            <td className={`px-4 py-3 text-right font-mono ${billColor}`}>
+                            <td className={`px-4 py-3 text-right ${billColor}`}>
                               {overallPct.toFixed(1)}%
                             </td>
-                            <td className="px-4 py-3 text-right text-white font-mono">
+                            <td className="px-4 py-3 text-right text-white">
                               {formatCurrency(totalRevenue, defaultCurrency)}
                             </td>
                           </tr>
@@ -1689,7 +1689,7 @@ export default function ReportsPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-white truncate">{report.name}</span>
                     <span
-                      className={`text-xs font-mono px-2 py-0.5 rounded-full flex-shrink-0 capitalize ${
+                      className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 capitalize ${
                         tabColors[report.tab] ?? 'bg-slate-800 text-slate-400'
                       }`}
                     >
@@ -1709,7 +1709,7 @@ export default function ReportsPage() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => runReport(report)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-mono rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors"
                   >
                     <Play size={13} />
                     Run

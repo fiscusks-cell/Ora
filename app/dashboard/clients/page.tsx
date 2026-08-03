@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { Plus, Pencil, Trash2, X, Circle } from 'lucide-react';
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/utils';
 import { DataTable, StatusBadge, Column } from '@/components/ui/data-table';
@@ -24,6 +25,9 @@ interface FormState {
 const DEFAULT_FORM: FormState = { name: '', email: '', currency: DEFAULT_CURRENCY };
 
 export default function ClientsPage() {
+  const { data: session } = useSession();
+  const isAdmin = ['OWNER', 'ADMIN'].includes((session?.user as { role?: string })?.role ?? '');
+
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
@@ -86,7 +90,7 @@ export default function ClientsPage() {
       key: 'currency',
       header: 'Currency',
       render: (c) => (
-        <span className="inline-flex items-center text-xs font-mono px-2 py-0.5 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+        <span className="inline-flex items-center text-xs px-2 py-0.5 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
           {c.currency}
         </span>
       ),
@@ -115,7 +119,7 @@ export default function ClientsPage() {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto">
+    <div className="p-6 md:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-normal" style={{ color: 'var(--text)' }}>Clients</h1>
@@ -123,7 +127,7 @@ export default function ClientsPage() {
         </div>
         <button
           onClick={openNew}
-          className="flex items-center gap-2 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg transition-colors"
           style={{ background: 'var(--accent)' }}
         >
           <Plus className="w-4 h-4" />
@@ -138,16 +142,18 @@ export default function ClientsPage() {
         searchPlaceholder="Search by name or email..."
         loading={loading}
         emptyMessage="No clients yet. Add your first client to get started."
-        actions={(c) => (
-          <div className="flex items-center gap-1 justify-end">
-            <button onClick={() => openEdit(c)} className="p-1.5 transition-colors rounded" style={{ color: 'var(--text-muted)' }} title="Edit client">
-              <Pencil className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={() => handleDelete(c.id, c.name)} className="p-1.5 transition-colors rounded hover:text-red-400" style={{ color: 'var(--text-muted)' }} title="Delete client">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
+        actions={(c) =>
+          isAdmin ? (
+            <div className="flex items-center gap-1 justify-end">
+              <button onClick={() => openEdit(c)} className="p-1.5 transition-colors rounded" style={{ color: 'var(--text-muted)' }} title="Edit client">
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => handleDelete(c.id, c.name)} className="p-1.5 transition-colors rounded hover:text-red-400" style={{ color: 'var(--text-muted)' }} title="Delete client">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : null
+        }
       />
 
       {showDialog && (
@@ -159,23 +165,23 @@ export default function ClientsPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-mono mb-1.5" style={{ color: 'var(--text-secondary)' }}>Name <span style={{ color: 'var(--error)' }}>*</span></label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Name <span style={{ color: 'var(--error)' }}>*</span></label>
                 <input type="text" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties} placeholder="e.g. Acme Corp" autoFocus />
               </div>
               <div>
-                <label className="block text-sm font-mono mb-1.5" style={{ color: 'var(--text-secondary)' }}>Email</label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Email</label>
                 <input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties} placeholder="billing@example.com (optional)" />
               </div>
               <div>
-                <label className="block text-sm font-mono mb-1.5" style={{ color: 'var(--text-secondary)' }}>Currency</label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Currency</label>
                 <select value={form.currency} onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text-secondary)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}>
                   {CURRENCIES.map((c) => (<option key={c.code} value={c.code}>{c.label}</option>))}
                 </select>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={closeDialog} className="flex-1 py-2.5 rounded-lg text-sm font-mono transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
-              <button onClick={handleSubmit} disabled={!form.name.trim() || saving} className="flex-1 text-white py-2.5 rounded-lg text-sm font-mono transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)' }}>{saving ? 'Saving...' : editClient ? 'Save changes' : 'Create client'}</button>
+              <button onClick={closeDialog} className="flex-1 py-2.5 rounded-lg text-sm transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
+              <button onClick={handleSubmit} disabled={!form.name.trim() || saving} className="flex-1 text-white py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)' }}>{saving ? 'Saving...' : editClient ? 'Save changes' : 'Create client'}</button>
             </div>
           </div>
         </div>

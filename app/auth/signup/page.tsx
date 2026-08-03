@@ -9,7 +9,7 @@ import { AuthVideoBackground } from '@/components/auth/auth-video-background';
 const inputCls =
   'w-full bg-[#f7f7f5] dark:bg-[#1a1f26] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[8px] px-3 py-2.5 text-sm text-[#1a1f26] dark:text-white placeholder-[#8b95a1] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
 const btnCls =
-  'font-mono w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none';
+  'w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none';
 
 export default function SignUpPage() {
   const [form, setForm] = useState({ name: '', orgName: '', email: '', password: '' });
@@ -45,13 +45,13 @@ export default function SignUpPage() {
     }
   }
 
-  const labelCls = 'font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
+  const labelCls = 'text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
+    <div className="ora-fade min-h-screen flex items-center justify-center px-4 py-8">
       <Link
         href="/"
-        className="font-mono fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+        className="fixed top-5 left-5 z-20 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
       >
         ← Home
       </Link>
@@ -77,7 +77,7 @@ export default function SignUpPage() {
           </p>
 
           {error && (
-            <div className="font-mono bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
+            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
               {error}
             </div>
           )}
@@ -143,7 +143,7 @@ export default function SignUpPage() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-[#d4d6cf] dark:border-[#3a4550] text-center">
-            <span className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1]">
+            <span className="text-[13px] tracking-[-0.02em] text-[#8b95a1]">
               Already have an account?{' '}
               <Link href="/auth/signin" className="text-indigo-400 hover:text-indigo-300 hover:underline">
                 Sign in

@@ -29,7 +29,7 @@ export function Sidebar({ user }: SidebarProps) {
       {/* User footer */}
       <div className="px-4 py-4 border-t border-slate-800">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 rounded-full bg-indigo-700 flex items-center justify-center text-white text-sm font-mono shrink-0">
+          <div className="w-8 h-8 rounded-full bg-indigo-700 flex items-center justify-center text-white text-sm shrink-0">
             {user.name?.[0]?.toUpperCase() ?? '?'}
           </div>
           <div className="overflow-hidden">

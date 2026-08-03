@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-[#f7f7f5] dark:bg-[#1a1f26] flex items-center justify-center px-4">
       <Link
         href="/"
-        className="font-mono fixed top-5 left-5 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+        className="fixed top-5 left-5 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
       >
         ← Home
       </Link>
@@ -67,12 +67,12 @@ export default function ForgotPasswordPage() {
                 If an account exists for{' '}
                 <span className="text-[#1a1f26] dark:text-white">{email}</span>, we sent a reset link. Check your inbox and spam folder.
               </p>
-              <p className="font-mono text-[12px] tracking-[-0.02em] text-[#8b95a1] mb-8">
+              <p className="text-[12px] tracking-[-0.02em] text-[#8b95a1] mb-8">
                 The link expires in 1 hour.
               </p>
               <Link
                 href="/auth/signin"
-                className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+                className="text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
               >
                 Back to sign in
               </Link>
@@ -87,14 +87,14 @@ export default function ForgotPasswordPage() {
               </p>
 
               {error && (
-                <div className="font-mono bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
+                <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
                   {error}
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2">
+                  <label className="text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2">
                     Email
                   </label>
                   <input
@@ -110,7 +110,7 @@ export default function ForgotPasswordPage() {
                 <OriginButton
                   type="submit"
                   disabled={loading}
-                  className="font-mono w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none"
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none"
                 >
                   {loading ? 'Sending…' : 'Send reset link'}
                 </OriginButton>
@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
               <div className="mt-8 pt-6 border-t border-[#d4d6cf] dark:border-[#3a4550] text-center">
                 <Link
                   href="/auth/signin"
-                  className="font-mono text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
+                  className="text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
                 >
                   Back to sign in
                 </Link>
