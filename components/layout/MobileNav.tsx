@@ -12,6 +12,7 @@ interface MobileNavProps {
     email: string;
     role: string;
     organizationName: string;
+    image?: string | null;
   };
 }
 

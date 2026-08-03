@@ -1,10 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
 import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { PLANS, type PlanKey } from '@/lib/plans';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 type Tab = 'profile' | 'organization' | 'billing' | 'integrations';
 
@@ -34,6 +35,13 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [org, setOrg] = useState<OrgInfo | null>(null);
 
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (session?.user?.name) setName(session.user.name);
   }, [session?.user?.name]);
@@ -44,6 +52,17 @@ export default function SettingsPage() {
       .then((d) => setOrg(d))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetch('/api/user/avatar')
+      .then((r) => r.json())
+      .then((d) => setAvatarUrl(d.url ?? null))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
+  }, [previewUrl]);
 
   useEffect(() => {
     fetch('/api/integrations/qbo/status')
@@ -67,6 +86,61 @@ export default function SettingsPage() {
       setXeroMsg({ ok: false, text: msg ? `Xero connection failed: ${msg}` : 'Xero connection failed. Please try again.' });
     }
   }, [searchParams]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setAvatarError('Only JPEG, PNG, or WebP images are allowed.');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError('Image must be under 2 MB.');
+      return;
+    }
+    setAvatarError('');
+    setPendingFile(file);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleCancelPending = () => {
+    setPendingFile(null);
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
+    setAvatarError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSaveAvatar = async () => {
+    if (!pendingFile) return;
+    setAvatarSaving(true);
+    setAvatarError('');
+    try {
+      const fd = new FormData();
+      fd.append('avatar', pendingFile);
+      const res = await fetch('/api/user/avatar', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) { setAvatarError(data.error ?? 'Upload failed'); return; }
+      setAvatarUrl(data.url);
+      setPendingFile(null);
+      if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } finally {
+      setAvatarSaving(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setAvatarSaving(true);
+    setAvatarError('');
+    try {
+      const res = await fetch('/api/user/avatar', { method: 'DELETE' });
+      if (res.ok) { setAvatarUrl(null); }
+      else { const d = await res.json(); setAvatarError(d.error ?? 'Remove failed'); }
+    } finally {
+      setAvatarSaving(false);
+    }
+  };
 
   const handleSaveName = async () => {
     setSaving(true);
@@ -111,6 +185,72 @@ export default function SettingsPage() {
 
       {tab === 'profile' && (
         <div className="space-y-6">
+          {/* Profile photo */}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h2 className="text-base font-normal text-white mb-4">Profile photo</h2>
+            <div className="flex items-center gap-5">
+              <Avatar className="w-16 h-16 shrink-0">
+                <AvatarImage
+                  src={previewUrl ?? avatarUrl ?? undefined}
+                  alt={session?.user?.name ?? ''}
+                />
+                <AvatarFallback
+                  className="text-xl text-white"
+                  style={{ background: 'var(--sidebar-active)' }}
+                >
+                  {session?.user?.name?.[0]?.toUpperCase() ?? '?'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarSaving}
+                    className="bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-sm px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    {pendingFile ? 'Change' : 'Upload photo'}
+                  </button>
+                  {pendingFile && (
+                    <>
+                      <button
+                        onClick={handleSaveAvatar}
+                        disabled={avatarSaving}
+                        className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        {avatarSaving ? 'Saving…' : 'Save photo'}
+                      </button>
+                      <button
+                        onClick={handleCancelPending}
+                        disabled={avatarSaving}
+                        className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+                      >
+                        Discard
+                      </button>
+                    </>
+                  )}
+                  {avatarUrl && !pendingFile && (
+                    <button
+                      onClick={handleRemoveAvatar}
+                      disabled={avatarSaving}
+                      className="text-sm text-slate-500 hover:text-red-400 transition-colors"
+                    >
+                      {avatarSaving ? 'Removing…' : 'Remove'}
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500">JPEG, PNG, or WebP · max 2 MB</p>
+                {avatarError && <p className="text-xs text-red-400">{avatarError}</p>}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+          </div>
+
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
             <h2 className="text-base font-normal text-white mb-4">Personal information</h2>
             <div className="space-y-4">
