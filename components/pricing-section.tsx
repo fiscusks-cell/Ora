@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { PLANS, PLAN_ORDER, yearlyMonthlyPrice, type PlanDefinition } from '@/lib/plans';
 
 // ─── palette ─────────────────────────────────────────────────────────────────
 
@@ -14,83 +15,6 @@ const C = {
   indigoH: '#4338ca',
 } as const;
 
-// ─── data ────────────────────────────────────────────────────────────────────
-
-interface Plan {
-  name: string;
-  monthlyPrice: number;
-  desc: string;
-  seats: string;
-  features: string[];
-  cta: string;
-  href: string;
-  highlight: boolean;
-  enterprise: boolean;
-}
-
-const PLANS: Plan[] = [
-  {
-    name: 'FREE',
-    monthlyPrice: 0,
-    desc: 'For trying ORA out',
-    seats: '1 user',
-    features: ['3 projects', 'Time tracking', 'CSV export'],
-    cta: 'Start free trial',
-    href: '/auth/signup',
-    highlight: false,
-    enterprise: false,
-  },
-  {
-    name: 'PRO',
-    monthlyPrice: 12,
-    desc: 'For solo freelancers',
-    seats: '3 users',
-    features: ['Unlimited projects', 'QuickBooks Online', 'Xero (coming soon)', 'PDF reports', 'Priority support'],
-    cta: 'Start free trial',
-    href: '/auth/signup',
-    highlight: true,
-    enterprise: false,
-  },
-  {
-    name: 'TEAM',
-    monthlyPrice: 49,
-    desc: 'For growing firms',
-    seats: '15 users',
-    features: ['Everything in Pro', 'Team messaging', 'Project boards', 'Team analytics'],
-    cta: 'Start free trial',
-    href: '/auth/signup',
-    highlight: false,
-    enterprise: false,
-  },
-  {
-    name: 'ADVANCED',
-    monthlyPrice: 99,
-    desc: 'For established practices',
-    seats: 'Unlimited users',
-    features: ['Everything in Team', 'Custom invoice branding', 'API access', 'Advanced permissions'],
-    cta: 'Start free trial',
-    href: '/auth/signup',
-    highlight: false,
-    enterprise: false,
-  },
-  {
-    name: 'ENTERPRISE',
-    monthlyPrice: 249,
-    desc: 'For large organisations',
-    seats: 'Unlimited users',
-    features: ['Everything in Advanced', 'SSO', 'Dedicated support', 'SLA'],
-    cta: 'Contact sales',
-    href: 'mailto:hello@getora.app',
-    highlight: false,
-    enterprise: true,
-  },
-];
-
-function yearlyPerMonth(monthly: number): number {
-  if (monthly === 0) return 0;
-  return Math.round((monthly * 10) / 12);
-}
-
 // ─── sub-components ──────────────────────────────────────────────────────────
 
 function CheckIcon() {
@@ -102,13 +26,15 @@ function CheckIcon() {
 }
 
 interface PlanCardProps {
-  plan: Plan;
+  plan: PlanDefinition;
   yearly: boolean;
 }
 
 function PlanCard({ plan, yearly }: PlanCardProps) {
-  const price = yearly ? yearlyPerMonth(plan.monthlyPrice) : plan.monthlyPrice;
+  const price = yearly ? yearlyMonthlyPrice(plan.monthlyPrice) : plan.monthlyPrice;
   const yearlyTotal = plan.monthlyPrice * 10;
+  const cta = plan.enterprise ? 'Contact sales' : 'Start free trial';
+  const href = plan.enterprise ? 'mailto:hello@getora.app' : '/auth/signup';
 
   return (
     <div className="w-full sm:w-[calc(50%-10px)] lg:w-72 flex-shrink-0 flex flex-col">
@@ -137,7 +63,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
           className={`text-[12px] tracking-[0.04em] mb-4`}
           style={{ color: C.muted }}
         >
-          {plan.name}
+          {plan.name.toUpperCase()}
         </p>
 
         {/* Price */}
@@ -169,7 +95,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
           className={`text-[14px] leading-normal tracking-[-0.001em] font-normal mt-2 mb-6`}
           style={{ color: C.muted }}
         >
-          {plan.desc}
+          {plan.description}
         </p>
 
         {/* Seat count — visually distinct from feature list */}
@@ -181,7 +107,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
             className={`text-[14px] tracking-[-0.02em]`}
             style={{ color: C.text }}
           >
-            {plan.seats}
+            {plan.seatsLabel}
           </span>
         </div>
 
@@ -202,7 +128,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
 
         {/* CTA */}
         <Link
-          href={plan.href}
+          href={href}
           className={`block text-center text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors`}
           style={
             plan.highlight
@@ -226,7 +152,7 @@ function PlanCard({ plan, yearly }: PlanCardProps) {
                 }
           }
         >
-          {plan.cta}
+          {cta}
         </Link>
       </div>
     </div>
@@ -302,8 +228,8 @@ export function PricingSection() {
 
         {/* Cards — flex-wrap: 3 per row on lg+, 2 on sm, 1 on mobile */}
         <div className="flex flex-wrap gap-5 justify-center">
-          {PLANS.map((plan) => (
-            <PlanCard key={plan.name} plan={plan} yearly={yearly} />
+          {PLAN_ORDER.map((key) => (
+            <PlanCard key={key} plan={PLANS[key]} yearly={yearly} />
           ))}
         </div>
 

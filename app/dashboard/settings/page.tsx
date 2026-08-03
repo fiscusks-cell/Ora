@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
 import { SiQuickbooks, SiXero } from 'react-icons/si';
+import { PLANS, type PlanKey } from '@/lib/plans';
 
 type Tab = 'profile' | 'organization' | 'billing' | 'integrations';
 
@@ -11,6 +12,12 @@ interface IntegrationStatus {
   connectedQBO: boolean;
   connectedXero: boolean;
   xeroOrgName: string | null;
+}
+
+interface OrgInfo {
+  name: string;
+  plan: PlanKey;
+  billingPeriod: string;
 }
 
 export default function SettingsPage() {
@@ -25,10 +32,18 @@ export default function SettingsPage() {
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [org, setOrg] = useState<OrgInfo | null>(null);
 
   useEffect(() => {
     if (session?.user?.name) setName(session.user.name);
   }, [session?.user?.name]);
+
+  useEffect(() => {
+    fetch('/api/org')
+      .then((r) => r.json())
+      .then((d) => setOrg(d))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch('/api/integrations/qbo/status')
@@ -161,33 +176,39 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
             <h2 className="text-base font-normal text-white mb-2">Current plan</h2>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-2xl text-white">Free</div>
-                <p className="text-sm text-slate-400 mt-1">1 user · 3 projects · no integrations</p>
-              </div>
-              <span className="bg-slate-800 text-slate-400 text-xs px-3 py-1.5 rounded-full">Current plan</span>
-            </div>
+            {org ? (() => {
+              const currentPlan = PLANS[org.plan] ?? PLANS.FREE;
+              const seatsText = currentPlan.seats === null ? 'Unlimited users' : `${currentPlan.seats} user${currentPlan.seats === 1 ? '' : 's'}`;
+              return (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl text-white">{currentPlan.name}</div>
+                    <p className="text-sm text-slate-400 mt-1">
+                      {seatsText} · {org.billingPeriod.toLowerCase()} billing
+                    </p>
+                  </div>
+                  <span className="bg-slate-800 text-slate-400 text-xs px-3 py-1.5 rounded-full">Current plan</span>
+                </div>
+              );
+            })() : (
+              <div className="h-12 bg-slate-800 rounded-lg animate-pulse" />
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-slate-900 border border-indigo-800 rounded-xl p-5">
-              <div className="text-white mb-1">Pro</div>
-              <div className="text-2xl text-white mb-2">$12<span className="text-sm font-normal text-slate-400">/mo</span></div>
+              <div className="text-white mb-1">{PLANS.PRO.name}</div>
+              <div className="text-2xl text-white mb-2">${PLANS.PRO.monthlyPrice}<span className="text-sm font-normal text-slate-400">/mo</span></div>
               <ul className="text-xs text-slate-400 space-y-1 mb-4">
-                <li>✓ Unlimited projects</li>
-                <li>✓ QuickBooks & Xero</li>
-                <li>✓ PDF reports</li>
+                {PLANS.PRO.features.slice(0, 3).map((f) => <li key={f}>✓ {f}</li>)}
               </ul>
               <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm py-2 rounded-lg">Upgrade</button>
             </div>
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-              <div className="text-white mb-1">Team</div>
-              <div className="text-2xl text-white mb-2">$49<span className="text-sm font-normal text-slate-400">/mo</span></div>
+              <div className="text-white mb-1">{PLANS.TEAM.name}</div>
+              <div className="text-2xl text-white mb-2">${PLANS.TEAM.monthlyPrice}<span className="text-sm font-normal text-slate-400">/mo</span></div>
               <ul className="text-xs text-slate-400 space-y-1 mb-4">
-                <li>✓ Up to 15 users</li>
-                <li>✓ All Pro features</li>
-                <li>✓ Approval workflow</li>
+                {PLANS.TEAM.features.slice(0, 3).map((f) => <li key={f}>✓ {f}</li>)}
               </ul>
               <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm py-2 rounded-lg">Upgrade</button>
             </div>
@@ -197,7 +218,7 @@ export default function SettingsPage() {
             onClick={openBillingPortal}
             className="text-sm text-indigo-400 hover:text-indigo-300 underline"
           >
-            Open Stripe billing portal →
+            Open billing portal →
           </button>
         </div>
       )}

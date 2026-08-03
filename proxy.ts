@@ -34,5 +34,9 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/((?!auth|webhooks|integrations/xero/callback|integrations/qbo/callback).*)'],
+  // /api/invite/* is intentionally excluded from proxy auth.
+  // Invite acceptance is inherently unauthenticated — the caller has no account yet.
+  // Any future route added under /api/invite/ will be public by default; add explicit
+  // server-side validation inside the route handler itself (as /api/invite/accept does).
+  matcher: ['/dashboard/:path*', '/api/((?!auth|invite|webhooks|integrations/xero/callback|integrations/qbo/callback).*)'],
 };
