@@ -82,6 +82,15 @@ function StatusCard({
   );
 }
 
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2.5 rounded-[8px] mb-5 flex items-start gap-2">
+      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+      {message}
+    </div>
+  );
+}
+
 export default function InviteAcceptClient({
   state,
   token,
@@ -101,44 +110,52 @@ export default function InviteAcceptClient({
     setLoading(true);
     setError('');
 
-    const res = await fetch('/api/invite/accept', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, name, password }),
-    });
+    try {
+      const res = await fetch('/api/invite/accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, name, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      if (data.error === 'expired') {
-        setError('This invitation has expired. Ask your admin to resend it.');
-      } else if (data.error === 'already_accepted') {
-        setError('This invitation has already been accepted. Try signing in.');
-      } else if (data.error === 'different_org') {
-        setError('You already have an ORA account linked to a different workspace. Use a separate email address to join this one.');
-      } else if (data.error === 'invalid') {
-        setError('This invitation link is no longer valid.');
-      } else {
-        setError(data.error || 'Something went wrong. Please try again.');
+      if (!res.ok) {
+        if (data.error === 'expired') {
+          setError('This invitation has expired. Ask your admin to resend it.');
+        } else if (data.error === 'already_accepted') {
+          setError('This invitation has already been accepted. Try signing in.');
+        } else if (data.error === 'different_org') {
+          setError(
+            'You already have an ORA account linked to a different workspace. Use a separate email address to join this one.',
+          );
+        } else if (data.error === 'invalid') {
+          setError('This invitation link is no longer valid.');
+        } else {
+          setError(data.error || 'Something went wrong. Please try again.');
+        }
+        return;
       }
+
+      // Account created — sign in with the credentials just set
+      const result = await signIn('credentials', {
+        email: data.email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(
+          'Account created, but sign-in failed. Go to the sign-in page and use your new password.',
+        );
+        return;
+      }
+
+      window.location.href = '/dashboard';
+    } catch {
+      setError('Network error — check your connection and try again.');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Account created — sign in with the credentials just set
-    const result = await signIn('credentials', {
-      email: data.email,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setError('Account created, but sign-in failed. Go to the sign-in page and use your new password.');
-      setLoading(false);
-      return;
-    }
-
-    window.location.href = '/dashboard';
   }
 
   if (state === 'invalid') {
@@ -192,7 +209,10 @@ export default function InviteAcceptClient({
           title="Already a member"
           body={
             <>
-              An account for <strong className="text-[#1a1f26] dark:text-white">{email}</strong> already exists in <strong className="text-[#1a1f26] dark:text-white">{orgName}</strong>. Sign in to continue.
+              An account for <strong className="text-[#1a1f26] dark:text-white">{email}</strong>{' '}
+              already exists in{' '}
+              <strong className="text-[#1a1f26] dark:text-white">{orgName}</strong>. Sign in to
+              continue.
             </>
           }
           footer={
@@ -217,9 +237,14 @@ export default function InviteAcceptClient({
           title="Account conflict"
           body={
             <>
-              <strong className="text-[#1a1f26] dark:text-white">{email}</strong> is already registered with a different ORA workspace. Accepting this invite would move you out of that workspace, which isn&apos;t allowed.
-              <br /><br />
-              To join <strong className="text-[#1a1f26] dark:text-white">{orgName}</strong>, register with a different email address and ask your admin to send a new invitation to that address.
+              <strong className="text-[#1a1f26] dark:text-white">{email}</strong> is already
+              registered with a different ORA workspace. Accepting this invite would move you out of
+              that workspace, which isn&apos;t allowed.
+              <br />
+              <br />
+              To join <strong className="text-[#1a1f26] dark:text-white">{orgName}</strong>,
+              register with a different email address and ask your admin to send a new invitation to
+              that address.
             </>
           }
           footer={
@@ -246,21 +271,33 @@ export default function InviteAcceptClient({
             <>
               This invitation is for{' '}
               <strong className="text-[#1a1f26] dark:text-white">{email}</strong>.
-              <br /><br />
-              Sign out first, then open this link again to accept the invitation with the correct account.
+              <br />
+              <br />
+              Sign out first, then open this link again to accept the invitation with the correct
+              account.
             </>
           }
           footer={
-            <OriginButton
-              onClick={async () => {
-                setSigningOut(true);
-                await signOut({ callbackUrl: `/invite/${token}` });
-              }}
-              disabled={signingOut}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors"
-            >
-              {signingOut ? 'Signing out…' : 'Sign out and accept'}
-            </OriginButton>
+            <>
+              {error && <ErrorBanner message={error} />}
+              <OriginButton
+                onClick={async () => {
+                  setSigningOut(true);
+                  setError('');
+                  try {
+                    await signOut({ callbackUrl: `/invite/${token}` });
+                  } catch {
+                    setError('Sign-out failed. Please try again.');
+                  } finally {
+                    setSigningOut(false);
+                  }
+                }}
+                disabled={signingOut}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors"
+              >
+                {signingOut ? 'Signing out…' : 'Sign out and accept'}
+              </OriginButton>
+            </>
           }
         />
       </Shell>
@@ -268,8 +305,7 @@ export default function InviteAcceptClient({
   }
 
   // 'valid' — join form
-  const roleLabel =
-    role === 'OWNER' ? 'Owner' : role === 'ADMIN' ? 'Admin' : 'Member';
+  const roleLabel = role === 'OWNER' ? 'Owner' : role === 'ADMIN' ? 'Admin' : 'Member';
 
   return (
     <Shell>
@@ -278,16 +314,11 @@ export default function InviteAcceptClient({
       </h1>
       <p className="text-[14px] text-[#8b95a1] text-center mb-8">
         You&apos;ve been invited as a{' '}
-        <span className="font-medium text-[#1a1f26] dark:text-white">{roleLabel}</span>.
-        Set up your account to continue.
+        <span className="font-medium text-[#1a1f26] dark:text-white">{roleLabel}</span>. Set up
+        your account to continue.
       </p>
 
-      {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2.5 rounded-[8px] mb-5 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} />}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
@@ -301,7 +332,9 @@ export default function InviteAcceptClient({
         </div>
 
         <div>
-          <label className={labelCls}>Full name <span className="text-red-400">*</span></label>
+          <label className={labelCls}>
+            Full name <span className="text-red-400">*</span>
+          </label>
           <input
             type="text"
             value={name}
@@ -314,7 +347,9 @@ export default function InviteAcceptClient({
         </div>
 
         <div>
-          <label className={labelCls}>Password <span className="text-red-400">*</span></label>
+          <label className={labelCls}>
+            Password <span className="text-red-400">*</span>
+          </label>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
