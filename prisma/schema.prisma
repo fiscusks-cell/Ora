@@ -46,6 +46,7 @@ model Organization {
   updatedAt            DateTime      @updatedAt
 
   members     User[]
+  tags        Tag[]
   clients     Client[]
   projects    Project[]
   timePeriods TimePeriod[]
@@ -64,6 +65,7 @@ model User {
   passwordHash   String?
   role           Role     @default(MEMBER)
   organizationId String
+  weekStartDay   Int      @default(1)
   connectedQBO   Boolean  @default(false)
   qboRealmId     String?
   qboTokens      String?
@@ -176,6 +178,7 @@ model TimeEntry {
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   project    Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
   timePeriod TimePeriod? @relation(fields: [timePeriodId], references: [id], onDelete: SetNull)
+  tags       TimeEntryTag[]
 
   @@index([userId])
   @@index([projectId])
@@ -209,6 +212,32 @@ model TimePeriod {
   @@index([organizationId])
   @@index([organizationId, status])
   @@map("time_periods")
+}
+
+model Tag {
+  id             String   @id @default(cuid())
+  name           String
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  entries      TimeEntryTag[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("tags")
+}
+
+model TimeEntryTag {
+  timeEntryId String
+  tagId       String
+
+  timeEntry TimeEntry @relation(fields: [timeEntryId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([timeEntryId, tagId])
+  @@index([tagId])
+  @@map("time_entry_tags")
 }
 
 model Invite {

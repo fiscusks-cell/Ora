@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { Plus, Archive, Pencil, X } from 'lucide-react';
 import { getCurrency } from '@/lib/currency';
@@ -42,6 +42,7 @@ export default function ProjectsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [showDialog, setShowDialog] = useState(false);
   const [editProject, setEditProject] = useState<Project | null>(null);
+  const dialogMouseDown = useRef(false);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
   const [showInlineClient, setShowInlineClient] = useState(false);
@@ -159,7 +160,7 @@ export default function ProjectsPage() {
       />
 
       {showDialog && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) closeDialog(); }}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onMouseDown={(e) => { dialogMouseDown.current = e.target === e.currentTarget; }} onClick={(e) => { if (e.target === e.currentTarget && dialogMouseDown.current) closeDialog(); }}>
           <div className="rounded-2xl p-6 w-full max-w-md shadow-2xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-normal" style={{ color: 'var(--text)' }}>{editProject ? 'Edit Project' : 'New Project'}</h2>

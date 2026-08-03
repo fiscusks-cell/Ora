@@ -9,6 +9,7 @@ const createSchema = z.object({
   startedAt: z.string().datetime(),
   stoppedAt: z.string().datetime().optional(),
   isBillable: z.boolean().default(true),
+  tagIds: z.string().array().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -44,12 +45,15 @@ export async function GET(req: NextRequest) {
       include: {
         project: { select: { id: true, name: true, color: true, hourlyRate: true, isBillable: true, client: { select: { id: true, name: true } } } },
         user: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        tags: { include: { tag: { select: { id: true, name: true } } } },
       },
       orderBy: { startedAt: 'desc' },
       take: 500,
     });
 
-    return NextResponse.json(entries);
+    return NextResponse.json(
+      entries.map((e) => ({ ...e, tags: e.tags.map((t) => t.tag) })),
+    );
   } catch (err) {
     console.error('[time-entries GET] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -73,7 +77,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { projectId, description, startedAt, stoppedAt, isBillable } = parsed.data;
+    const { projectId, description, startedAt, stoppedAt, isBillable, tagIds } = parsed.data;
 
     if (projectId) {
       const project = await prisma.project.findFirst({
@@ -101,14 +105,18 @@ export async function POST(req: NextRequest) {
         stoppedAt: stoppedAt ? new Date(stoppedAt) : null,
         durationSeconds: durationSeconds ?? null,
         isBillable,
+        ...(tagIds?.length
+          ? { tags: { createMany: { data: tagIds.map((tagId) => ({ tagId })), skipDuplicates: true } } }
+          : {}),
       },
       include: {
         project: { select: { id: true, name: true, color: true, hourlyRate: true, isBillable: true } },
         user: { select: { id: true, name: true, email: true } },
+        tags: { include: { tag: { select: { id: true, name: true } } } },
       },
     });
 
-    return NextResponse.json(entry, { status: 201 });
+    return NextResponse.json({ ...entry, tags: entry.tags.map((t) => t.tag) }, { status: 201 });
   } catch (err) {
     console.error('[time-entries POST] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

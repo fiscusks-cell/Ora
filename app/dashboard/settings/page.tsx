@@ -34,6 +34,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [org, setOrg] = useState<OrgInfo | null>(null);
+  const [weekStartDay, setWeekStartDay] = useState(1);
+  const [weekStartSaving, setWeekStartSaving] = useState(false);
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -59,6 +61,27 @@ export default function SettingsPage() {
       .then((d) => setAvatarUrl(d.url ?? null))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetch('/api/user/preferences')
+      .then((r) => r.json())
+      .then((d) => { if (typeof d.weekStartDay === 'number') setWeekStartDay(d.weekStartDay); })
+      .catch(() => {});
+  }, []);
+
+  const handleWeekStartChange = async (value: number) => {
+    setWeekStartDay(value);
+    setWeekStartSaving(true);
+    try {
+      await fetch('/api/user/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weekStartDay: value }),
+      });
+    } finally {
+      setWeekStartSaving(false);
+    }
+  };
 
   useEffect(() => {
     return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
@@ -278,6 +301,23 @@ export default function SettingsPage() {
               >
                 {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save changes'}
               </button>
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h2 className="text-base font-normal text-white mb-4">Time preferences</h2>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1.5">Week starts on</label>
+              <select
+                value={weekStartDay}
+                onChange={(e) => handleWeekStartChange(Number(e.target.value))}
+                disabled={weekStartSaving}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                <option value={0}>Sunday</option>
+                <option value={1}>Monday</option>
+                <option value={6}>Saturday</option>
+              </select>
             </div>
           </div>
 
