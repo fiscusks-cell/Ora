@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/authz';
 import { getValidClient, qboApiBase } from '@/lib/qbo';
 import { getCurrency, roundForCurrency } from '@/lib/currency';
 import { generatePeriodPdf } from '@/lib/generate-period-pdf';
@@ -10,10 +10,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const sessionUser = session.user as { id: string; organizationId: string };
+    const authz = await requireAuth(['OWNER', 'ADMIN']);
+    if (authz instanceof NextResponse) return authz;
+    const sessionUser = { id: authz.userId, organizationId: authz.organizationId };
     const { id } = await params;
 
     // ── load period with entries ─────────────────────────────────────────────

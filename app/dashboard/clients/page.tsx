@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { Plus, Pencil, Trash2, X, Circle } from 'lucide-react';
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/utils';
 import { DataTable, StatusBadge, Column } from '@/components/ui/data-table';
@@ -24,6 +25,9 @@ interface FormState {
 const DEFAULT_FORM: FormState = { name: '', email: '', currency: DEFAULT_CURRENCY };
 
 export default function ClientsPage() {
+  const { data: session } = useSession();
+  const isAdmin = ['OWNER', 'ADMIN'].includes((session?.user as { role?: string })?.role ?? '');
+
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
@@ -138,16 +142,18 @@ export default function ClientsPage() {
         searchPlaceholder="Search by name or email..."
         loading={loading}
         emptyMessage="No clients yet. Add your first client to get started."
-        actions={(c) => (
-          <div className="flex items-center gap-1 justify-end">
-            <button onClick={() => openEdit(c)} className="p-1.5 transition-colors rounded" style={{ color: 'var(--text-muted)' }} title="Edit client">
-              <Pencil className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={() => handleDelete(c.id, c.name)} className="p-1.5 transition-colors rounded hover:text-red-400" style={{ color: 'var(--text-muted)' }} title="Delete client">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
+        actions={(c) =>
+          isAdmin ? (
+            <div className="flex items-center gap-1 justify-end">
+              <button onClick={() => openEdit(c)} className="p-1.5 transition-colors rounded" style={{ color: 'var(--text-muted)' }} title="Edit client">
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => handleDelete(c.id, c.name)} className="p-1.5 transition-colors rounded hover:text-red-400" style={{ color: 'var(--text-muted)' }} title="Delete client">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : null
+        }
       />
 
       {showDialog && (

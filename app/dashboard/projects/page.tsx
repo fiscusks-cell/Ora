@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { Plus, Archive, Pencil, X } from 'lucide-react';
 import { getCurrency } from '@/lib/currency';
 import { DataTable, StatusBadge, Column } from '@/components/ui/data-table';
@@ -34,6 +35,9 @@ const COLOR_OPTIONS = ['#3730A3', '#10B981', '#EF4444', '#F59E0B', '#8B5CF6', '#
 const DEFAULT_FORM: FormState = { name: '', clientId: '', color: '#3730A3', hourlyRate: '0', isBillable: true };
 
 export default function ProjectsPage() {
+  const { data: session } = useSession();
+  const isAdmin = ['OWNER', 'ADMIN'].includes((session?.user as { role?: string })?.role ?? '');
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [showDialog, setShowDialog] = useState(false);
@@ -141,7 +145,7 @@ export default function ProjectsPage() {
         searchPlaceholder="Search by project or client..."
         emptyMessage="No projects yet. Create your first project to start tracking time."
         actions={(p) =>
-          !p.isArchived ? (
+          !p.isArchived && isAdmin ? (
             <div className="flex items-center gap-0.5 justify-end">
               <button onClick={() => openEdit(p)} className="p-1.5 transition-colors rounded" style={{ color: 'var(--text-muted)' }} title="Edit project">
                 <Pencil className="w-3.5 h-3.5" />

@@ -1,20 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/authz';
 import { roundForCurrency } from '@/lib/currency';
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const orgId = (session.user as { organizationId: string }).organizationId;
+  const authz = await requireAuth();
+  if (authz instanceof NextResponse) return authz;
+  const { userId: callerId, organizationId: orgId, role } = authz;
 
   const { searchParams } = req.nextUrl;
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
   const clientId = searchParams.get('clientId') || undefined;
   const projectId = searchParams.get('projectId') || undefined;
-  const userId = searchParams.get('userId') || undefined;
+  const requestedUserId = searchParams.get('userId') || undefined;
   const billable = searchParams.get('billable');
+
+  // MEMBER querying another member's data is forbidden
+  if (requestedUserId && requestedUserId !== callerId && role === 'MEMBER') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const dateFilter: Record<string, Date> = {};
   if (startDate) dateFilter.gte = new Date(startDate);
@@ -35,8 +40,11 @@ export async function GET(req: NextRequest) {
   } else if (clientId) {
     where.project = { clientId };
   }
-  if (userId) {
-    where.userId = userId;
+  if (requestedUserId) {
+    where.userId = requestedUserId;
+  } else if (role === 'MEMBER') {
+    // No userId filter supplied: MEMBER sees only their own entries
+    where.userId = callerId;
   }
   if (billable === 'true') {
     where.isBillable = true;

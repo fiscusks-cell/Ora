@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { formatDuration, formatCurrency } from '@/lib/utils';
 import { getCurrency } from '@/lib/currency';
 import { format } from 'date-fns';
@@ -52,6 +53,8 @@ const STATUS_LABEL = {
 export default function PeriodDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const { data: session } = useSession();
+  const isAdmin = ['OWNER', 'ADMIN'].includes((session?.user as { role?: string })?.role ?? '');
 
   const [period, setPeriod] = useState<Period | null>(null);
   const [loading, setLoading] = useState(true);
@@ -198,7 +201,7 @@ export default function PeriodDetailPage() {
             <Clock className="w-4 h-4" /> Submit for Approval
           </OriginButton>
         )}
-        {period.status === 'PENDING_APPROVAL' && (
+        {period.status === 'PENDING_APPROVAL' && isAdmin && (
           <OriginButton
             onClick={() => doAction(`/api/periods/${id}/approve`)}
             disabled={actionLoading}
@@ -207,7 +210,7 @@ export default function PeriodDetailPage() {
             <CheckCircle className="w-4 h-4" /> Approve Period
           </OriginButton>
         )}
-        {period.status === 'APPROVED' && (
+        {period.status === 'APPROVED' && isAdmin && (
           <>
             <OriginButton
               onClick={() => doAction(`/api/periods/${id}/publish/qbo`, 'POST')}
