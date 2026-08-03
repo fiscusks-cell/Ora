@@ -10,6 +10,7 @@ enum Plan {
   FREE
   PRO
   TEAM
+  ADVANCED
   ENTERPRISE
 }
 
