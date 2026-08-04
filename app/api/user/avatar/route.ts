@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const MAX_BYTES = 2 * 1024 * 1024;
+const MAX_BYTES = 5 * 1024 * 1024;
 
 export async function GET() {
   const authz = await requireAuth();
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'File must be under 2 MB' }, { status: 400 });
+    return NextResponse.json({ error: 'File must be under 5 MB' }, { status: 400 });
   }
 
   const existing = await prisma.user.findUnique({

@@ -192,10 +192,6 @@ function insertEntryIntoWeeks(prev: WeekBucket[], entry: TimeEntry, wsd: number)
       groups: collapseToGroups([entry]),
       total: entry.durationSeconds ?? 0,
     };
-    updatedDays = [...week.days, newDay].sort(([, a], [, b]) =>
-      (b as unknown as DayBucket).dateKey.localeCompare((a as unknown as DayBucket).dateKey),
-    );
-    // re-sort using DayBucket types
     updatedDays = [...week.days, newDay].sort((a, b) => b.dateKey.localeCompare(a.dateKey));
   } else {
     const allDayEntries = [
@@ -381,6 +377,7 @@ export default function TimerPage() {
       if (!useTimerStore.getState().isPaused) {
         setIsRunning(true);
         setElapsed(Math.floor((Date.now() - start.getTime()) / 1000));
+        useTimerStore.getState().startTimer(active.id, active.project?.id ?? null, active.description ?? '', start);
       }
     }
   }, []);
@@ -468,6 +465,7 @@ export default function TimerPage() {
       setStartedAt(now);
       setIsRunning(true);
       setElapsed(0);
+      useTimerStore.getState().startTimer(entry.id, pid ?? null, desc ?? '');
       if (opts?.projectId !== undefined) setProjectId(opts.projectId);
       if (opts?.description !== undefined) setDescription(opts.description);
       if (opts?.isBillable !== undefined) setIsBillable(opts.isBillable);
@@ -493,6 +491,7 @@ export default function TimerPage() {
       setDescription('');
       setProjectId('');
       setSelectedTagIds([]);
+      useTimerStore.getState().stopTimer();
       await refreshCurrentWeeks();
     } finally {
       setLoading(false);

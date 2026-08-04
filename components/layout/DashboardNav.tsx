@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -10,6 +11,7 @@ import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/ThemeProvider';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useTimerStore } from '@/store/timerStore';
 
 interface NavUser {
   name: string;
@@ -25,10 +27,6 @@ interface DashboardNavProps {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type NavItem = { href: string; label: string; icon: any };
-
-const topItems: NavItem[] = [
-  { href: '/dashboard/timer', label: 'Time Tracker', icon: Clock },
-];
 
 const analyzeItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -50,6 +48,30 @@ export function DashboardNav({ user }: DashboardNavProps) {
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
   const isAdmin = user.role === 'OWNER' || user.role === 'ADMIN';
+
+  const isRunning = useTimerStore((s) => s.isRunning);
+  const storeStartedAt = useTimerStore((s) => s.startedAt);
+  const [timerLabel, setTimerLabel] = useState('Time Tracker');
+
+  useEffect(() => {
+    if (!isRunning || !storeStartedAt) {
+      setTimerLabel('Time Tracker');
+      return;
+    }
+    // storeStartedAt is a Date in memory but an ISO string after Zustand rehydrates
+    // from localStorage — new Date(x) handles both.
+    const startMs = new Date(storeStartedAt as unknown as string).getTime();
+    const tick = () => {
+      const sec = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      setTimerLabel(`${h}:${m}:${s}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => { clearInterval(id); setTimerLabel('Time Tracker'); };
+  }, [isRunning, storeStartedAt]);
 
   function isActive(href: string) {
     return href === '/dashboard' ? pathname === href : pathname.startsWith(href);
@@ -79,8 +101,28 @@ export function DashboardNav({ user }: DashboardNavProps) {
   return (
     <div className="flex flex-col h-full">
       <nav className="flex-1 px-3 py-4">
-        {/* Ungrouped */}
-        <div className="space-y-1">{topItems.map(navLink)}</div>
+        {/* Timer — label shows live elapsed time when a timer is running */}
+        <div className="space-y-1">
+          {(() => {
+            const active = isActive('/dashboard/timer');
+            return (
+              <Link
+                href="/dashboard/timer"
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+                  !active && 'hover:bg-white/5',
+                )}
+                style={{
+                  boxShadow: active ? 'inset 3px 0 0 var(--accent)' : undefined,
+                  color: active ? 'var(--sidebar-text)' : 'var(--sidebar-muted)',
+                }}
+              >
+                <Clock size={18} />
+                {timerLabel}
+              </Link>
+            );
+          })()}
+        </div>
 
         {/* Analyze */}
         <p
