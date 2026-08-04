@@ -192,10 +192,6 @@ function insertEntryIntoWeeks(prev: WeekBucket[], entry: TimeEntry, wsd: number)
       groups: collapseToGroups([entry]),
       total: entry.durationSeconds ?? 0,
     };
-    updatedDays = [...week.days, newDay].sort(([, a], [, b]) =>
-      (b as unknown as DayBucket).dateKey.localeCompare((a as unknown as DayBucket).dateKey),
-    );
-    // re-sort using DayBucket types
     updatedDays = [...week.days, newDay].sort((a, b) => b.dateKey.localeCompare(a.dateKey));
   } else {
     const allDayEntries = [
