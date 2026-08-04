@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -14,23 +15,44 @@ const createSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const userId = session.user.id;
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    const ctx = await requireAuth();
+    if (ctx instanceof NextResponse) return ctx;
+    const { userId, organizationId, role } = ctx;
 
     const { searchParams } = new URL(req.url);
+    const active = searchParams.get('active') === 'true';
     const filterUserId = searchParams.get('userId');
     const filterProjectId = searchParams.get('projectId');
     const filterClientId = searchParams.get('clientId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
+    // active=true is always self-scoped to the session user — never trust a
+    // client-supplied userId here, and always filter to stoppedAt: null.
+    if (active) {
+      const entries = await prisma.timeEntry.findMany({
+        where: { userId, stoppedAt: null },
+        include: {
+          project: { select: { id: true, name: true, color: true, hourlyRate: true, isBillable: true, client: { select: { id: true, name: true } } } },
+          user: { select: { id: true, name: true, email: true, avatarUrl: true } },
+          tags: { include: { tag: { select: { id: true, name: true } } } },
+        },
+        orderBy: { startedAt: 'desc' },
+        take: 1,
+      });
+      return NextResponse.json(entries.map((e) => ({ ...e, tags: e.tags.map((t) => t.tag) })));
+    }
+
+    if (filterUserId && filterUserId !== userId && role === 'MEMBER') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const entries = await prisma.timeEntry.findMany({
       where: {
+        // Default to the session user when no explicit userId is requested.
+        // Org-wide queries belong in /api/reports (role-gated), not here.
+        userId: filterUserId ?? userId,
         user: { organizationId },
-        ...(filterUserId ? { userId: filterUserId } : {}),
         ...(filterProjectId ? { projectId: filterProjectId } : {}),
         ...(filterClientId ? { project: { clientId: filterClientId } } : {}),
         ...(startDate || endDate

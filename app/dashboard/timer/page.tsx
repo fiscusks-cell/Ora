@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import { format } from 'date-fns';
-import { Play, Square, DollarSign, MoreHorizontal, ChevronDown, Tag, X } from 'lucide-react';
+import { Play, Square, DollarSign, MoreHorizontal, ChevronDown, Tag, X, Check } from 'lucide-react';
 import { OriginButton } from '@/components/ui/origin-button';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 import { TagCombobox, type TagOption } from '@/components/ui/TagCombobox';
@@ -223,6 +224,9 @@ function replaceEntryInWeeks(prev: WeekBucket[], oldEntry: TimeEntry, newEntry: 
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function TimerPage() {
+  const { data: session } = useSession();
+  const initForUser = useTimerStore((state) => state.initForUser);
+
   const [isRunning, setIsRunning] = useState(false);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -231,6 +235,13 @@ export default function TimerPage() {
   const storePaused = useTimerStore((state) => state.isPaused);
   const storeStartedAt = useTimerStore((state) => state.startedAt);
   const wasPausedRef = useRef(false);
+
+  // Scope the persisted timer store to the current user. If a different user's
+  // session is found in localStorage, wipe it before any timer state is read.
+  useEffect(() => {
+    const userId = (session?.user as { id?: string })?.id;
+    if (userId) initForUser(userId);
+  }, [(session?.user as { id?: string })?.id, initForUser]);
 
   const [projectId, setProjectId] = useState('');
   const [description, setDescription] = useState('');
@@ -265,6 +276,15 @@ export default function TimerPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState('');
   const editMouseDown = useRef(false);
+
+  // Inline editing — one field open at a time across all rows
+  type InlineField = 'description' | 'project' | 'tags' | 'startTime' | 'endTime';
+  const [inlineEdit, setInlineEdit] = useState<{ entryId: string; field: InlineField } | null>(null);
+  const [inlineDesc, setInlineDesc] = useState('');
+  const [inlineProjectId, setInlineProjectId] = useState<string | null>(null);
+  const [inlineTagIds, setInlineTagIds] = useState<string[]>([]);
+  const [inlineStartTime, setInlineStartTime] = useState('');
+  const [inlineEndTime, setInlineEndTime] = useState('');
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
@@ -550,6 +570,32 @@ export default function TimerPage() {
     }
   };
 
+  // Fires a PATCH for a single field and updates the local weeks state on success.
+  // Callers are responsible for closing the inline edit (setInlineEdit(null)) before
+  // or after calling this — they know whether to stay open on failure.
+  const saveInlineField = async (
+    entry: TimeEntry,
+    patch: {
+      description?: string | null;
+      projectId?: string | null;
+      tagIds?: string[];
+      startedAt?: string;
+      stoppedAt?: string;
+    },
+  ) => {
+    try {
+      const res = await fetch(`/api/time-entries/${entry.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (res.ok) {
+        const updated: TimeEntry = await res.json();
+        setWeeks((prev) => replaceEntryInWeeks(prev, entry, updated, weekStartDay));
+      }
+    } catch { /* silent revert — row shows original value */ }
+  };
+
   // ── space bar toggle ──────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -758,12 +804,12 @@ export default function TimerPage() {
             week.days.length === 0 ? null : (
               <div
                 key={week.weekKey}
-                className="rounded-xl overflow-hidden"
+                className="rounded-xl"
                 style={{ border: '1px solid var(--border)' }}
               >
-                {/* Week header */}
+                {/* Week header — rounded-t-xl clips its background at the top corners */}
                 <div
-                  className="flex items-center justify-between px-4 py-2"
+                  className="flex items-center justify-between px-4 py-2 rounded-t-xl overflow-hidden"
                   style={{ background: 'var(--surface-raised)', borderBottom: '1px solid var(--border)' }}
                 >
                   <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{week.label}</span>
@@ -807,12 +853,36 @@ export default function TimerPage() {
                                 className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.03]"
                                 style={isLastVisible && notLastGroup ? { borderBottom: '1px solid var(--border)' } : undefined}
                               >
-                                {/* Description */}
-                                <span className="flex-1 text-sm truncate min-w-0" style={{ color: 'var(--text)' }}>
-                                  {entry.description ?? (
-                                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No description</span>
-                                  )}
-                                </span>
+                                {/* Description — click to edit inline */}
+                                {inlineEdit?.entryId === entry.id && inlineEdit.field === 'description' ? (
+                                  <input
+                                    type="text"
+                                    autoFocus
+                                    className="flex-1 text-sm min-w-0 rounded px-2 py-0.5 focus:outline-none focus:ring-1"
+                                    style={{
+                                      background: 'var(--surface-raised)',
+                                      border: '1px solid var(--accent)',
+                                      color: 'var(--text)',
+                                      '--tw-ring-color': 'var(--accent)',
+                                    } as React.CSSProperties}
+                                    value={inlineDesc}
+                                    onChange={(e) => setInlineDesc(e.target.value)}
+                                    onBlur={() => { setInlineEdit(null); saveInlineField(entry, { description: inlineDesc || null }); }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') { setInlineEdit(null); saveInlineField(entry, { description: inlineDesc || null }); }
+                                      if (e.key === 'Escape') { e.stopPropagation(); setInlineEdit(null); }
+                                      if (e.key === ' ') e.stopPropagation();
+                                    }}
+                                  />
+                                ) : (
+                                  <span
+                                    className="flex-1 text-sm truncate min-w-0 cursor-text rounded-sm px-1 -mx-1 hover:bg-white/5 transition-colors"
+                                    style={{ color: entry.description ? 'var(--text)' : 'var(--text-muted)' }}
+                                    onClick={() => { setOpenKebab(null); setInlineEdit({ entryId: entry.id, field: 'description' }); setInlineDesc(entry.description ?? ''); }}
+                                  >
+                                    {entry.description ?? <span style={{ fontStyle: 'italic' }}>Add description…</span>}
+                                  </span>
+                                )}
 
                                 {/* Count badge (first row of multi-group only) */}
                                 {isMulti && ei === 0 && (
@@ -827,48 +897,178 @@ export default function TimerPage() {
                                   </button>
                                 )}
 
-                                {/* Project */}
-                                {entry.project && (
-                                  <>
-                                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: entry.project.color }} />
-                                    <span className="text-sm flex-shrink-0 max-w-[120px] truncate" style={{ color: entry.project.color }}>
-                                      {entry.project.name}
-                                    </span>
-                                  </>
+                                {/* Project — click to edit inline */}
+                                {inlineEdit?.entryId === entry.id && inlineEdit.field === 'project' ? (
+                                  <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                    <ProjectCombobox
+                                      projects={projects}
+                                      value={inlineProjectId}
+                                      onChange={(id) => { setInlineProjectId(id); saveInlineField(entry, { projectId: id }); }}
+                                      onClose={() => setInlineEdit(null)}
+                                      placeholder="No project"
+                                    />
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="group/proj flex items-center gap-1.5 flex-shrink-0 rounded-sm px-1 -mx-1 hover:bg-white/5 transition-colors"
+                                    onClick={() => { setOpenKebab(null); setInlineEdit({ entryId: entry.id, field: 'project' }); setInlineProjectId(entry.project?.id ?? null); }}
+                                    title="Click to change project"
+                                  >
+                                    {entry.project ? (
+                                      <>
+                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: entry.project.color }} />
+                                        <span className="text-sm flex-shrink-0 max-w-[120px] truncate" style={{ color: entry.project.color }}>
+                                          {entry.project.name}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="opacity-0 group-hover/proj:opacity-100 text-xs transition-opacity" style={{ color: 'var(--text-muted)' }}>
+                                        + project
+                                      </span>
+                                    )}
+                                  </button>
                                 )}
 
-                                {/* Client */}
-                                {entry.project?.client && (
+                                {/* Client — read-only, hidden while project combobox is open */}
+                                {!(inlineEdit?.entryId === entry.id && inlineEdit.field === 'project') && entry.project?.client && (
                                   <span className="text-sm flex-shrink-0 hidden md:block" style={{ color: 'var(--text-muted)' }}>
                                     — {entry.project.client.name}
                                   </span>
                                 )}
 
-                                {/* Tag badges */}
-                                {entry.tags.length > 0 && entry.tags.map((tag) => (
-                                  <span
-                                    key={tag.id}
-                                    className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 hidden sm:block"
-                                    style={{
-                                      background: 'var(--surface-raised)',
-                                      border: '1px solid var(--border)',
-                                      color: 'var(--text-muted)',
-                                    }}
+                                {/* Tags — click to edit inline */}
+                                {inlineEdit?.entryId === entry.id && inlineEdit.field === 'tags' ? (
+                                  <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                    <TagCombobox
+                                      tags={allTags}
+                                      selectedIds={inlineTagIds}
+                                      onChange={setInlineTagIds}
+                                      onCreateTag={handleCreateTag}
+                                    />
+                                    <button
+                                      onClick={() => { const ids = inlineTagIds; setInlineEdit(null); saveInlineField(entry, { tagIds: ids }); }}
+                                      className="flex-shrink-0 p-1 rounded transition-colors hover:bg-white/10"
+                                      style={{ color: 'var(--accent)' }}
+                                      title="Save tags"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => setInlineEdit(null)}
+                                      className="flex-shrink-0 p-1 rounded transition-colors hover:bg-white/10"
+                                      style={{ color: 'var(--text-muted)' }}
+                                      title="Cancel"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="group/tags flex items-center gap-1 flex-shrink-0 hidden sm:flex rounded-sm px-1 -mx-1 hover:bg-white/5 transition-colors"
+                                    onClick={() => { setOpenKebab(null); setInlineEdit({ entryId: entry.id, field: 'tags' }); setInlineTagIds(entry.tags.map((t) => t.id)); }}
+                                    title="Click to edit tags"
                                   >
-                                    <Tag className="w-2.5 h-2.5 inline mr-0.5 -mt-px" />
-                                    {tag.name}
-                                  </span>
-                                ))}
+                                    {entry.tags.length > 0 ? (
+                                      entry.tags.map((tag) => (
+                                        <span
+                                          key={tag.id}
+                                          className="text-xs px-1.5 py-0.5 rounded flex-shrink-0"
+                                          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                                        >
+                                          <Tag className="w-2.5 h-2.5 inline mr-0.5 -mt-px" />
+                                          {tag.name}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="opacity-0 group-hover/tags:opacity-100 text-xs transition-opacity" style={{ color: 'var(--text-muted)' }}>
+                                        + tag
+                                      </span>
+                                    )}
+                                  </button>
+                                )}
 
                                 {/* Billable */}
                                 {entry.isBillable && (
                                   <DollarSign className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
                                 )}
 
-                                {/* Time range */}
-                                <span className="text-xs flex-shrink-0 hidden sm:block" style={{ color: 'var(--text-secondary)' }}>
-                                  {formatTime(entry.startedAt)}
-                                  {entry.stoppedAt ? ` – ${formatTime(entry.stoppedAt)}` : ''}
+                                {/* Time range — start and end time independently editable */}
+                                <span className="text-xs flex-shrink-0 hidden sm:flex items-center gap-0.5" style={{ color: 'var(--text-secondary)' }}>
+                                  {inlineEdit?.entryId === entry.id && inlineEdit.field === 'startTime' ? (
+                                    <input
+                                      type="time"
+                                      autoFocus
+                                      className="w-24 text-xs rounded px-1 py-0.5 focus:outline-none"
+                                      style={{ background: 'var(--surface-raised)', border: '1px solid var(--accent)', color: 'var(--text)' }}
+                                      value={inlineStartTime}
+                                      onChange={(e) => setInlineStartTime(e.target.value)}
+                                      onBlur={() => {
+                                        const date = format(new Date(entry.startedAt), 'yyyy-MM-dd');
+                                        const startedAt = new Date(`${date}T${inlineStartTime}:00`).toISOString();
+                                        setInlineEdit(null);
+                                        saveInlineField(entry, { startedAt });
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          const date = format(new Date(entry.startedAt), 'yyyy-MM-dd');
+                                          const startedAt = new Date(`${date}T${inlineStartTime}:00`).toISOString();
+                                          setInlineEdit(null);
+                                          saveInlineField(entry, { startedAt });
+                                        }
+                                        if (e.key === 'Escape') { e.stopPropagation(); setInlineEdit(null); }
+                                      }}
+                                    />
+                                  ) : (
+                                    <span
+                                      className="cursor-pointer rounded-sm px-0.5 hover:bg-white/5 transition-colors"
+                                      onClick={() => { setOpenKebab(null); setInlineEdit({ entryId: entry.id, field: 'startTime' }); setInlineStartTime(format(new Date(entry.startedAt), 'HH:mm')); }}
+                                    >
+                                      {formatTime(entry.startedAt)}
+                                    </span>
+                                  )}
+                                  {entry.stoppedAt && (
+                                    <>
+                                      <span className="mx-0.5">–</span>
+                                      {inlineEdit?.entryId === entry.id && inlineEdit.field === 'endTime' ? (
+                                        <input
+                                          type="time"
+                                          autoFocus
+                                          className="w-24 text-xs rounded px-1 py-0.5 focus:outline-none"
+                                          style={{ background: 'var(--surface-raised)', border: '1px solid var(--accent)', color: 'var(--text)' }}
+                                          value={inlineEndTime}
+                                          onChange={(e) => setInlineEndTime(e.target.value)}
+                                          onBlur={() => {
+                                            const origin = new Date(entry.startedAt);
+                                            const date = format(origin, 'yyyy-MM-dd');
+                                            let stoppedAt = new Date(`${date}T${inlineEndTime}:00`);
+                                            if (stoppedAt <= origin) stoppedAt = new Date(stoppedAt.getTime() + 86400000);
+                                            setInlineEdit(null);
+                                            saveInlineField(entry, { stoppedAt: stoppedAt.toISOString() });
+                                          }}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              const origin = new Date(entry.startedAt);
+                                              const date = format(origin, 'yyyy-MM-dd');
+                                              let stoppedAt = new Date(`${date}T${inlineEndTime}:00`);
+                                              if (stoppedAt <= origin) stoppedAt = new Date(stoppedAt.getTime() + 86400000);
+                                              setInlineEdit(null);
+                                              saveInlineField(entry, { stoppedAt: stoppedAt.toISOString() });
+                                            }
+                                            if (e.key === 'Escape') { e.stopPropagation(); setInlineEdit(null); }
+                                          }}
+                                        />
+                                      ) : (
+                                        <span
+                                          className="cursor-pointer rounded-sm px-0.5 hover:bg-white/5 transition-colors"
+                                          onClick={() => { setOpenKebab(null); setInlineEdit({ entryId: entry.id, field: 'endTime' }); setInlineEndTime(format(new Date(entry.stoppedAt!), 'HH:mm')); }}
+                                        >
+                                          {formatTime(entry.stoppedAt)}
+                                        </span>
+                                      )}
+                                    </>
+                                  )}
                                 </span>
 
                                 {/* Duration */}
