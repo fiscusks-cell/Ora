@@ -647,11 +647,11 @@ export default function TimerPage() {
 
       {/* ── Top bar ──────────────────────────────────────────────────────── */}
       <div
-        className="flex items-center gap-3 rounded-xl px-4 py-3"
+        className="flex flex-wrap sm:flex-nowrap items-center gap-2 rounded-xl px-4 py-3"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
-        {/* Description */}
-        <div className="relative flex-1 min-w-0">
+        {/* ── Description ─ 50% at sm+ ─────────────────────────────────── */}
+        <div className="relative w-full sm:min-w-0 sm:[flex:2_1_0%]">
           <input
             ref={descriptionRef}
             type="text"
@@ -693,58 +693,58 @@ export default function TimerPage() {
           )}
         </div>
 
-        {/* Project selector */}
-        <ProjectCombobox
-          projects={projects}
-          value={projectId || null}
-          onChange={(id) => setProjectId(id ?? '')}
-          disabled={isRunning}
-          placeholder="No project"
-        />
-
-        {/* Tag selector */}
-        <TagCombobox
-          tags={allTags}
-          selectedIds={selectedTagIds}
-          onChange={setSelectedTagIds}
-          onCreateTag={handleCreateTag}
-          disabled={isRunning && !entryId}
-        />
-
-        {/* Billable toggle */}
-        <button
-          type="button"
-          onClick={() => { if (!isRunning) setIsBillable((b) => !b); }}
-          disabled={isRunning}
-          className="flex-shrink-0 p-1.5 rounded transition-colors hover:bg-white/5 disabled:cursor-not-allowed"
-          title={isBillable ? 'Billable' : 'Not billable'}
-        >
-          <DollarSign
-            className="w-4 h-4"
-            style={{ color: isBillable ? 'var(--accent)' : 'var(--text-muted)' }}
+        {/* ── Project + Tags ─ 25% at sm+ ──────────────────────────────── */}
+        <div className="flex items-center gap-1.5 flex-1 min-w-0 sm:[flex:1_1_0%]">
+          <ProjectCombobox
+            projects={projects}
+            value={projectId || null}
+            onChange={(id) => setProjectId(id ?? '')}
+            disabled={isRunning}
+            placeholder="No project"
           />
-        </button>
+          <TagCombobox
+            tags={allTags}
+            selectedIds={selectedTagIds}
+            onChange={setSelectedTagIds}
+            onCreateTag={handleCreateTag}
+            disabled={isRunning && !entryId}
+          />
+        </div>
 
-        {/* Elapsed */}
-        <span
-          className="text-xl tabular-nums tracking-tight flex-shrink-0 select-none"
-          style={{ color: storePaused ? '#f59e0b' : isRunning ? 'var(--accent)' : 'var(--text-muted)' }}
-        >
-          {formatElapsed(elapsed)}
-        </span>
+        {/* ── Controls ─ 25% at sm+ ────────────────────────────────────── */}
+        <div className="flex items-center gap-2 flex-shrink-0 sm:[flex:1_1_0%] sm:justify-end">
+          <button
+            type="button"
+            onClick={() => { if (!isRunning) setIsBillable((b) => !b); }}
+            disabled={isRunning}
+            className="p-1.5 rounded transition-colors hover:bg-white/5 disabled:cursor-not-allowed"
+            title={isBillable ? 'Billable' : 'Not billable'}
+          >
+            <DollarSign
+              className="w-4 h-4"
+              style={{ color: isBillable ? 'var(--accent)' : 'var(--text-muted)' }}
+            />
+          </button>
 
-        {/* Start / Stop */}
-        <OriginButton
-          onClick={isRunning ? handleStop : () => handleStart()}
-          disabled={loading || storePaused}
-          className="flex-shrink-0 px-5 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
-          style={{
-            background: storePaused ? 'rgba(245,158,11,0.15)' : isRunning ? 'var(--error)' : 'var(--accent)',
-            color: storePaused ? '#f59e0b' : 'white',
-          }}
-        >
-          {storePaused ? 'Paused' : isRunning ? <><Square className="w-3.5 h-3.5" />Stop</> : <><Play className="w-3.5 h-3.5" />Start</>}
-        </OriginButton>
+          <span
+            className="text-xl tabular-nums tracking-tight select-none"
+            style={{ color: storePaused ? '#f59e0b' : isRunning ? 'var(--accent)' : 'var(--text-muted)' }}
+          >
+            {formatElapsed(elapsed)}
+          </span>
+
+          <OriginButton
+            onClick={isRunning ? handleStop : () => handleStart()}
+            disabled={loading || storePaused}
+            className="px-5 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 flex-shrink-0"
+            style={{
+              background: storePaused ? 'rgba(245,158,11,0.15)' : isRunning ? 'var(--error)' : 'var(--accent)',
+              color: storePaused ? '#f59e0b' : 'white',
+            }}
+          >
+            {storePaused ? 'Paused' : isRunning ? <><Square className="w-3.5 h-3.5" />Stop</> : <><Play className="w-3.5 h-3.5" />Start</>}
+          </OriginButton>
+        </div>
       </div>
 
       {/* ── Entry list ───────────────────────────────────────────────────── */}
