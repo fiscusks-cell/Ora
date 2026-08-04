@@ -21,6 +21,10 @@ interface OrgInfo {
   billingPeriod: string;
 }
 
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)' };
+const inputStyle: React.CSSProperties = { background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text)' };
+const inputReadOnly: React.CSSProperties = { background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'not-allowed' };
+
 export default function SettingsPage() {
   const { data: session, update } = useSession();
   const searchParams = useSearchParams();
@@ -167,7 +171,6 @@ export default function SettingsPage() {
 
   const handleSaveName = async () => {
     setSaving(true);
-    // Profile update would call a settings API route
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     setSaving(false);
@@ -189,17 +192,20 @@ export default function SettingsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-normal text-white mb-8">Settings</h1>
+      <h1 className="text-2xl font-normal mb-8" style={{ color: 'var(--text)' }}>Settings</h1>
 
       {/* Tab nav */}
-      <div className="flex gap-1 border-b border-slate-800 mb-8">
+      <div className="flex gap-1 mb-8" style={{ borderBottom: '1px solid var(--border)' }}>
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2.5 text-sm transition-colors border-b-2 -mb-px ${
-              tab === t.id ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className="px-4 py-2.5 text-sm transition-colors border-b-2 -mb-px"
+            style={
+              tab === t.id
+                ? { borderColor: '#6366f1', color: 'var(--text)' }
+                : { borderColor: 'transparent', color: 'var(--text-muted)' }
+            }
           >
             {t.label}
           </button>
@@ -209,8 +215,8 @@ export default function SettingsPage() {
       {tab === 'profile' && (
         <div className="space-y-6">
           {/* Profile photo */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h2 className="text-base font-normal text-white mb-4">Profile photo</h2>
+          <div className="rounded-xl p-6" style={card}>
+            <h2 className="text-base font-normal mb-4" style={{ color: 'var(--text)' }}>Profile photo</h2>
             <div className="flex items-center gap-5">
               <Avatar className="w-16 h-16 shrink-0">
                 <AvatarImage
@@ -229,7 +235,8 @@ export default function SettingsPage() {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={avatarSaving}
-                    className="bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-sm px-3 py-1.5 rounded-lg transition-colors"
+                    className="text-white text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                    style={{ background: 'var(--surface-raised)' }}
                   >
                     {pendingFile ? 'Change' : 'Upload photo'}
                   </button>
@@ -238,14 +245,16 @@ export default function SettingsPage() {
                       <button
                         onClick={handleSaveAvatar}
                         disabled={avatarSaving}
-                        className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm px-3 py-1.5 rounded-lg transition-colors"
+                        className="text-white text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                        style={{ background: 'var(--accent)' }}
                       >
                         {avatarSaving ? 'Saving…' : 'Save photo'}
                       </button>
                       <button
                         onClick={handleCancelPending}
                         disabled={avatarSaving}
-                        className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+                        className="text-sm transition-colors"
+                        style={{ color: 'var(--text-muted)' }}
                       >
                         Discard
                       </button>
@@ -255,13 +264,14 @@ export default function SettingsPage() {
                     <button
                       onClick={handleRemoveAvatar}
                       disabled={avatarSaving}
-                      className="text-sm text-slate-500 hover:text-red-400 transition-colors"
+                      className="text-sm transition-colors hover:text-red-400"
+                      style={{ color: 'var(--text-muted)' }}
                     >
                       {avatarSaving ? 'Removing…' : 'Remove'}
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-slate-500">JPEG, PNG, or WebP · max 2 MB</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>JPEG, PNG, or WebP · max 2 MB</p>
                 {avatarError && <p className="text-xs text-red-400">{avatarError}</p>}
               </div>
               <input
@@ -274,45 +284,49 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h2 className="text-base font-normal text-white mb-4">Personal information</h2>
+          <div className="rounded-xl p-6" style={card}>
+            <h2 className="text-base font-normal mb-4" style={{ color: 'var(--text)' }}>Personal information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Display name</label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-muted)' }}>Display name</label>
                 <input
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Email</label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-muted)' }}>Email</label>
                 <input
                   readOnly
                   value={session?.user?.email || ''}
-                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none"
+                  style={inputReadOnly}
                 />
-                <p className="text-xs text-slate-600 mt-1">Email cannot be changed</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Email cannot be changed</p>
               </div>
               <button
                 onClick={handleSaveName}
                 disabled={saving}
-                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+                className="text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                style={{ background: 'var(--accent)' }}
               >
                 {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save changes'}
               </button>
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h2 className="text-base font-normal text-white mb-4">Time preferences</h2>
+          <div className="rounded-xl p-6" style={card}>
+            <h2 className="text-base font-normal mb-4" style={{ color: 'var(--text)' }}>Time preferences</h2>
             <div>
-              <label className="block text-sm text-slate-400 mb-1.5">Week starts on</label>
+              <label className="block text-sm mb-1.5" style={{ color: 'var(--text-muted)' }}>Week starts on</label>
               <select
                 value={weekStartDay}
                 onChange={(e) => handleWeekStartChange(Number(e.target.value))}
                 disabled={weekStartSaving}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                style={{ ...inputStyle, color: 'var(--text-secondary)' }}
               >
                 <option value={0}>Sunday</option>
                 <option value={1}>Monday</option>
@@ -321,83 +335,117 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h2 className="text-base font-normal text-white mb-2">Change password</h2>
-            <p className="text-sm text-slate-400 mb-4">Leave blank to keep your current password</p>
+          <div className="rounded-xl p-6" style={card}>
+            <h2 className="text-base font-normal mb-2" style={{ color: 'var(--text)' }}>Change password</h2>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Leave blank to keep your current password</p>
             <div className="space-y-4">
-              <input type="password" placeholder="Current password" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              <input type="password" placeholder="New password (min 8 chars)" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">Update password</button>
+              <input
+                type="password"
+                placeholder="Current password"
+                className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{ ...inputStyle, '--tw-placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
+              />
+              <input
+                type="password"
+                placeholder="New password (min 8 chars)"
+                className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style={{ ...inputStyle, '--tw-placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
+              />
+              <button
+                className="text-white text-sm px-4 py-2 rounded-lg transition-colors"
+                style={{ background: 'var(--accent)' }}
+              >
+                Update password
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {tab === 'organization' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
-          <h2 className="text-base font-normal text-white mb-4">Organization settings</h2>
+        <div className="rounded-xl p-6 space-y-4" style={card}>
+          <h2 className="text-base font-normal mb-4" style={{ color: 'var(--text)' }}>Organization settings</h2>
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">Organization name</label>
-            <input className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className="block text-sm mb-1.5" style={{ color: 'var(--text-muted)' }}>Organization name</label>
+            <input
+              className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              style={inputStyle}
+            />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">Default billing period</label>
-            <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <label className="block text-sm mb-1.5" style={{ color: 'var(--text-muted)' }}>Default billing period</label>
+            <select
+              className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              style={{ ...inputStyle, color: 'var(--text-secondary)' }}
+            >
               <option value="WEEKLY">Weekly</option>
               <option value="BIWEEKLY">Bi-weekly</option>
               <option value="MONTHLY">Monthly</option>
             </select>
           </div>
-          <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">Save</button>
+          <button
+            className="text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            style={{ background: 'var(--accent)' }}
+          >
+            Save
+          </button>
         </div>
       )}
 
       {tab === 'billing' && (
         <div className="space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h2 className="text-base font-normal text-white mb-2">Current plan</h2>
+          <div className="rounded-xl p-6" style={card}>
+            <h2 className="text-base font-normal mb-2" style={{ color: 'var(--text)' }}>Current plan</h2>
             {org ? (() => {
               const currentPlan = PLANS[org.plan] ?? PLANS.FREE;
               const seatsText = currentPlan.seats === null ? 'Unlimited users' : `${currentPlan.seats} user${currentPlan.seats === 1 ? '' : 's'}`;
               return (
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl text-white">{currentPlan.name}</div>
-                    <p className="text-sm text-slate-400 mt-1">
+                    <div className="text-2xl" style={{ color: 'var(--text)' }}>{currentPlan.name}</div>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                       {seatsText} · {org.billingPeriod.toLowerCase()} billing
                     </p>
                   </div>
-                  <span className="bg-slate-800 text-slate-400 text-xs px-3 py-1.5 rounded-full">Current plan</span>
+                  <span
+                    className="text-xs px-3 py-1.5 rounded-full"
+                    style={{ background: 'var(--surface-raised)', color: 'var(--text-muted)' }}
+                  >
+                    Current plan
+                  </span>
                 </div>
               );
             })() : (
-              <div className="h-12 bg-slate-800 rounded-lg animate-pulse" />
+              <div className="h-12 rounded-lg animate-pulse" style={{ background: 'var(--surface-raised)' }} />
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-slate-900 border border-indigo-800 rounded-xl p-5">
-              <div className="text-white mb-1">{PLANS.PRO.name}</div>
-              <div className="text-2xl text-white mb-2">${PLANS.PRO.monthlyPrice}<span className="text-sm font-normal text-slate-400">/mo</span></div>
-              <ul className="text-xs text-slate-400 space-y-1 mb-4">
+            <div className="rounded-xl p-5" style={{ background: 'var(--surface)', border: '1px solid #4338ca' }}>
+              <div className="mb-1" style={{ color: 'var(--text)' }}>{PLANS.PRO.name}</div>
+              <div className="text-2xl mb-2" style={{ color: 'var(--text)' }}>
+                ${PLANS.PRO.monthlyPrice}
+                <span className="text-sm font-normal" style={{ color: 'var(--text-muted)' }}>/mo</span>
+              </div>
+              <ul className="text-xs space-y-1 mb-4" style={{ color: 'var(--text-muted)' }}>
                 {PLANS.PRO.features.slice(0, 3).map((f) => <li key={f}>✓ {f}</li>)}
               </ul>
-              <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm py-2 rounded-lg">Upgrade</button>
+              <button className="w-full text-white text-sm py-2 rounded-lg" style={{ background: 'var(--accent)' }}>Upgrade</button>
             </div>
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-              <div className="text-white mb-1">{PLANS.TEAM.name}</div>
-              <div className="text-2xl text-white mb-2">${PLANS.TEAM.monthlyPrice}<span className="text-sm font-normal text-slate-400">/mo</span></div>
-              <ul className="text-xs text-slate-400 space-y-1 mb-4">
+            <div className="rounded-xl p-5" style={card}>
+              <div className="mb-1" style={{ color: 'var(--text)' }}>{PLANS.TEAM.name}</div>
+              <div className="text-2xl mb-2" style={{ color: 'var(--text)' }}>
+                ${PLANS.TEAM.monthlyPrice}
+                <span className="text-sm font-normal" style={{ color: 'var(--text-muted)' }}>/mo</span>
+              </div>
+              <ul className="text-xs space-y-1 mb-4" style={{ color: 'var(--text-muted)' }}>
                 {PLANS.TEAM.features.slice(0, 3).map((f) => <li key={f}>✓ {f}</li>)}
               </ul>
-              <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm py-2 rounded-lg">Upgrade</button>
+              <button className="w-full text-white text-sm py-2 rounded-lg" style={{ background: 'var(--accent)' }}>Upgrade</button>
             </div>
           </div>
 
-          <button
-            onClick={openBillingPortal}
-            className="text-sm text-indigo-400 hover:text-indigo-300 underline"
-          >
+          <button onClick={openBillingPortal} className="text-sm text-indigo-400 hover:text-indigo-300 underline">
             Open billing portal →
           </button>
         </div>
@@ -407,22 +455,22 @@ export default function SettingsPage() {
         <div className="space-y-4">
           {qboMsg && (
             <div className={`flex items-center gap-2 text-sm px-4 py-3 rounded-lg border ${
-              qboMsg.ok
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                : 'bg-red-950 text-red-300 border-red-800'
+              qboMsg.ok ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-red-950 text-red-300 border-red-800'
             }`}>
               {qboMsg.ok && <CheckCircle className="w-4 h-4 flex-shrink-0" />}
               {qboMsg.text}
             </div>
           )}
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <div className="rounded-xl p-6" style={card}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center"><SiQuickbooks size={22} className="text-white" /></div>
+                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                  <SiQuickbooks size={22} className="text-white" />
+                </div>
                 <div>
-                  <div className="text-white">QuickBooks Online</div>
-                  <div className="text-sm text-slate-400">
+                  <div style={{ color: 'var(--text)' }}>QuickBooks Online</div>
+                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
                     {integrations.connectedQBO ? 'Connected — invoices will be published to your QBO account' : 'Publish invoices directly to QuickBooks'}
                   </div>
                 </div>
@@ -432,16 +480,13 @@ export default function SettingsPage() {
                   <CheckCircle className="w-4 h-4" /> Connected
                 </span>
               ) : (
-                <a
-                  href="/api/integrations/qbo/connect"
-                  className="bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
-                >
+                <a href="/api/integrations/qbo/connect" className="text-white text-sm px-4 py-2 rounded-lg transition-colors" style={{ background: '#15803d' }}>
                   Connect
                 </a>
               )}
             </div>
             {!integrations.connectedQBO && (
-              <div className="mt-3 text-xs text-slate-600 bg-slate-800 rounded px-3 py-2">
+              <div className="mt-3 text-xs rounded px-3 py-2" style={{ background: 'var(--surface-raised)', color: 'var(--text-muted)' }}>
                 Set INTUIT_CLIENT_ID and INTUIT_CLIENT_SECRET in your environment to enable.
               </div>
             )}
@@ -449,22 +494,22 @@ export default function SettingsPage() {
 
           {xeroMsg && (
             <div className={`flex items-center gap-2 text-sm px-4 py-3 rounded-lg border ${
-              xeroMsg.ok
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                : 'bg-red-950 text-red-300 border-red-800'
+              xeroMsg.ok ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-red-950 text-red-300 border-red-800'
             }`}>
               {xeroMsg.ok && <CheckCircle className="w-4 h-4 flex-shrink-0" />}
               {xeroMsg.text}
             </div>
           )}
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <div className="rounded-xl p-6" style={card}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center"><SiXero size={22} className="text-white" /></div>
+                <div className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center">
+                  <SiXero size={22} className="text-white" />
+                </div>
                 <div>
-                  <div className="text-white">Xero</div>
-                  <div className="text-sm text-slate-400">
+                  <div style={{ color: 'var(--text)' }}>Xero</div>
+                  <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
                     {integrations.connectedXero
                       ? `Connected${integrations.xeroOrgName ? ` to ${integrations.xeroOrgName}` : ''} — invoices will be published to your Xero organisation`
                       : 'Publish invoices directly to Xero'}
@@ -481,22 +526,20 @@ export default function SettingsPage() {
                       const res = await fetch('/api/integrations/xero/disconnect', { method: 'POST' });
                       if (res.ok) setIntegrations((prev) => ({ ...prev, connectedXero: false }));
                     }}
-                    className="text-xs text-slate-500 hover:text-red-400 transition-colors"
+                    className="text-xs transition-colors hover:text-red-400"
+                    style={{ color: 'var(--text-muted)' }}
                   >
                     Disconnect
                   </button>
                 </div>
               ) : (
-                <a
-                  href="/api/integrations/xero/connect"
-                  className="bg-sky-700 hover:bg-sky-600 text-white text-sm px-4 py-2 rounded-lg transition-colors"
-                >
+                <a href="/api/integrations/xero/connect" className="text-white text-sm px-4 py-2 rounded-lg transition-colors" style={{ background: '#0369a1' }}>
                   Connect
                 </a>
               )}
             </div>
             {!integrations.connectedXero && (
-              <div className="mt-3 text-xs text-slate-600 bg-slate-800 rounded px-3 py-2">
+              <div className="mt-3 text-xs rounded px-3 py-2" style={{ background: 'var(--surface-raised)', color: 'var(--text-muted)' }}>
                 Set XERO_CLIENT_ID and XERO_CLIENT_SECRET in your environment to enable.
               </div>
             )}

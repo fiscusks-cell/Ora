@@ -33,11 +33,11 @@ interface FormState {
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<PeriodStatus, string> = {
-  OPEN: 'bg-slate-700 text-slate-200',
-  PENDING_APPROVAL: 'bg-amber-900 text-amber-200',
-  APPROVED: 'bg-blue-900 text-blue-200',
-  PUBLISHED: 'bg-emerald-900 text-emerald-200',
+const STATUS_STYLES: Record<PeriodStatus, React.CSSProperties> = {
+  OPEN:             { background: 'var(--surface-raised)', color: 'var(--text-secondary)' },
+  PENDING_APPROVAL: { background: 'rgba(120,53,15,0.4)',   color: '#fcd34d' },
+  APPROVED:         { background: 'rgba(30,58,138,0.4)',   color: '#93c5fd' },
+  PUBLISHED:        { background: 'rgba(6,78,59,0.4)',     color: '#6ee7b7' },
 };
 
 const STATUS_LABELS: Record<PeriodStatus, string> = {
@@ -47,11 +47,7 @@ const STATUS_LABELS: Record<PeriodStatus, string> = {
   PUBLISHED: 'Published',
 };
 
-const DEFAULT_FORM: FormState = {
-  startDate: '',
-  endDate: '',
-  type: 'MONTHLY',
-};
+const DEFAULT_FORM: FormState = { startDate: '', endDate: '', type: 'MONTHLY' };
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -68,11 +64,7 @@ function formatHM(totalSeconds: number): string {
 function calcBillableAmount(entries: TimeEntryLite[] | undefined): number {
   return (entries ?? [])
     .filter((e) => e.isBillable && e.project?.hourlyRate)
-    .reduce(
-      (acc, e) =>
-        acc + ((e.durationSeconds ?? 0) / 3600) * parseFloat(e.project!.hourlyRate),
-      0
-    );
+    .reduce((acc, e) => acc + ((e.durationSeconds ?? 0) / 3600) * parseFloat(e.project!.hourlyRate), 0);
 }
 
 // ─── page ────────────────────────────────────────────────────────────────────
@@ -84,8 +76,6 @@ export default function PeriodsPage() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
 
-  // ── fetching ────────────────────────────────────────────────────────────
-
   const fetchPeriods = useCallback(async () => {
     setLoading(true);
     try {
@@ -96,11 +86,7 @@ export default function PeriodsPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchPeriods();
-  }, [fetchPeriods]);
-
-  // ── create ───────────────────────────────────────────────────────────────
+  useEffect(() => { fetchPeriods(); }, [fetchPeriods]);
 
   const handleCreate = async () => {
     if (!form.startDate || !form.endDate) return;
@@ -125,19 +111,26 @@ export default function PeriodsPage() {
     }
   };
 
+  const inputStyle: React.CSSProperties = {
+    background: 'var(--bg-tertiary)',
+    border: '1px solid var(--border)',
+    color: 'var(--text)',
+  };
+
   return (
     <div className="p-6 md:p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-normal text-white">Reports &amp; Periods</h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <h1 className="text-2xl font-normal" style={{ color: 'var(--text)' }}>Reports &amp; Periods</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Manage billing periods and submit for approval
           </p>
         </div>
         <button
           onClick={() => setShowDialog(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+          style={{ background: 'var(--accent)' }}
         >
           <Plus className="w-4 h-4" />
           Create Period
@@ -148,28 +141,30 @@ export default function PeriodsPage() {
       {loading ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-14 bg-slate-900 animate-pulse rounded-xl" />
+            <div key={i} className="h-14 animate-pulse rounded-xl" style={{ background: 'var(--surface)' }} />
           ))}
         </div>
       ) : periods.length === 0 ? (
-        <div className="text-center text-slate-500 py-16 bg-slate-900 border border-slate-800 rounded-xl">
+        <div
+          className="text-center py-16 rounded-xl"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+        >
           No billing periods yet. Create your first period to start the approval workflow.
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+        <div className="rounded-xl overflow-x-auto" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="border-b border-slate-800 text-left">
-                {['Date Range', 'Type', 'Status', 'Total Hours', 'Billable Amount', ''].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-3 text-xs text-slate-400 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  )
-                )}
+              <tr className="text-left" style={{ borderBottom: '1px solid var(--border)' }}>
+                {['Date Range', 'Type', 'Status', 'Total Hours', 'Billable Amount', ''].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-xs uppercase tracking-wider"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -179,28 +174,25 @@ export default function PeriodsPage() {
                 return (
                   <tr
                     key={p.id}
-                    className="border-b border-slate-800/50 last:border-0 hover:bg-slate-800/30 transition-colors"
+                    className="last:border-0 hover:bg-white/5 transition-colors"
+                    style={{ borderBottom: '1px solid var(--border)' }}
                   >
-                    <td className="px-4 py-3 text-white">
+                    <td className="px-4 py-3" style={{ color: 'var(--text)' }}>
                       {format(new Date(p.startDate), 'MMM d')} –{' '}
                       {format(new Date(p.endDate), 'MMM d, yyyy')}
                     </td>
-                    <td className="px-4 py-3 text-slate-400 capitalize">
+                    <td className="px-4 py-3 capitalize" style={{ color: 'var(--text-muted)' }}>
                       {p.periodType.charAt(0) + p.periodType.slice(1).toLowerCase()}
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`text-xs px-2.5 py-1 rounded ${
-                          STATUS_STYLES[p.status]
-                        }`}
-                      >
+                      <span className="text-xs px-2.5 py-1 rounded" style={STATUS_STYLES[p.status]}>
                         {STATUS_LABELS[p.status]}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-300 tabular-nums">
+                    <td className="px-4 py-3 tabular-nums" style={{ color: 'var(--text-secondary)' }}>
                       {formatHM(totalSeconds)}
                     </td>
-                    <td className="px-4 py-3 text-slate-300">
+                    <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>
                       ${billable.toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
@@ -224,30 +216,31 @@ export default function PeriodsPage() {
       {showDialog && (
         <div
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowDialog(false);
-          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowDialog(false); }}
         >
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            {/* Header */}
+          <div
+            className="rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+          >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-normal text-white">Create Billing Period</h2>
+              <h2 className="text-lg font-normal" style={{ color: 'var(--text)' }}>Create Billing Period</h2>
               <button
                 onClick={() => setShowDialog(false)}
-                className="text-slate-500 hover:text-white transition-colors p-1 rounded"
+                className="p-1 rounded transition-colors"
+                style={{ color: 'var(--text-muted)' }}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4">
-              {/* Type */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Period type</label>
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Period type</label>
                 <select
                   value={form.type}
                   onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style={{ ...inputStyle, color: 'var(--text-secondary)' }}
                 >
                   <option value="WEEKLY">Weekly</option>
                   <option value="BIWEEKLY">Bi-weekly</option>
@@ -256,22 +249,21 @@ export default function PeriodsPage() {
                 </select>
               </div>
 
-              {/* Start date */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Start date <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="date"
                   value={form.startDate}
                   onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style={inputStyle}
                 />
               </div>
 
-              {/* End date */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">
+                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   End date <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -279,23 +271,25 @@ export default function PeriodsPage() {
                   value={form.endDate}
                   min={form.startDate}
                   onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style={inputStyle}
                 />
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowDialog(false)}
-                className="flex-1 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 py-2.5 rounded-lg text-sm transition-colors"
+                className="flex-1 py-2.5 rounded-lg text-sm transition-colors"
+                style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!form.startDate || !form.endDate || saving}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm transition-colors"
+                className="flex-1 text-white py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'var(--accent)' }}
               >
                 {saving ? 'Creating…' : 'Create Period'}
               </button>

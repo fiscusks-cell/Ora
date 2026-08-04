@@ -23,7 +23,8 @@ export function MobileNav({ user }: MobileNavProps) {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button
-          className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+          className="flex items-center justify-center w-9 h-9 rounded-lg transition-colors hover:bg-white/10"
+          style={{ color: 'var(--sidebar-text)' }}
           aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" />
@@ -31,10 +32,11 @@ export function MobileNav({ user }: MobileNavProps) {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-60 p-0 bg-slate-900 border-r border-slate-800 flex flex-col"
+        className="w-60 p-0 flex flex-col"
+        style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' } as React.CSSProperties}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-slate-800 flex-shrink-0">
+        <div className="p-6 flex-shrink-0" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
           <OraLogo />
         </div>
         {/* Nav — closes sheet on link click */}

@@ -50,21 +50,18 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-xl border p-5 ${
+      className="rounded-xl p-5"
+      style={
         highlight
-          ? 'bg-emerald-950 border-emerald-800'
-          : 'bg-slate-900 border-slate-800'
-      }`}
+          ? { background: 'rgba(6,78,59,0.25)', border: '1px solid #065f46' }
+          : { background: 'var(--surface)', border: '1px solid var(--border)' }
+      }
     >
-      <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">{label}</p>
-      <p
-        className={`text-3xl tabular-nums ${
-          highlight ? 'text-emerald-400' : 'text-white'
-        }`}
-      >
+      <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="text-3xl tabular-nums" style={{ color: highlight ? '#34d399' : 'var(--text)' }}>
         {value}
       </p>
-      {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
+      {sub && <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
     </div>
   );
 }
@@ -170,10 +167,10 @@ export default async function DashboardPage() {
     <div className="p-6 md:p-8 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-normal text-white">
+        <h1 className="text-2xl font-normal" style={{ color: 'var(--text)' }}>
           {greeting}, {firstName}
         </h1>
-        <p className="text-slate-400 text-sm mt-1">Here&apos;s your time tracking overview.</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Here&apos;s your time tracking overview.</p>
       </div>
 
       {/* Active timer banner */}
@@ -206,17 +203,22 @@ export default async function DashboardPage() {
 
       {/* Recent entries */}
       <div>
-        <h2 className="text-sm text-slate-400 uppercase tracking-wider mb-4">
+        <h2 className="text-sm uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
           Recent entries
         </h2>
 
         {Object.keys(byDate).length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center text-slate-500">
-            No time entries yet.{' '}
-            <a href="/dashboard/timer" className="text-indigo-400 hover:text-indigo-300 underline">
-              Start the timer
-            </a>{' '}
-            to track your first entry.
+          <div
+            className="rounded-xl p-12 text-center"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          >
+            <p style={{ color: 'var(--text-muted)' }}>
+              No time entries yet.{' '}
+              <a href="/dashboard/timer" className="text-indigo-400 hover:text-indigo-300 underline">
+                Start the timer
+              </a>{' '}
+              to track your first entry.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -225,14 +227,18 @@ export default async function DashboardPage() {
               return (
                 <div
                   key={dateKey}
-                  className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden"
+                  className="rounded-xl overflow-hidden"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                 >
                   {/* Date header */}
-                  <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-900/80">
-                    <span className="text-sm text-slate-300">
+                  <div
+                    className="flex items-center justify-between px-5 py-3"
+                    style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-raised)' }}
+                  >
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                       {format(new Date(dateKey + 'T12:00:00'), 'EEEE, MMMM d')}
                     </span>
-                    <span className="text-sm text-slate-400 tabular-nums">
+                    <span className="text-sm tabular-nums" style={{ color: 'var(--text-muted)' }}>
                       {formatHM(dayTotal)}
                     </span>
                   </div>
@@ -248,7 +254,8 @@ export default async function DashboardPage() {
                     return (
                       <div
                         key={entry.id}
-                        className="flex items-center gap-4 px-5 py-3 border-b border-slate-800/50 last:border-0 hover:bg-slate-800/30 transition-colors"
+                        className="flex items-center gap-4 px-5 py-3 last:border-0 hover:bg-white/5 transition-colors"
+                        style={{ borderBottom: '1px solid var(--border)' }}
                       >
                         {/* Project color dot */}
                         {entry.project ? (
@@ -257,20 +264,20 @@ export default async function DashboardPage() {
                             style={{ backgroundColor: entry.project.color }}
                           />
                         ) : (
-                          <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-600" />
+                          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--text-muted)' }} />
                         )}
 
                         {/* Description + project */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-slate-200 truncate">
+                          <p className="text-sm truncate" style={{ color: 'var(--text)' }}>
                             {entry.description ? (
                               entry.description
                             ) : (
-                              <span className="text-slate-500 italic">No description</span>
+                              <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No description</span>
                             )}
                           </p>
                           {entry.project && (
-                            <p className="text-xs text-slate-500 truncate">
+                            <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
                               {entry.project.name}
                               {entry.project.client ? ` · ${entry.project.client.name}` : ''}
                             </p>
@@ -278,19 +285,22 @@ export default async function DashboardPage() {
                         </div>
 
                         {/* Time range */}
-                        <span className="text-xs text-slate-500 hidden sm:block flex-shrink-0">
+                        <span className="text-xs hidden sm:block flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
                           {format(entry.startedAt, 'HH:mm')}
                           {entry.stoppedAt ? ` – ${format(entry.stoppedAt, 'HH:mm')}` : ''}
                         </span>
 
                         {/* Duration */}
-                        <span className="text-sm text-slate-300 tabular-nums flex-shrink-0">
+                        <span className="text-sm tabular-nums flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
                           {formatHM(entrySeconds)}
                         </span>
 
                         {/* Billable badge */}
                         {entry.isBillable && (
-                          <span className="text-xs bg-emerald-900/60 text-emerald-400 px-1.5 py-0.5 rounded flex-shrink-0 hidden sm:block">
+                          <span
+                            className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 hidden sm:block"
+                            style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399' }}
+                          >
                             $
                           </span>
                         )}

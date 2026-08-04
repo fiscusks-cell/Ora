@@ -43,11 +43,13 @@ interface Period {
   }>;
 }
 
-const STATUS_LABEL = {
-  OPEN: { label: 'Open', color: 'text-slate-400 bg-slate-800' },
-  PENDING_APPROVAL: { label: 'Pending Approval', color: 'text-amber-400 bg-amber-900/50' },
-  APPROVED: { label: 'Approved', color: 'text-blue-400 bg-blue-900/50' },
-  PUBLISHED: { label: 'Published', color: 'text-emerald-400 bg-emerald-900/50' },
+type StatusKey = Period['status'];
+
+const STATUS_LABEL: Record<StatusKey, { label: string; style: React.CSSProperties }> = {
+  OPEN:             { label: 'Open',             style: { background: 'var(--surface-raised)', color: 'var(--text-secondary)' } },
+  PENDING_APPROVAL: { label: 'Pending Approval', style: { background: 'rgba(120,53,15,0.4)',   color: '#fcd34d' } },
+  APPROVED:         { label: 'Approved',         style: { background: 'rgba(30,58,138,0.4)',   color: '#93c5fd' } },
+  PUBLISHED:        { label: 'Published',        style: { background: 'rgba(6,78,59,0.4)',     color: '#6ee7b7' } },
 };
 
 export default function PeriodDetailPage() {
@@ -83,11 +85,8 @@ export default function PeriodDetailPage() {
     if (!res.ok) {
       setMessage(data.error || data.message || 'Action failed');
     } else {
-      if (data.pdfAttached === true) {
-        setSuccessMsg('Invoice created + PDF attached');
-      } else if (data.pdfAttached === false) {
-        setSuccessMsg('Invoice created (PDF attachment failed)');
-      }
+      if (data.pdfAttached === true) setSuccessMsg('Invoice created + PDF attached');
+      else if (data.pdfAttached === false) setSuccessMsg('Invoice created (PDF attachment failed)');
       await load();
     }
     setActionLoading(false);
@@ -120,7 +119,7 @@ export default function PeriodDetailPage() {
   };
 
   if (loading) return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
-  if (!period) return <div className="p-8 text-slate-400">Period not found</div>;
+  if (!period) return <div className="p-8" style={{ color: 'var(--text-muted)' }}>Period not found</div>;
 
   const totalSeconds = period.stats?.totalSeconds ?? (period.entries ?? []).reduce((s, e) => s + (e.durationSeconds || 0), 0);
   const totalAmount = period.stats?.totalBillableAmount ?? 0;
@@ -131,26 +130,26 @@ export default function PeriodDetailPage() {
       <div className="mb-8">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <div className="text-sm text-slate-500 mb-1">Billing Period</div>
-            <h1 className="text-2xl font-normal text-white">
+            <div className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Billing Period</div>
+            <h1 className="text-2xl font-normal" style={{ color: 'var(--text)' }}>
               {format(new Date(period.startDate), 'MMM d')} – {format(new Date(period.endDate), 'MMM d, yyyy')}
             </h1>
           </div>
-          <span className={`text-xs px-3 py-1.5 rounded-full ${s.color}`}>{s.label}</span>
+          <span className="text-xs px-3 py-1.5 rounded-full" style={s.style}>{s.label}</span>
         </div>
 
         <div className="flex gap-6">
           <div>
-            <div className="text-xs text-slate-500">Total Hours</div>
-            <div className="text-xl text-white tabular-nums">{formatDuration(totalSeconds)}</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Total Hours</div>
+            <div className="text-xl tabular-nums" style={{ color: 'var(--text)' }}>{formatDuration(totalSeconds)}</div>
           </div>
           <div>
-            <div className="text-xs text-slate-500">Billable Amount</div>
-            <div className="text-xl text-white">{formatCurrency(totalAmount)}</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Billable Amount</div>
+            <div className="text-xl" style={{ color: 'var(--text)' }}>{formatCurrency(totalAmount)}</div>
           </div>
           <div>
-            <div className="text-xs text-slate-500">Entries</div>
-            <div className="text-xl text-white">{(period.entries ?? []).length}</div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Entries</div>
+            <div className="text-xl" style={{ color: 'var(--text)' }}>{(period.entries ?? []).length}</div>
           </div>
         </div>
       </div>
@@ -196,7 +195,8 @@ export default function PeriodDetailPage() {
           <OriginButton
             onClick={() => doAction(`/api/periods/${id}/submit`)}
             disabled={actionLoading || (period.entries ?? []).length === 0}
-            className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            style={{ background: '#d97706' }}
           >
             <Clock className="w-4 h-4" /> Submit for Approval
           </OriginButton>
@@ -205,7 +205,8 @@ export default function PeriodDetailPage() {
           <OriginButton
             onClick={() => doAction(`/api/periods/${id}/approve`)}
             disabled={actionLoading}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            style={{ background: '#2563eb' }}
           >
             <CheckCircle className="w-4 h-4" /> Approve Period
           </OriginButton>
@@ -215,21 +216,24 @@ export default function PeriodDetailPage() {
             <OriginButton
               onClick={() => doAction(`/api/periods/${id}/publish/qbo`, 'POST')}
               disabled={actionLoading}
-              className="flex items-center gap-2 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              style={{ background: '#15803d' }}
             >
               <SiQuickbooks size={16} /> Publish to QuickBooks
             </OriginButton>
             <OriginButton
               onClick={() => doAction(`/api/periods/${id}/publish/xero`, 'POST')}
               disabled={actionLoading}
-              className="flex items-center gap-2 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              style={{ background: '#0369a1' }}
             >
               <SiXero size={16} /> Publish to Xero
             </OriginButton>
             <OriginButton
               onClick={handleGenerateInvoice}
               disabled={invoiceLoading}
-              className="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              style={{ background: '#4338ca' }}
             >
               <Download className="w-4 h-4" /> {invoiceLoading ? 'Generating…' : 'Download Invoice PDF'}
             </OriginButton>
@@ -242,14 +246,17 @@ export default function PeriodDetailPage() {
         )}
       </div>
 
-      <div className="flex gap-1 border-b border-slate-800 mb-6">
+      <div className="flex gap-1 mb-6" style={{ borderBottom: '1px solid var(--border)' }}>
         {(['summary', 'entries'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-sm capitalize transition-colors border-b-2 -mb-px ${
-              tab === t ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className="px-4 py-2.5 text-sm capitalize transition-colors border-b-2 -mb-px"
+            style={
+              tab === t
+                ? { borderColor: '#6366f1', color: 'var(--text)' }
+                : { borderColor: 'transparent', color: 'var(--text-muted)' }
+            }
           >
             {t}
           </button>
@@ -259,55 +266,73 @@ export default function PeriodDetailPage() {
       {tab === 'summary' && (
         <div className="space-y-3">
           {(period.byProject ?? []).map((p) => (
-            <div key={p.projectId} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <div
+              key={p.projectId}
+              className="rounded-xl p-4"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: p.projectColor }} />
-                  <span className="text-white">{p.projectName}</span>
-                  {p.clientName && <span className="text-xs text-slate-500">· {p.clientName}</span>}
+                  <span style={{ color: 'var(--text)' }}>{p.projectName}</span>
+                  {p.clientName && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>· {p.clientName}</span>}
                 </div>
                 <div className="flex gap-6 text-right">
                   <div>
-                    <div className="text-xs text-slate-500">Hours</div>
-                    <div className="text-sm text-slate-300">{formatDuration(p.totalSeconds)}</div>
+                    <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Hours</div>
+                    <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>{formatDuration(p.totalSeconds)}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-slate-500">Amount</div>
-                    <div className="text-sm text-white">{formatCurrency(p.billableAmount, p.clientCurrency)}</div>
+                    <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Amount</div>
+                    <div className="text-sm" style={{ color: 'var(--text)' }}>{formatCurrency(p.billableAmount, p.clientCurrency)}</div>
                   </div>
                 </div>
               </div>
             </div>
           ))}
-          <div className="flex justify-between items-center pt-4 border-t border-slate-800">
-            <span className="text-white">Total</span>
+          <div className="flex justify-between items-center pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+            <span style={{ color: 'var(--text)' }}>Total</span>
             <div className="flex gap-6">
-              <span className="text-white">{formatDuration(totalSeconds)}</span>
-              <span className="text-white">{formatCurrency(totalAmount)}</span>
+              <span style={{ color: 'var(--text)' }}>{formatDuration(totalSeconds)}</span>
+              <span style={{ color: 'var(--text)' }}>{formatCurrency(totalAmount)}</span>
             </div>
           </div>
         </div>
       )}
 
       {tab === 'entries' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           {(period.entries ?? []).length === 0 ? (
-            <div className="text-center text-slate-500 py-8">No entries in this period</div>
+            <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>No entries in this period</div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
                   {['Date', 'Description', 'Project', 'User', 'Duration', 'Billable'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-xs text-slate-400 uppercase tracking-wider">{h}</th>
+                    <th
+                      key={h}
+                      className="text-left px-4 py-3 text-xs uppercase tracking-wider"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {(period.entries ?? []).map(e => (
-                  <tr key={e.id} className="border-b border-slate-800/50 last:border-0">
-                    <td className="px-4 py-3 text-sm text-slate-400">{format(new Date(e.startedAt), 'MMM d')}</td>
-                    <td className="px-4 py-3 text-sm text-slate-200 max-w-xs truncate">{e.description || <span className="text-slate-500 italic">—</span>}</td>
-                    <td className="px-4 py-3 text-sm text-slate-400">
+                  <tr
+                    key={e.id}
+                    className="last:border-0"
+                    style={{ borderBottom: '1px solid var(--border)' }}
+                  >
+                    <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+                      {format(new Date(e.startedAt), 'MMM d')}
+                    </td>
+                    <td className="px-4 py-3 text-sm max-w-xs truncate" style={{ color: 'var(--text)' }}>
+                      {e.description || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>
                       {e.project ? (
                         <span className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: e.project.color }} />
@@ -315,10 +340,15 @@ export default function PeriodDetailPage() {
                         </span>
                       ) : '—'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-400">{e.user.name}</td>
-                    <td className="px-4 py-3 text-sm text-slate-300 tabular-nums">{formatDuration(e.durationSeconds || 0)}</td>
+                    <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{e.user.name}</td>
+                    <td className="px-4 py-3 text-sm tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                      {formatDuration(e.durationSeconds || 0)}
+                    </td>
                     <td className="px-4 py-3 text-sm">
-                      {e.isBillable ? <span className="text-emerald-400">Yes</span> : <span className="text-slate-600">No</span>}
+                      {e.isBillable
+                        ? <span className="text-emerald-400">Yes</span>
+                        : <span style={{ color: 'var(--text-muted)' }}>No</span>
+                      }
                     </td>
                   </tr>
                 ))}
