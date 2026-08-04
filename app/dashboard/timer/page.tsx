@@ -377,6 +377,7 @@ export default function TimerPage() {
       if (!useTimerStore.getState().isPaused) {
         setIsRunning(true);
         setElapsed(Math.floor((Date.now() - start.getTime()) / 1000));
+        useTimerStore.getState().startTimer(active.id, active.project?.id ?? null, active.description ?? '', start);
       }
     }
   }, []);
@@ -464,6 +465,7 @@ export default function TimerPage() {
       setStartedAt(now);
       setIsRunning(true);
       setElapsed(0);
+      useTimerStore.getState().startTimer(entry.id, pid ?? null, desc ?? '');
       if (opts?.projectId !== undefined) setProjectId(opts.projectId);
       if (opts?.description !== undefined) setDescription(opts.description);
       if (opts?.isBillable !== undefined) setIsBillable(opts.isBillable);
@@ -489,6 +491,7 @@ export default function TimerPage() {
       setDescription('');
       setProjectId('');
       setSelectedTagIds([]);
+      useTimerStore.getState().stopTimer();
       await refreshCurrentWeeks();
     } finally {
       setLoading(false);

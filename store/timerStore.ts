@@ -12,7 +12,7 @@ interface TimerState {
   isPaused: boolean;
   pausedAt: Date | null;
   initForUser: (userId: string) => void;
-  startTimer: (entryId: string, projectId: string | null, description: string) => void;
+  startTimer: (entryId: string, projectId: string | null, description: string, startedAt?: Date) => void;
   stopTimer: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
@@ -44,8 +44,8 @@ export const useTimerStore = create<TimerState>()(
           set({ userId });
         }
       },
-      startTimer: (entryId, projectId, description) =>
-        set({ entryId, projectId, description, startedAt: new Date(), isRunning: true, isPaused: false, pausedAt: null }),
+      startTimer: (entryId, projectId, description, startedAt) =>
+        set({ entryId, projectId, description, startedAt: startedAt ?? new Date(), isRunning: true, isPaused: false, pausedAt: null }),
       stopTimer: () =>
         set({ ...RESET }),
       pauseTimer: () =>

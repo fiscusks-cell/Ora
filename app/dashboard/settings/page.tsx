@@ -121,8 +121,8 @@ export default function SettingsPage() {
       setAvatarError('Only JPEG, PNG, or WebP images are allowed.');
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setAvatarError('Image must be under 2 MB.');
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError('Image must be under 5 MB.');
       return;
     }
     setAvatarError('');
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                     </button>
                   )}
                 </div>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>JPEG, PNG, or WebP · max 2 MB</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>JPEG, PNG, or WebP · max 5 MB</p>
                 {avatarError && <p className="text-xs text-red-400">{avatarError}</p>}
               </div>
               <input
