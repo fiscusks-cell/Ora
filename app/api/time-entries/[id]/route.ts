@@ -9,6 +9,7 @@ const updateSchema = z.object({
   stoppedAt: z.string().datetime().nullable().optional(),
   projectId: z.string().nullable().optional(),
   isBillable: z.boolean().optional(),
+  tagIds: z.string().array().optional(),
 });
 
 export async function PATCH(
@@ -65,14 +66,23 @@ export async function PATCH(
         durationSeconds,
         ...(data.projectId !== undefined ? { projectId: data.projectId } : {}),
         ...(data.isBillable !== undefined ? { isBillable: data.isBillable } : {}),
+        ...(data.tagIds !== undefined
+          ? {
+              tags: {
+                deleteMany: {},
+                createMany: { data: data.tagIds.map((tagId) => ({ tagId })), skipDuplicates: true },
+              },
+            }
+          : {}),
       },
       include: {
-        project: { select: { id: true, name: true, color: true, hourlyRate: true } },
+        project: { select: { id: true, name: true, color: true, hourlyRate: true, client: { select: { id: true, name: true } } } },
         user: { select: { id: true, name: true, email: true } },
+        tags: { include: { tag: { select: { id: true, name: true } } } },
       },
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json({ ...updated, tags: updated.tags.map((t) => t.tag) });
   } catch (err) {
     console.error('[time-entries PATCH] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

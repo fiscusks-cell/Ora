@@ -45,39 +45,52 @@ export default function InvoicesPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-normal text-white">Invoices</h1>
-          <p className="text-sm text-slate-500 mt-1">All generated invoice PDFs</p>
+          <h1 className="text-2xl font-normal" style={{ color: 'var(--text)' }}>Invoices</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>All generated invoice PDFs</p>
         </div>
       </div>
 
       {invoices.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
-          <FileText className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400">No invoices generated yet</p>
-          <p className="text-slate-600 text-sm mt-1">Generate your first invoice from an approved billing period</p>
+        <div
+          className="rounded-xl p-12 text-center"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        >
+          <FileText className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+          <p className="mb-1" style={{ color: 'var(--text-secondary)' }}>No invoices generated yet</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Generate your first invoice from an approved billing period</p>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-800">
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Invoice #', 'Client', 'Period', 'Amount', 'Date', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs text-slate-400 uppercase tracking-wider">{h}</th>
+                  <th
+                    key={h}
+                    className="text-left px-4 py-3 text-xs uppercase tracking-wider"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {(invoices ?? []).map(inv => (
-                <tr key={inv.id} className="border-b border-slate-800/50 last:border-0 hover:bg-slate-800/30">
+                <tr
+                  key={inv.id}
+                  className="last:border-0 hover:bg-white/5 transition-colors"
+                  style={{ borderBottom: '1px solid var(--border)' }}
+                >
                   <td className="px-4 py-3 text-sm text-indigo-400">{inv.invoiceNumber}</td>
-                  <td className="px-4 py-3 text-sm text-slate-200">{inv.clientName}</td>
-                  <td className="px-4 py-3 text-sm text-slate-400">
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--text)' }}>{inv.clientName}</td>
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>
                     {inv.periodStart && inv.periodEnd
                       ? `${format(new Date(inv.periodStart), 'MMM d')} – ${format(new Date(inv.periodEnd), 'MMM d, yyyy')}`
                       : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-white">{formatCurrency(inv.amount, inv.currency)}</td>
-                  <td className="px-4 py-3 text-sm text-slate-400">{format(new Date(inv.createdAt), 'MMM d, yyyy')}</td>
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--text)' }}>{formatCurrency(inv.amount, inv.currency)}</td>
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{format(new Date(inv.createdAt), 'MMM d, yyyy')}</td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDownload(inv)}

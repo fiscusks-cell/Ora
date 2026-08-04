@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Plus, X, Trash2, Shield, ShieldCheck, User, Mail, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { DataTable, StatusBadge, Column } from '@/components/ui/data-table';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 type MemberRole = 'MEMBER' | 'ADMIN' | 'OWNER';
 type InviteRole = 'MEMBER' | 'ADMIN';
@@ -188,12 +189,15 @@ export default function TeamPage() {
         }
         return (
           <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0 select-none"
-              style={{ background: 'var(--accent)' }}
-            >
-              {avatarInitial(row.email, row.name)}
-            </div>
+            <Avatar className="w-8 h-8 shrink-0">
+              <AvatarImage src={row.avatarUrl ?? undefined} alt={row.name ?? row.email} />
+              <AvatarFallback
+                className="text-sm text-white select-none"
+                style={{ background: 'var(--accent)' }}
+              >
+                {avatarInitial(row.email, row.name)}
+              </AvatarFallback>
+            </Avatar>
             <span className="font-medium truncate max-w-[140px]" style={{ color: 'var(--text)' }}>
               {row.name ?? '—'}
             </span>

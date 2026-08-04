@@ -9,12 +9,14 @@ import {
 import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/ThemeProvider';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface NavUser {
   name: string;
   email: string;
   role: string;
   organizationName: string;
+  image?: string | null;
 }
 
 interface DashboardNavProps {
@@ -161,12 +163,15 @@ export function DashboardNav({ user }: DashboardNavProps) {
 
         {/* User info */}
         <div className="flex items-center gap-3 px-3 py-2.5">
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs shrink-0"
-            style={{ background: 'var(--sidebar-active)' }}
-          >
-            {user.name?.[0]?.toUpperCase() ?? '?'}
-          </div>
+          <Avatar className="w-7 h-7 shrink-0">
+            <AvatarImage src={user.image ?? undefined} alt={user.name} />
+            <AvatarFallback
+              className="text-xs text-white"
+              style={{ background: 'var(--sidebar-active)' }}
+            >
+              {user.name?.[0]?.toUpperCase() ?? '?'}
+            </AvatarFallback>
+          </Avatar>
           <div className="overflow-hidden flex-1">
             <p className="text-sm font-medium truncate" style={{ color: 'var(--sidebar-text)' }}>
               {user.name}

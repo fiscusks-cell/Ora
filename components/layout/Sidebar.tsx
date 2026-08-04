@@ -14,11 +14,14 @@ interface SidebarProps {
 
 export function Sidebar({ user }: SidebarProps) {
   return (
-    <aside className="fixed left-0 top-0 h-full w-60 bg-slate-900 border-r border-slate-800 flex flex-col z-40">
+    <aside
+      className="fixed left-0 top-0 h-full w-60 flex flex-col z-40"
+      style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' }}
+    >
       {/* Logo */}
-      <div className="px-4 py-5 border-b border-slate-800">
+      <div className="px-4 py-5" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
         <OraLogo />
-        <p className="text-xs text-slate-500 mt-1 pl-10">Time, tracked.</p>
+        <p className="text-xs mt-1 pl-10" style={{ color: 'var(--sidebar-muted)' }}>Time, tracked.</p>
       </div>
 
       {/* Nav */}
@@ -27,14 +30,14 @@ export function Sidebar({ user }: SidebarProps) {
       </div>
 
       {/* User footer */}
-      <div className="px-4 py-4 border-t border-slate-800">
+      <div className="px-4 py-4" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 rounded-full bg-indigo-700 flex items-center justify-center text-white text-sm shrink-0">
             {user.name?.[0]?.toUpperCase() ?? '?'}
           </div>
           <div className="overflow-hidden">
-            <p className="text-sm font-medium text-white truncate">{user.name}</p>
-            <p className="text-xs text-slate-500 truncate">{user.organizationName}</p>
+            <p className="text-sm font-medium truncate" style={{ color: 'var(--sidebar-text)' }}>{user.name}</p>
+            <p className="text-xs truncate" style={{ color: 'var(--sidebar-muted)' }}>{user.organizationName}</p>
           </div>
         </div>
         <form
@@ -45,7 +48,8 @@ export function Sidebar({ user }: SidebarProps) {
         >
           <button
             type="submit"
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors w-full px-2 py-1.5 rounded hover:bg-slate-800"
+            className="flex items-center gap-2 text-sm w-full px-2 py-1.5 rounded transition-colors hover:bg-white/10"
+            style={{ color: 'var(--sidebar-muted)' }}
           >
             <LogOut size={15} />
             Sign out

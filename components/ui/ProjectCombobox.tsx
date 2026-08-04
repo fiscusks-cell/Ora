@@ -15,6 +15,7 @@ interface Props {
   onChange: (id: string | null) => void;
   disabled?: boolean;
   placeholder?: string;
+  onClose?: () => void;
 }
 
 export function ProjectCombobox({
@@ -23,6 +24,7 @@ export function ProjectCombobox({
   onChange,
   disabled = false,
   placeholder = 'Project',
+  onClose,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -47,8 +49,9 @@ export function ProjectCombobox({
       onChange(id);
       setOpen(false);
       setQuery('');
+      onClose?.();
     },
-    [onChange],
+    [onChange, onClose],
   );
 
   useEffect(() => {
@@ -57,6 +60,7 @@ export function ProjectCombobox({
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
         setQuery('');
+        onClose?.();
       }
     }
     document.addEventListener('mousedown', handler);

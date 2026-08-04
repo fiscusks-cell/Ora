@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { DashboardNav } from '@/components/layout/DashboardNav';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { OraLogo } from '@/components/layout/OraLogo';
+import { TabSignal } from '@/components/layout/TabSignal';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -13,17 +14,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
     id: string; name: string; email: string; role: string; organizationId: string;
   };
 
-  const org = await prisma.organization.findUnique({ where: { id: sessionUser.organizationId } });
+  const [org, dbUser] = await Promise.all([
+    prisma.organization.findUnique({ where: { id: sessionUser.organizationId } }),
+    prisma.user.findUnique({ where: { id: sessionUser.id }, select: { avatarUrl: true } }),
+  ]);
 
   const navUser = {
     name: sessionUser.name || sessionUser.email || 'User',
     email: sessionUser.email || '',
     role: sessionUser.role || 'MEMBER',
     organizationName: org?.name ?? '',
+    image: dbUser?.avatarUrl ?? null,
   };
 
   return (
     <div className="flex h-screen relative" style={{ background: 'var(--bg)' }}>
+      <TabSignal />
       {/* Fixed background image — opacity controlled per theme via CSS */}
       <div
         aria-hidden="true"
