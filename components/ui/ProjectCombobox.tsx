@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, X } from 'lucide-react';
 
 export interface ProjectOption {
   id: string;
@@ -56,6 +56,16 @@ export function ProjectCombobox({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [collapsedClients, setCollapsedClients] = useState<Set<string>>(new Set());
+
+  const toggleClient = useCallback((label: string) => {
+    setCollapsedClients((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -230,23 +240,38 @@ export function ProjectCombobox({
                   ...sortedClients.map((client) => ({ label: client, items: groups.get(client)! })),
                   ...(noClient.length > 0 ? [{ label: 'No client', items: noClient }] : []),
                 ];
-                return sections.map(({ label, items }) => (
-                  <li key={label}>
-                    <p
-                      className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest select-none"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      {label}
-                    </p>
-                    <ul>
-                      {items.map((p) => (
-                        <li key={p.id}>
-                          <ProjectRow p={p} selected={value === p.id} onSelect={select} indent />
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                ));
+                return sections.map(({ label, items }) => {
+                  const collapsed = collapsedClients.has(label);
+                  return (
+                    <li key={label}>
+                      <button
+                        type="button"
+                        onClick={() => toggleClient(label)}
+                        className="w-full flex items-center gap-1 px-3 pt-3 pb-1 hover:opacity-80 transition-opacity"
+                      >
+                        {collapsed
+                          ? <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                          : <ChevronDown className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                        }
+                        <span
+                          className="text-[10px] uppercase tracking-widest select-none"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          {label}
+                        </span>
+                      </button>
+                      {!collapsed && (
+                        <ul>
+                          {items.map((p) => (
+                            <li key={p.id}>
+                              <ProjectRow p={p} selected={value === p.id} onSelect={select} indent />
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                });
               })()
             )}
           </ul>
