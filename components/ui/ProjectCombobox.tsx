@@ -129,6 +129,12 @@ export function ProjectCombobox({
         type="button"
         disabled={disabled}
         onClick={openDropdown}
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            openDropdown();
+          }
+        }}
         className={`flex items-center gap-2 h-9 rounded-lg px-3 text-sm transition-colors min-w-[160px] max-w-[220px] disabled:opacity-60 disabled:cursor-not-allowed ${open ? 'ring-2 ring-indigo-500' : ''}`}
         style={{
           background: 'var(--surface-raised)',
@@ -168,7 +174,7 @@ export function ProjectCombobox({
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute z-50 top-full mt-1 left-0 w-64 rounded-xl shadow-lg overflow-hidden"
+          className="absolute z-50 top-full mt-1 left-0 w-80 max-w-[calc(100vw-2rem)] rounded-xl shadow-lg overflow-hidden"
           style={{
             background: 'var(--surface)',
             border: '1px solid var(--border)',

@@ -17,6 +17,7 @@ interface Project {
   color: string;
   hourlyRate: number;
   isBillable: boolean;
+  clientName?: string | null;
   client: { id: string; name: string } | null;
 }
 
@@ -355,7 +356,10 @@ export default function TimerPage() {
 
   const fetchProjects = useCallback(async () => {
     const res = await fetch('/api/projects');
-    if (res.ok) setProjects(await res.json());
+    if (res.ok) {
+      const raw: Array<{ id: string; name: string; color: string; hourlyRate: number; isBillable: boolean; client: { id: string; name: string } | null }> = await res.json();
+      setProjects(raw.map((p) => ({ ...p, clientName: p.client?.name ?? null })));
+    }
   }, []);
 
   const fetchTags = useCallback(async () => {
