@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, X, Play, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { ProjectIconOrDot } from '@/components/ui/ProjectIconOrDot';
 import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -17,6 +18,7 @@ interface Entry {
     id: string;
     name: string;
     color: string;
+    icon?: string | null;
     hourlyRate: number | string;
     client?: { name: string } | null;
   } | null;
@@ -87,11 +89,7 @@ function EntryRow({
 
   return (
     <div className="group flex items-center gap-3 py-2.5 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
-      {/* color dot */}
-      <span
-        className="w-2 h-2 rounded-full flex-shrink-0 mt-0.5"
-        style={{ backgroundColor: entry.project?.color ?? '#4b5563' }}
-      />
+      <ProjectIconOrDot icon={entry.project?.icon} color={entry.project?.color ?? '#4b5563'} size={20} dotClassName="w-2 h-2 mt-0.5" />
 
       {/* description + project/client — grows to fill */}
       <div className="flex-1 min-w-0">

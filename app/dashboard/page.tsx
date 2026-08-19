@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
+import { ProjectIconOrDot } from '@/components/ui/ProjectIconOrDot';
 import {
   startOfDay,
   endOfDay,
@@ -257,15 +258,10 @@ export default async function DashboardPage() {
                         className="flex items-center gap-4 px-5 py-3 last:border-0 hover:bg-white/5 transition-colors"
                         style={{ borderBottom: '1px solid var(--border)' }}
                       >
-                        {/* Project color dot */}
-                        {entry.project ? (
-                          <span
-                            className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: entry.project.color }}
-                          />
-                        ) : (
-                          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--text-muted)' }} />
-                        )}
+                        {entry.project
+                          ? <ProjectIconOrDot icon={entry.project.icon} color={entry.project.color} size={20} dotClassName="w-2 h-2" />
+                          : <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--text-muted)' }} />
+                        }
 
                         {/* Description + project */}
                         <div className="flex-1 min-w-0">

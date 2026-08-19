@@ -41,7 +41,7 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { getCurrency } from '@/lib/currency';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
-import { resolveIcon } from '@/lib/project-icons';
+import { ProjectIconOrDot } from '@/components/ui/ProjectIconOrDot';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1035,7 +1035,7 @@ export default function ReportsPage() {
                               ) : (
                                 <ChevronRight size={14} className="text-slate-500 flex-shrink-0" />
                               )}
-                              {(() => { const ProjIcon = resolveIcon(proj.projectIcon); return ProjIcon ? <ProjIcon size={12} style={{ color: proj.projectColor, flexShrink: 0 }} /> : <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: proj.projectColor }} />; })()}
+                              <ProjectIconOrDot icon={proj.projectIcon} color={proj.projectColor} size={24} />
                               <span className="text-white truncate">{proj.projectName}</span>
                             </div>
                           </td>
@@ -1222,7 +1222,7 @@ export default function ReportsPage() {
                             ) : (
                               <div className="flex items-center gap-1.5">
                                 {entry.project && (
-                                  (() => { const ProjIcon = resolveIcon(entry.project.icon); return ProjIcon ? <ProjIcon size={10} style={{ color: entry.project.color, flexShrink: 0 }} /> : <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: entry.project.color }} />; })()
+                                  <ProjectIconOrDot icon={entry.project.icon} color={entry.project.color} size={20} dotClassName="w-2 h-2" />
                                 )}
                                 <span className="text-slate-300 hover:text-white">
                                   {entry.project?.name ?? <span className="text-slate-600">No project</span>}
@@ -1595,7 +1595,7 @@ export default function ReportsPage() {
                           >
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                {(() => { const ProjIcon = resolveIcon(proj.projectIcon); return ProjIcon ? <ProjIcon size={12} style={{ color: proj.projectColor, flexShrink: 0 }} /> : <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: proj.projectColor }} />; })()}
+                                <ProjectIconOrDot icon={proj.projectIcon} color={proj.projectColor} size={24} />
                                 <span className="text-white truncate">{proj.projectName}</span>
                               </div>
                             </td>

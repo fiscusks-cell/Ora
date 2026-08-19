@@ -8,7 +8,7 @@ import { OriginButton } from '@/components/ui/origin-button';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 import { TagCombobox, type TagOption } from '@/components/ui/TagCombobox';
 import { useTimerStore } from '@/store/timerStore';
-import { resolveIcon } from '@/lib/project-icons';
+import { ProjectIconOrDot } from '@/components/ui/ProjectIconOrDot';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -930,7 +930,7 @@ export default function TimerPage() {
                                   >
                                     {entry.project ? (
                                       <>
-                                        {(() => { const ProjIcon = resolveIcon(entry.project.icon); return ProjIcon ? <ProjIcon size={10} style={{ color: entry.project.color, flexShrink: 0 }} /> : <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: entry.project.color }} />; })()}
+                                        <ProjectIconOrDot icon={entry.project.icon} color={entry.project.color} size={20} dotClassName="w-2 h-2" />
                                         <span className="text-sm flex-shrink-0 max-w-[120px] truncate" style={{ color: entry.project.color }}>
                                           {entry.project.name}
                                         </span>
