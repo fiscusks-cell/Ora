@@ -7,6 +7,7 @@ const createSchema = z.object({
   name: z.string().min(1).max(100),
   clientId: z.string().optional(),
   color: z.string().default('#3730A3'),
+  icon: z.string().min(1),
   hourlyRate: z.number().min(0).default(0),
   isBillable: z.boolean().default(true),
 });
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, clientId, color, hourlyRate, isBillable } = parsed.data;
+    const { name, clientId, color, icon, hourlyRate, isBillable } = parsed.data;
 
     if (clientId) {
       const client = await prisma.client.findFirst({
@@ -72,6 +73,7 @@ export async function POST(req: NextRequest) {
         name,
         clientId: clientId ?? null,
         color,
+        icon: icon ?? null,
         hourlyRate,
         isBillable,
       },

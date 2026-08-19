@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       const entries = await prisma.timeEntry.findMany({
         where: { userId, stoppedAt: null },
         include: {
-          project: { select: { id: true, name: true, color: true, hourlyRate: true, isBillable: true, client: { select: { id: true, name: true } } } },
+          project: { select: { id: true, name: true, color: true, icon: true, hourlyRate: true, isBillable: true, client: { select: { id: true, name: true } } } },
           user: { select: { id: true, name: true, email: true, avatarUrl: true } },
           tags: { include: { tag: { select: { id: true, name: true } } } },
         },
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
           : {}),
       },
       include: {
-        project: { select: { id: true, name: true, color: true, hourlyRate: true, isBillable: true, client: { select: { id: true, name: true } } } },
+        project: { select: { id: true, name: true, color: true, icon: true, hourlyRate: true, isBillable: true, client: { select: { id: true, name: true } } } },
         user: { select: { id: true, name: true, email: true, avatarUrl: true } },
         tags: { include: { tag: { select: { id: true, name: true } } } },
       },
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
           : {}),
       },
       include: {
-        project: { select: { id: true, name: true, color: true, hourlyRate: true, isBillable: true } },
+        project: { select: { id: true, name: true, color: true, icon: true, hourlyRate: true, isBillable: true } },
         user: { select: { id: true, name: true, email: true } },
         tags: { include: { tag: { select: { id: true, name: true } } } },
       },

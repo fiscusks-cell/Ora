@@ -41,6 +41,7 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { getCurrency } from '@/lib/currency';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
+import { resolveIcon } from '@/lib/project-icons';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -57,6 +58,7 @@ interface TimeEntry {
     id: string;
     name: string;
     color: string;
+    icon?: string | null;
     hourlyRate: any;
     isBillable: boolean;
     client: { id: string; name: string; currency: string } | null;
@@ -82,6 +84,7 @@ interface ProjectStat {
   projectId: string | null;
   projectName: string;
   projectColor: string;
+  projectIcon: string | null;
   clientId: string | null;
   clientName: string | null;
   clientCurrency: string;
@@ -114,6 +117,7 @@ interface ProjectOption {
   id: string;
   name: string;
   color: string;
+  icon?: string | null;
   clientName?: string | null;
 }
 
@@ -349,6 +353,7 @@ export default function ReportsPage() {
               id: entry.project.id,
               name: entry.project.name,
               color: entry.project.color,
+              icon: entry.project.icon ?? null,
               clientName: entry.project.client?.name ?? null,
             });
           }
@@ -1030,10 +1035,7 @@ export default function ReportsPage() {
                               ) : (
                                 <ChevronRight size={14} className="text-slate-500 flex-shrink-0" />
                               )}
-                              <span
-                                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: proj.projectColor }}
-                              />
+                              {(() => { const ProjIcon = resolveIcon(proj.projectIcon); return ProjIcon ? <ProjIcon size={12} style={{ color: proj.projectColor, flexShrink: 0 }} /> : <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: proj.projectColor }} />; })()}
                               <span className="text-white truncate">{proj.projectName}</span>
                             </div>
                           </td>
@@ -1220,10 +1222,7 @@ export default function ReportsPage() {
                             ) : (
                               <div className="flex items-center gap-1.5">
                                 {entry.project && (
-                                  <span
-                                    className="w-2 h-2 rounded-full flex-shrink-0"
-                                    style={{ backgroundColor: entry.project.color }}
-                                  />
+                                  (() => { const ProjIcon = resolveIcon(entry.project.icon); return ProjIcon ? <ProjIcon size={10} style={{ color: entry.project.color, flexShrink: 0 }} /> : <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: entry.project.color }} />; })()
                                 )}
                                 <span className="text-slate-300 hover:text-white">
                                   {entry.project?.name ?? <span className="text-slate-600">No project</span>}
@@ -1596,10 +1595,7 @@ export default function ReportsPage() {
                           >
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                <span
-                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                                  style={{ backgroundColor: proj.projectColor }}
-                                />
+                                {(() => { const ProjIcon = resolveIcon(proj.projectIcon); return ProjIcon ? <ProjIcon size={12} style={{ color: proj.projectColor, flexShrink: 0 }} /> : <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: proj.projectColor }} />; })()}
                                 <span className="text-white truncate">{proj.projectName}</span>
                               </div>
                             </td>

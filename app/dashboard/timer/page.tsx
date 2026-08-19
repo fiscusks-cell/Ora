@@ -8,6 +8,7 @@ import { OriginButton } from '@/components/ui/origin-button';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 import { TagCombobox, type TagOption } from '@/components/ui/TagCombobox';
 import { useTimerStore } from '@/store/timerStore';
+import { resolveIcon } from '@/lib/project-icons';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -15,14 +16,18 @@ interface Project {
   id: string;
   name: string;
   color: string;
+  icon?: string | null;
   hourlyRate: number;
   isBillable: boolean;
+  clientName?: string | null;
   client: { id: string; name: string } | null;
 }
 
 interface RecentDesc {
   description: string;
   projectName: string;
+  projectId: string | null;
+  tagIds: string[];
 }
 
 interface TimeEntry {
@@ -37,6 +42,7 @@ interface TimeEntry {
     id: string;
     name: string;
     color: string;
+    icon?: string | null;
     client: { id: string; name: string } | null;
   } | null;
 }
@@ -355,7 +361,10 @@ export default function TimerPage() {
 
   const fetchProjects = useCallback(async () => {
     const res = await fetch('/api/projects');
-    if (res.ok) setProjects(await res.json());
+    if (res.ok) {
+      const raw: Array<{ id: string; name: string; color: string; icon?: string | null; hourlyRate: number; isBillable: boolean; client: { id: string; name: string } | null }> = await res.json();
+      setProjects(raw.map((p) => ({ ...p, clientName: p.client?.name ?? null })));
+    }
   }, []);
 
   const fetchTags = useCallback(async () => {
@@ -642,17 +651,20 @@ export default function TimerPage() {
   // ── recent descriptions dropdown ──────────────────────────────────────────
 
   const handleDescFocus = async () => {
-    const clientId = selectedProject?.client?.id;
-    if (!clientId) return;
-    const res = await fetch(`/api/time-entries?clientId=${clientId}`);
+    const res = await fetch('/api/time-entries');
     if (!res.ok) return;
     const entries: TimeEntry[] = await res.json();
     const seen = new Set<string>();
     const unique: RecentDesc[] = [];
     for (const e of entries) {
-      if (e.description && !seen.has(e.description) && unique.length < 3) {
+      if (e.description && e.stoppedAt && !seen.has(e.description) && unique.length < 10) {
         seen.add(e.description);
-        unique.push({ description: e.description, projectName: e.project?.name ?? '' });
+        unique.push({
+          description: e.description,
+          projectName: e.project?.name ?? '',
+          projectId: e.project?.id ?? null,
+          tagIds: e.tags.map((t) => t.id),
+        });
       }
     }
     setRecentDescs(unique);
@@ -722,6 +734,8 @@ export default function TimerPage() {
                     e.preventDefault();
                     setDescription(item.description);
                     handleDescriptionChange(item.description);
+                    if (item.projectId) setProjectId(item.projectId);
+                    if (item.tagIds.length > 0) setSelectedTagIds(item.tagIds);
                     setShowDescs(false);
                   }}
                   className="w-full text-left px-3 py-2 hover:bg-white/5 transition-colors flex items-baseline gap-1.5 min-w-0"
@@ -916,7 +930,7 @@ export default function TimerPage() {
                                   >
                                     {entry.project ? (
                                       <>
-                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: entry.project.color }} />
+                                        {(() => { const ProjIcon = resolveIcon(entry.project.icon); return ProjIcon ? <ProjIcon size={10} style={{ color: entry.project.color, flexShrink: 0 }} /> : <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: entry.project.color }} />; })()}
                                         <span className="text-sm flex-shrink-0 max-w-[120px] truncate" style={{ color: entry.project.color }}>
                                           {entry.project.name}
                                         </span>
