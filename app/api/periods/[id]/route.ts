@@ -51,6 +51,7 @@ export async function GET(
         projectId: string;
         projectName: string;
         projectColor: string;
+        projectIcon: string | null;
         clientName: string | null;
         clientCurrency: string;
         totalSeconds: number;
@@ -64,6 +65,7 @@ export async function GET(
       const key = entry.projectId ?? '__no_project__';
       const projectName = entry.project?.name ?? 'No Project';
       const projectColor = entry.project?.color ?? '#6B7280';
+      const projectIcon = entry.project?.icon ?? null;
       const clientName = entry.project?.client?.name ?? null;
       const clientCurrency = entry.project?.client?.currency ?? 'USD';
 
@@ -72,6 +74,7 @@ export async function GET(
           projectId: key,
           projectName,
           projectColor,
+          projectIcon,
           clientName,
           clientCurrency,
           totalSeconds: 0,

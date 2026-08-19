@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, ChevronRight, X } from 'lucide-react';
-import { resolveIcon } from '@/lib/project-icons';
+import { ProjectIconOrDot } from '@/components/ui/ProjectIconOrDot';
 
 export interface ProjectOption {
   id: string;
@@ -31,17 +31,13 @@ function ProjectRow({
   onSelect: (id: string) => void;
   indent?: boolean;
 }) {
-  const Icon = resolveIcon(p.icon);
   return (
     <button
       type="button"
       onClick={() => onSelect(p.id)}
       className={`w-full text-left py-2 flex items-center gap-2.5 hover:bg-white/5 transition-colors ${selected ? 'bg-white/5' : ''} ${indent ? 'px-4' : 'px-3'}`}
     >
-      {Icon
-        ? <Icon size={12} style={{ color: p.color, flexShrink: 0 }} />
-        : <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-      }
+      <ProjectIconOrDot icon={p.icon} color={p.color} size={24} />
       <span className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
         {p.name}
       </span>
@@ -146,7 +142,7 @@ export function ProjectCombobox({
       >
         {selected ? (
           <>
-            {(() => { const Icon = resolveIcon(selected.icon); return Icon ? <Icon size={12} style={{ color: selected.color, flexShrink: 0 }} /> : <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: selected.color }} />; })()}
+            <ProjectIconOrDot icon={selected.icon} color={selected.color} size={24} />
             <span className="truncate flex-1 text-left font-medium" style={{ color: 'var(--text)' }}>
               {selected.name}
             </span>

@@ -6,6 +6,7 @@ import { formatDuration, formatCurrency } from '@/lib/utils';
 import { getCurrency } from '@/lib/currency';
 import { format } from 'date-fns';
 import { CheckCircle, Clock, AlertCircle, Download } from 'lucide-react';
+import { ProjectIconOrDot } from '@/components/ui/ProjectIconOrDot';
 import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { OriginButton } from '@/components/ui/origin-button';
 
@@ -16,7 +17,7 @@ interface Entry {
   stoppedAt: string | null;
   durationSeconds: number | null;
   isBillable: boolean;
-  project: { id: string; name: string; color: string; hourlyRate: string; client: { name: string; currency: string } | null } | null;
+  project: { id: string; name: string; color: string; icon?: string | null; hourlyRate: string; client: { name: string; currency: string } | null } | null;
   user: { id: string; name: string };
 }
 
@@ -36,6 +37,7 @@ interface Period {
     projectId: string;
     projectName: string;
     projectColor: string;
+    projectIcon: string | null;
     clientName: string | null;
     clientCurrency: string;
     totalSeconds: number;
@@ -273,7 +275,7 @@ export default function PeriodDetailPage() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: p.projectColor }} />
+                  <ProjectIconOrDot icon={p.projectIcon} color={p.projectColor} size={24} dotClassName="w-3 h-3" />
                   <span style={{ color: 'var(--text)' }}>{p.projectName}</span>
                   {p.clientName && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>· {p.clientName}</span>}
                 </div>
@@ -335,7 +337,7 @@ export default function PeriodDetailPage() {
                     <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>
                       {e.project ? (
                         <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: e.project.color }} />
+                          <ProjectIconOrDot icon={e.project.icon} color={e.project.color} size={20} dotClassName="w-2 h-2" />
                           {e.project.name}
                         </span>
                       ) : '—'}

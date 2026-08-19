@@ -102,7 +102,7 @@ export default function ProjectsPage() {
         return (
           <div className="flex items-center gap-3">
             {Icon
-              ? <Icon size={14} style={{ color: p.color, flexShrink: 0 }} />
+              ? <Icon size={28} style={{ color: p.color, width: 28, height: 28, flexShrink: 0 }} />
               : <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: p.color }} />
             }
             <span className="font-medium" style={{ color: 'var(--text)' }}>{p.name}</span>
