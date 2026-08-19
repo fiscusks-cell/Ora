@@ -7,6 +7,7 @@ const updateSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   clientId: z.string().nullable().optional(),
   color: z.string().optional(),
+  icon: z.string().nullable().optional(),
   hourlyRate: z.number().min(0).optional(),
   isBillable: z.boolean().optional(),
   isArchived: z.boolean().optional(),

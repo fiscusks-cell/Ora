@@ -24,6 +24,8 @@ interface Project {
 interface RecentDesc {
   description: string;
   projectName: string;
+  projectId: string | null;
+  tagIds: string[];
 }
 
 interface TimeEntry {
@@ -646,17 +648,20 @@ export default function TimerPage() {
   // ── recent descriptions dropdown ──────────────────────────────────────────
 
   const handleDescFocus = async () => {
-    const clientId = selectedProject?.client?.id;
-    if (!clientId) return;
-    const res = await fetch(`/api/time-entries?clientId=${clientId}`);
+    const res = await fetch('/api/time-entries');
     if (!res.ok) return;
     const entries: TimeEntry[] = await res.json();
     const seen = new Set<string>();
     const unique: RecentDesc[] = [];
     for (const e of entries) {
-      if (e.description && !seen.has(e.description) && unique.length < 3) {
+      if (e.description && e.stoppedAt && !seen.has(e.description) && unique.length < 10) {
         seen.add(e.description);
-        unique.push({ description: e.description, projectName: e.project?.name ?? '' });
+        unique.push({
+          description: e.description,
+          projectName: e.project?.name ?? '',
+          projectId: e.project?.id ?? null,
+          tagIds: e.tags.map((t) => t.id),
+        });
       }
     }
     setRecentDescs(unique);
@@ -726,6 +731,8 @@ export default function TimerPage() {
                     e.preventDefault();
                     setDescription(item.description);
                     handleDescriptionChange(item.description);
+                    if (item.projectId) setProjectId(item.projectId);
+                    if (item.tagIds.length > 0) setSelectedTagIds(item.tagIds);
                     setShowDescs(false);
                   }}
                   className="w-full text-left px-3 py-2 hover:bg-white/5 transition-colors flex items-baseline gap-1.5 min-w-0"

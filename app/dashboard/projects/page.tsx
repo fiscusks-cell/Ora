@@ -6,6 +6,7 @@ import { Plus, Archive, Pencil, X } from 'lucide-react';
 import { getCurrency } from '@/lib/currency';
 import { DataTable, StatusBadge, Column } from '@/components/ui/data-table';
 import { InlineClientForm } from '@/components/forms/inline-client-form';
+import { PROJECT_ICONS, resolveIcon } from '@/lib/project-icons';
 
 interface Client {
   id: string;
@@ -17,6 +18,7 @@ interface Project {
   id: string;
   name: string;
   color: string;
+  icon?: string | null;
   hourlyRate: number | string;
   isBillable: boolean;
   isArchived: boolean;
@@ -27,12 +29,13 @@ interface FormState {
   name: string;
   clientId: string;
   color: string;
+  icon: string;
   hourlyRate: string;
   isBillable: boolean;
 }
 
 const COLOR_OPTIONS = ['#3730A3', '#10B981', '#EF4444', '#F59E0B', '#8B5CF6', '#06B6D4', '#EC4899', '#64748B'];
-const DEFAULT_FORM: FormState = { name: '', clientId: '', color: '#3730A3', hourlyRate: '0', isBillable: true };
+const DEFAULT_FORM: FormState = { name: '', clientId: '', color: '#3730A3', icon: '', hourlyRate: '0', isBillable: true };
 
 export default function ProjectsPage() {
   const { data: session } = useSession();
@@ -47,21 +50,22 @@ export default function ProjectsPage() {
   const [saving, setSaving] = useState(false);
   const [showInlineClient, setShowInlineClient] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const [iconSearch, setIconSearch] = useState('');
 
   const fetchProjects = useCallback(async () => { const res = await fetch('/api/projects'); if (res.ok) setProjects(await res.json()); }, []);
   const fetchClients = useCallback(async () => { const res = await fetch('/api/clients'); if (res.ok) setClients(await res.json()); }, []);
 
   useEffect(() => { fetchProjects(); fetchClients(); }, [fetchProjects, fetchClients]);
 
-  const openNew = () => { setEditProject(null); setForm(DEFAULT_FORM); setShowDialog(true); };
-  const openEdit = (p: Project) => { setEditProject(p); setForm({ name: p.name, clientId: p.client?.id ?? '', color: p.color, hourlyRate: String(Number(p.hourlyRate).toFixed(2)), isBillable: p.isBillable }); setShowDialog(true); };
-  const closeDialog = () => { setShowDialog(false); setEditProject(null); setShowInlineClient(false); };
+  const openNew = () => { setEditProject(null); setForm(DEFAULT_FORM); setIconSearch(''); setShowDialog(true); };
+  const openEdit = (p: Project) => { setEditProject(p); setForm({ name: p.name, clientId: p.client?.id ?? '', color: p.color, icon: p.icon ?? '', hourlyRate: String(Number(p.hourlyRate).toFixed(2)), isBillable: p.isBillable }); setIconSearch(''); setShowDialog(true); };
+  const closeDialog = () => { setShowDialog(false); setEditProject(null); setShowInlineClient(false); setIconSearch(''); };
 
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const body = { name: form.name.trim(), color: form.color, clientId: form.clientId || undefined, hourlyRate: parseFloat(form.hourlyRate) || 0, isBillable: form.isBillable };
+      const body = { name: form.name.trim(), color: form.color, icon: form.icon || null, clientId: form.clientId || undefined, hourlyRate: parseFloat(form.hourlyRate) || 0, isBillable: form.isBillable };
       if (editProject) {
         const res = await fetch(`/api/projects/${editProject.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         if (res.ok) { const updated: Project = await res.json(); setProjects((prev) => prev.map((p) => (p.id === editProject.id ? updated : p))); }
@@ -84,17 +88,26 @@ export default function ProjectsPage() {
   const archivedCount = projects.filter((p) => p.isArchived).length;
   const selectedClient = clients.find((c) => c.id === form.clientId) ?? null;
   const rateSymbol = getCurrency(selectedClient?.currency ?? 'USD').symbol;
+  const filteredIcons = iconSearch.trim()
+    ? PROJECT_ICONS.filter((i) => i.label.toLowerCase().includes(iconSearch.toLowerCase()))
+    : PROJECT_ICONS;
 
   const columns: Column<Project>[] = [
     {
       key: 'name',
       header: 'Project',
-      render: (p) => (
-        <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: p.color }} />
-          <span className="font-medium" style={{ color: 'var(--text)' }}>{p.name}</span>
-        </div>
-      ),
+      render: (p) => {
+        const Icon = resolveIcon(p.icon);
+        return (
+          <div className="flex items-center gap-3">
+            {Icon
+              ? <Icon size={14} style={{ color: p.color, flexShrink: 0 }} />
+              : <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: p.color }} />
+            }
+            <span className="font-medium" style={{ color: 'var(--text)' }}>{p.name}</span>
+          </div>
+        );
+      },
     },
     {
       key: 'client.name',
@@ -208,6 +221,57 @@ export default function ProjectsPage() {
                     <button key={color} type="button" onClick={() => setForm((f) => ({ ...f, color }))} className={`w-8 h-8 rounded-full transition-all ${form.color === color ? 'scale-125 ring-2 ring-white ring-offset-2' : 'hover:scale-110'}`} style={{ backgroundColor: color, '--tw-ring-offset-color': 'var(--card)' } as React.CSSProperties} title={color} />
                   ))}
                 </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    Icon <span className="text-xs ml-0.5" style={{ color: 'var(--text-muted)' }}>(optional)</span>
+                  </label>
+                  {form.icon && (
+                    <button type="button" onClick={() => setForm((f) => ({ ...f, icon: '' }))} className="text-xs flex items-center gap-1 transition-colors" style={{ color: 'var(--text-muted)' }}>
+                      <X className="w-3 h-3" />
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search icons…"
+                  value={iconSearch}
+                  onChange={(e) => setIconSearch(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:ring-2"
+                  style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties}
+                />
+                <div
+                  className="max-h-40 overflow-y-auto rounded-lg"
+                  style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}
+                >
+                  <div className="grid grid-cols-8 gap-0.5 p-1.5">
+                    {filteredIcons.map(({ key, label, component: Icon }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, icon: f.icon === key ? '' : key }))}
+                        title={label}
+                        className="flex items-center justify-center p-2 rounded transition-colors hover:bg-white/10"
+                        style={form.icon === key
+                          ? { background: 'var(--accent)', color: 'white' }
+                          : { color: 'var(--text-muted)' }
+                        }
+                      >
+                        <Icon size={18} />
+                      </button>
+                    ))}
+                    {filteredIcons.length === 0 && (
+                      <p className="col-span-8 text-center text-xs py-4" style={{ color: 'var(--text-muted)' }}>No icons match "{iconSearch}"</p>
+                    )}
+                  </div>
+                </div>
+                {form.icon && (
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    Selected: {PROJECT_ICONS.find((i) => i.key === form.icon)?.label}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Hourly rate{selectedClient ? ` (${getCurrency(selectedClient.currency).label})` : ''}</label>
