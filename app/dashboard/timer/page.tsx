@@ -8,6 +8,7 @@ import { OriginButton } from '@/components/ui/origin-button';
 import { ProjectCombobox } from '@/components/ui/ProjectCombobox';
 import { TagCombobox, type TagOption } from '@/components/ui/TagCombobox';
 import { useTimerStore } from '@/store/timerStore';
+import { resolveIcon } from '@/lib/project-icons';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -15,6 +16,7 @@ interface Project {
   id: string;
   name: string;
   color: string;
+  icon?: string | null;
   hourlyRate: number;
   isBillable: boolean;
   clientName?: string | null;
@@ -40,6 +42,7 @@ interface TimeEntry {
     id: string;
     name: string;
     color: string;
+    icon?: string | null;
     client: { id: string; name: string } | null;
   } | null;
 }
@@ -359,7 +362,7 @@ export default function TimerPage() {
   const fetchProjects = useCallback(async () => {
     const res = await fetch('/api/projects');
     if (res.ok) {
-      const raw: Array<{ id: string; name: string; color: string; hourlyRate: number; isBillable: boolean; client: { id: string; name: string } | null }> = await res.json();
+      const raw: Array<{ id: string; name: string; color: string; icon?: string | null; hourlyRate: number; isBillable: boolean; client: { id: string; name: string } | null }> = await res.json();
       setProjects(raw.map((p) => ({ ...p, clientName: p.client?.name ?? null })));
     }
   }, []);
@@ -927,7 +930,7 @@ export default function TimerPage() {
                                   >
                                     {entry.project ? (
                                       <>
-                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: entry.project.color }} />
+                                        {(() => { const ProjIcon = resolveIcon(entry.project.icon); return ProjIcon ? <ProjIcon size={10} style={{ color: entry.project.color, flexShrink: 0 }} /> : <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: entry.project.color }} />; })()}
                                         <span className="text-sm flex-shrink-0 max-w-[120px] truncate" style={{ color: entry.project.color }}>
                                           {entry.project.name}
                                         </span>

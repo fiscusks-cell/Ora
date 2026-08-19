@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
       isBillable: true,
       project: {
         select: {
-          id: true, name: true, color: true, hourlyRate: true,
+          id: true, name: true, color: true, icon: true, hourlyRate: true,
           client: { select: { id: true, name: true, currency: true } },
         },
       },
@@ -103,6 +103,7 @@ export async function GET(req: NextRequest) {
     projectId: string | null;
     projectName: string;
     projectColor: string;
+    projectIcon: string | null;
     clientId: string | null;
     clientName: string | null;
     clientCurrency: string;
@@ -128,6 +129,7 @@ export async function GET(req: NextRequest) {
         projectId: entry.projectId ?? null,
         projectName: entry.project?.name ?? 'No Project',
         projectColor: entry.project?.color ?? '#6b7280',
+        projectIcon: entry.project?.icon ?? null,
         clientId: entry.project?.client?.id ?? null,
         clientName: entry.project?.client?.name ?? null,
         clientCurrency: currency,
@@ -167,6 +169,7 @@ export async function GET(req: NextRequest) {
     projectId: p.projectId,
     projectName: p.projectName,
     projectColor: p.projectColor,
+    projectIcon: p.projectIcon,
     clientId: p.clientId,
     clientName: p.clientName,
     clientCurrency: p.clientCurrency,

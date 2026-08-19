@@ -7,7 +7,7 @@ const createSchema = z.object({
   name: z.string().min(1).max(100),
   clientId: z.string().optional(),
   color: z.string().default('#3730A3'),
-  icon: z.string().nullable().optional(),
+  icon: z.string().min(1),
   hourlyRate: z.number().min(0).default(0),
   isBillable: z.boolean().default(true),
 });

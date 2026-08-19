@@ -63,6 +63,7 @@ export default function ProjectsPage() {
 
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
+    if (!editProject && !form.icon) return;
     setSaving(true);
     try {
       const body = { name: form.name.trim(), color: form.color, icon: form.icon || null, clientId: form.clientId || undefined, hourlyRate: parseFloat(form.hourlyRate) || 0, isBillable: form.isBillable };
@@ -225,7 +226,10 @@ export default function ProjectsPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    Icon <span className="text-xs ml-0.5" style={{ color: 'var(--text-muted)' }}>(optional)</span>
+                    Icon {editProject
+                      ? <span className="text-xs ml-0.5" style={{ color: 'var(--text-muted)' }}>(optional)</span>
+                      : <span style={{ color: 'var(--error)' }}>*</span>
+                    }
                   </label>
                   {form.icon && (
                     <button type="button" onClick={() => setForm((f) => ({ ...f, icon: '' }))} className="text-xs flex items-center gap-1 transition-colors" style={{ color: 'var(--text-muted)' }}>
@@ -291,7 +295,7 @@ export default function ProjectsPage() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={closeDialog} className="flex-1 py-2.5 rounded-lg text-sm transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
-              <button onClick={handleSubmit} disabled={!form.name.trim() || saving} className="flex-1 text-white py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)' }}>{saving ? 'Saving...' : editProject ? 'Save changes' : 'Create project'}</button>
+              <button onClick={handleSubmit} disabled={!form.name.trim() || saving || (!editProject && !form.icon)} className="flex-1 text-white py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)' }}>{saving ? 'Saving...' : editProject ? 'Save changes' : 'Create project'}</button>
             </div>
           </div>
         </div>
