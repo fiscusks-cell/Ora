@@ -12,7 +12,8 @@ interface TimerState {
   isPaused: boolean;
   pausedAt: Date | null;
   initForUser: (userId: string) => void;
-  startTimer: (entryId: string, projectId: string | null, description: string, startedAt?: Date) => void;
+  startTimer: (entryId: string | null, projectId: string | null, description: string, startedAt?: Date) => void;
+  confirmStart: (entryId: string, startedAt: Date) => void;
   stopTimer: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
@@ -20,7 +21,7 @@ interface TimerState {
   setProjectId: (id: string | null) => void;
 }
 
-const RESET: Omit<TimerState, 'userId' | 'initForUser' | 'startTimer' | 'stopTimer' | 'pauseTimer' | 'resumeTimer' | 'setDescription' | 'setProjectId'> = {
+const RESET: Omit<TimerState, 'userId' | 'initForUser' | 'startTimer' | 'confirmStart' | 'stopTimer' | 'pauseTimer' | 'resumeTimer' | 'setDescription' | 'setProjectId'> = {
   entryId: null,
   projectId: null,
   description: '',
@@ -44,8 +45,18 @@ export const useTimerStore = create<TimerState>()(
           set({ userId });
         }
       },
+      // The timer is started before the server has created its entry, so that
+      // the sidebar and tab title start with the counter. entryId stays null until
+      // confirmStart supplies it.
       startTimer: (entryId, projectId, description, startedAt) =>
         set({ entryId, projectId, description, startedAt: startedAt ?? new Date(), isRunning: true, isPaused: false, pausedAt: null }),
+      // Attach the server's entry id and the start time the counter should show.
+      // Ignored if the timer was stopped while the request was in flight.
+      confirmStart: (entryId, startedAt) => {
+        const { isRunning, isPaused } = get();
+        if (!isRunning && !isPaused) return;
+        set({ entryId, startedAt });
+      },
       stopTimer: () =>
         set({ ...RESET }),
       pauseTimer: () =>

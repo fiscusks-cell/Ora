@@ -47,6 +47,11 @@ interface TimeEntry {
   } | null;
 }
 
+type StopResult =
+  | { kind: 'stopped'; entry: TimeEntry }
+  | { kind: 'gone' }
+  | { kind: 'failed' };
+
 interface EntryGroup {
   key: string;
   entries: TimeEntry[];
@@ -60,7 +65,6 @@ interface WeekBucket {
   weekKey: string;
   start: Date;
   end: Date;
-  label: string;
   days: DayBucket[];
   total: number;
 }
@@ -176,7 +180,7 @@ function buildWeekBuckets(entries: TimeEntry[], weekStartDay: number): WeekBucke
           total: dayEntries.reduce((s, e) => s + (e.durationSeconds ?? 0), 0),
         }));
       const total = we.reduce((s, e) => s + (e.durationSeconds ?? 0), 0);
-      return { weekKey: start.toISOString(), start, end, label: weekLabel(start, end, weekStartDay), days, total };
+      return { weekKey: start.toISOString(), start, end, days, total };
     });
 }
 
@@ -200,13 +204,40 @@ function removeEntryFromWeeks(prev: WeekBucket[], id: string): WeekBucket[] {
     .filter((w) => w.days.length > 0);
 }
 
-function insertEntryIntoWeeks(prev: WeekBucket[], entry: TimeEntry, wsd: number): WeekBucket[] {
+/**
+ * Splice one entry into the week/day buckets.
+ *
+ * A week bucket only exists once it holds an entry, so the first entry of a week
+ * has to create its week here. Returning early instead dropped it: every stop in
+ * a week that had no entries when the page loaded (every Monday, or a tab left
+ * open across the week boundary) vanished until refresh.
+ *
+ * Weeks older than `loadedFrom` are left to "load more", which fetches them and
+ * would otherwise append a second bucket with the same key.
+ */
+function insertEntryIntoWeeks(
+  prev: WeekBucket[],
+  entry: TimeEntry,
+  wsd: number,
+  loadedFrom: Date | null,
+): WeekBucket[] {
   const ws = getWeekStart(new Date(entry.startedAt), wsd);
   const weekKey = ws.toISOString();
   const dk = format(new Date(entry.startedAt), 'yyyy-MM-dd');
 
   const weekIdx = prev.findIndex((w) => w.weekKey === weekKey);
-  if (weekIdx === -1) return prev; // week not loaded; entry will appear on next full refresh
+  if (weekIdx === -1) {
+    if (!loadedFrom || ws < loadedFrom) return prev;
+    const seconds = entry.durationSeconds ?? 0;
+    const newWeek: WeekBucket = {
+      weekKey,
+      start: ws,
+      end: getWeekEnd(ws),
+      days: [{ dateKey: dk, groups: collapseToGroups([entry]), total: seconds }],
+      total: seconds,
+    };
+    return [...prev, newWeek].sort((a, b) => b.start.getTime() - a.start.getTime());
+  }
 
   const week = prev[weekIdx];
   const dayIdx = week.days.findIndex((d) => d.dateKey === dk);
@@ -239,8 +270,20 @@ function insertEntryIntoWeeks(prev: WeekBucket[], entry: TimeEntry, wsd: number)
   return prev.map((w, i) => (i === weekIdx ? updatedWeek : w));
 }
 
-function replaceEntryInWeeks(prev: WeekBucket[], oldEntry: TimeEntry, newEntry: TimeEntry, wsd: number): WeekBucket[] {
-  return insertEntryIntoWeeks(removeEntryFromWeeks(prev, oldEntry.id), newEntry, wsd);
+function replaceEntryInWeeks(
+  prev: WeekBucket[],
+  oldEntry: TimeEntry,
+  newEntry: TimeEntry,
+  wsd: number,
+  loadedFrom: Date | null,
+): WeekBucket[] {
+  return insertEntryIntoWeeks(removeEntryFromWeeks(prev, oldEntry.id), newEntry, wsd, loadedFrom);
+}
+
+function sameIds(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const set = new Set(a);
+  return b.every((id) => set.has(id));
 }
 
 // ─── page ────────────────────────────────────────────────────────────────────
@@ -272,7 +315,11 @@ export default function TimerPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [allTags, setAllTags] = useState<TagOption[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  // A start or stop that did not land, shown under the bar.
+  const [timerError, setTimerError] = useState('');
+  // A stop that failed after a newer timer had already started, so the entry
+  // could not go back into the bar. It is still running on the server.
+  const [strandedStop, setStrandedStop] = useState<{ id: string; description: string } | null>(null);
 
   const [recentDescs, setRecentDescs] = useState<RecentDesc[]>([]);
   const [showDescs, setShowDescs] = useState(false);
@@ -318,6 +365,20 @@ export default function TimerPage() {
   const recentDescsCachedRef = useRef(false);
   const hideDescTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Start and Stop update the UI before their requests resolve, so a response can
+  // arrive after the user has already moved on. Each start opens a numbered
+  // session, and a response only touches the bar while its session is active.
+  const sessionRef = useRef(0);
+  const activeSessionRef = useRef(0);
+  // The in-flight POST for the active session, so a Stop pressed before the entry
+  // exists can wait for its id.
+  const startRequestRef = useRef<Promise<TimeEntry | null> | null>(null);
+  // Tag ids the server holds for the running entry. Stop only rewrites tags when
+  // the selection differs.
+  const serverTagIdsRef = useRef<string[]>([]);
+  // The oldest loaded week start, readable from async continuations.
+  const oldestLoadedRef = useRef<Date | null>(null);
+
   // Populate edit form when a new entry is opened for editing
   useEffect(() => {
     if (!editingEntry) return;
@@ -349,6 +410,7 @@ export default function TimerPage() {
       const entries = await fetchRange(from, to);
       setWeeks(buildWeekBuckets(entries, wsd));
       setOldestLoaded(from);
+      oldestLoadedRef.current = from;
     } finally {
       setLoadingInitial(false);
     }
@@ -380,6 +442,7 @@ export default function TimerPage() {
       if (entries.length === 0) { setHasMore(false); return; }
       setWeeks((prev) => [...prev, ...buildWeekBuckets(entries, weekStartDay)]);
       setOldestLoaded(from);
+      oldestLoadedRef.current = from;
     } finally {
       setLoadingMore(false);
     }
@@ -405,15 +468,26 @@ export default function TimerPage() {
     const active: TimeEntry | null = Array.isArray(data) ? data[0] ?? null : data ?? null;
     if (active && !active.stoppedAt) {
       const start = new Date(active.startedAt);
+      const tagIds = active.tags.map((t) => t.id);
+      activeSessionRef.current = ++sessionRef.current;
+      startRequestRef.current = null;
+      serverTagIdsRef.current = tagIds;
       setEntryId(active.id);
       setStartedAt(start);
       setDescription(active.description ?? '');
       setProjectId(active.project?.id ?? '');
+      setIsBillable(active.isBillable);
+      setSelectedTagIds(tagIds);
       if (!useTimerStore.getState().isPaused) {
         setIsRunning(true);
         setElapsed(Math.floor((Date.now() - start.getTime()) / 1000));
         useTimerStore.getState().startTimer(active.id, active.project?.id ?? null, active.description ?? '', start);
       }
+    } else if (activeSessionRef.current === 0 && useTimerStore.getState().isRunning) {
+      // The persisted store starts before the server confirms, so a reload during
+      // a start that never landed can leave it claiming a timer the server does
+      // not have. The server is the authority.
+      useTimerStore.getState().stopTimer();
     }
   }, []);
 
@@ -478,8 +552,9 @@ export default function TimerPage() {
     projectId?: string;
     description?: string;
     isBillable?: boolean;
+    tagIds?: string[];
   }) => {
-    if (loading || isRunning) return;
+    if (isRunning) return;
     // Project guard fires before anything is set
     if (!opts && !projectId) {
       setNoProjectError(true);
@@ -488,89 +563,221 @@ export default function TimerPage() {
     }
     setNoProjectError(false);
     setOpenProjectCombobox(false);
-    setLoading(true);
+    setTimerError('');
 
     const pid = opts?.projectId !== undefined ? opts.projectId : projectId;
     const desc = opts?.description !== undefined ? opts.description : description;
     const billable = opts?.isBillable !== undefined ? opts.isBillable : isBillable;
+    const tagIds = opts?.tagIds !== undefined ? opts.tagIds : selectedTagIds;
     const now = new Date();
+    const session = ++sessionRef.current;
+    activeSessionRef.current = session;
 
-    // Optimistic: start the counter immediately so it doesn't freeze during the round trip
+    // Optimistic: the bar, the sidebar and the tab title all start now, before the
+    // round trip. The server records its own start time; `now` is only what the
+    // counter shows until that arrives.
+    setEntryId(null);
     setStartedAt(now);
     setIsRunning(true);
     setElapsed(0);
     if (opts?.projectId !== undefined) setProjectId(opts.projectId);
     if (opts?.description !== undefined) setDescription(opts.description);
     if (opts?.isBillable !== undefined) setIsBillable(opts.isBillable);
+    if (opts?.tagIds !== undefined) setSelectedTagIds(opts.tagIds);
+    serverTagIdsRef.current = [];
+    useTimerStore.getState().startTimer(null, pid || null, desc ?? '', now);
 
-    try {
-      const res = await fetch('/api/time-entries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          startedAt: now.toISOString(),
-          description: desc || undefined,
-          projectId: pid || undefined,
-          isBillable: billable,
-        }),
-      });
-      if (!res.ok) {
-        setIsRunning(false);
-        setStartedAt(null);
-        setElapsed(0);
-        return;
+    const request = (async (): Promise<TimeEntry | null> => {
+      try {
+        const res = await fetch('/api/time-entries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: desc || undefined,
+            projectId: pid || undefined,
+            isBillable: billable,
+            tagIds: tagIds.length > 0 ? tagIds : undefined,
+          }),
+        });
+        return res.ok ? ((await res.json()) as TimeEntry) : null;
+      } catch {
+        return null;
       }
-      const entry: TimeEntry = await res.json();
-      setEntryId(entry.id);
-      // Reconcile to server's startedAt if clock skew is meaningful (>2 s)
-      const serverStart = new Date(entry.startedAt);
-      if (Math.abs(serverStart.getTime() - now.getTime()) > 2000) {
-        setStartedAt(serverStart);
-      }
-      useTimerStore.getState().startTimer(entry.id, pid ?? null, desc ?? '');
-    } catch {
+    })();
+    startRequestRef.current = request;
+
+    const entry = await request;
+    // Stopped or restarted while the request was in flight: whoever did that now
+    // owns this entry, so leave the bar alone.
+    if (activeSessionRef.current !== session) return;
+
+    if (!entry) {
+      activeSessionRef.current = 0;
+      startRequestRef.current = null;
       setIsRunning(false);
       setStartedAt(null);
       setElapsed(0);
-    } finally {
-      setLoading(false);
+      useTimerStore.getState().stopTimer();
+      setTimerError('The timer could not be started. Check your connection and try again.');
+      return;
     }
-  }, [loading, isRunning, description, projectId, isBillable]);
+
+    setEntryId(entry.id);
+    serverTagIdsRef.current = entry.tags.map((t) => t.id);
+    // The server's start is authoritative. Move the counter onto it when it
+    // differs meaningfully from the click — a skewed browser clock or a slow
+    // request — and leave sub-2s differences alone so the counter doesn't jump.
+    const serverStart = new Date(entry.startedAt);
+    const reconciled = Math.abs(serverStart.getTime() - now.getTime()) > 2000;
+    if (reconciled) setStartedAt(serverStart);
+    useTimerStore.getState().confirmStart(entry.id, reconciled ? serverStart : now);
+  }, [isRunning, description, projectId, isBillable, selectedTagIds]);
+
+  // Send a server-clocked stop, retried briefly so a dropped request doesn't leave
+  // the entry running. The server keeps the first stop it records, so retrying
+  // after a lost response is harmless; a retry after a request that never arrived
+  // records the stop up to ~4s late.
+  const sendStop = useCallback(async (id: string, body: Record<string, unknown>): Promise<StopResult> => {
+    for (const delay of [0, 1000, 3000]) {
+      if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+      try {
+        const res = await fetch(`/api/time-entries/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) return { kind: 'stopped', entry: (await res.json()) as TimeEntry };
+        if (res.status === 404) return { kind: 'gone' };
+        if (res.status >= 400 && res.status < 500) return { kind: 'failed' };
+      } catch {
+        // network failure — try again
+      }
+    }
+    return { kind: 'failed' };
+  }, []);
 
   const handleStop = useCallback(async () => {
-    if (!entryId || loading || !isRunning) return;
-    setLoading(true);
-    try {
-      const now = new Date();
-      const res = await fetch(`/api/time-entries/${entryId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stoppedAt: now.toISOString(), tagIds: selectedTagIds }),
-      });
-      setIsRunning(false);
-      setStartedAt(null);
-      setEntryId(null);
-      setElapsed(0);
-      setDescription('');
-      setProjectId('');
-      setSelectedTagIds([]);
-      useTimerStore.getState().stopTimer();
-      if (res.ok) {
-        const stopped = await res.json() as TimeEntry;
-        setWeeks((prev) => insertEntryIntoWeeks(prev, stopped, weekStartDay));
-      }
-      recentDescsCachedRef.current = false;
-    } finally {
-      setLoading(false);
+    if (!isRunning || !startedAt) return;
+
+    const session = activeSessionRef.current;
+    const snapshot = {
+      entryId,
+      startedAt,
+      description,
+      projectId,
+      isBillable,
+      tagIds: selectedTagIds,
+      serverTagIds: serverTagIdsRef.current,
+      startRequest: startRequestRef.current,
+    };
+    activeSessionRef.current = 0;
+    startRequestRef.current = null;
+    if (descSaveTimer.current) {
+      clearTimeout(descSaveTimer.current);
+      descSaveTimer.current = null;
     }
-  }, [entryId, loading, isRunning, selectedTagIds, weekStartDay]);
+
+    // Optimistic: the row appears and the bar resets now. The row's stop time and
+    // duration are placeholders until the server's arrive.
+    const stoppedAtGuess = new Date();
+    const project = projects.find((p) => p.id === snapshot.projectId) ?? null;
+    const placeholderId = snapshot.entryId ?? `pending-${session || Date.now()}`;
+    const optimistic: TimeEntry = {
+      id: placeholderId,
+      description: snapshot.description || null,
+      startedAt: snapshot.startedAt.toISOString(),
+      stoppedAt: stoppedAtGuess.toISOString(),
+      durationSeconds: Math.max(0, Math.floor((stoppedAtGuess.getTime() - snapshot.startedAt.getTime()) / 1000)),
+      isBillable: snapshot.isBillable,
+      tags: allTags.filter((t) => snapshot.tagIds.includes(t.id)),
+      project: project
+        ? { id: project.id, name: project.name, color: project.color, icon: project.icon ?? null, client: project.client }
+        : null,
+    };
+
+    setIsRunning(false);
+    setStartedAt(null);
+    setEntryId(null);
+    setElapsed(0);
+    setDescription('');
+    setProjectId('');
+    setSelectedTagIds([]);
+    setTimerError('');
+    useTimerStore.getState().stopTimer();
+    setWeeks((prev) => insertEntryIntoWeeks(prev, optimistic, weekStartDay, oldestLoadedRef.current));
+    recentDescsCachedRef.current = false;
+
+    // A Stop pressed before the start request resolved has no id yet: wait for it.
+    let id = snapshot.entryId;
+    let serverTagIds = snapshot.serverTagIds;
+    if (!id) {
+      const created = await snapshot.startRequest;
+      if (!created) {
+        // The start never landed, so there is nothing on the server to stop.
+        setWeeks((prev) => removeEntryFromWeeks(prev, placeholderId));
+        return;
+      }
+      id = created.id;
+      serverTagIds = created.tags.map((t) => t.id);
+    }
+
+    // The description may have been typed after the last debounced save, so it
+    // rides along with the stop. Tags are rewritten only when they changed.
+    const body: Record<string, unknown> = { stop: 'now', description: snapshot.description || null };
+    if (!sameIds(snapshot.tagIds, serverTagIds)) body.tagIds = snapshot.tagIds;
+
+    const result = await sendStop(id, body);
+
+    if (result.kind === 'stopped') {
+      setWeeks((prev) => replaceEntryInWeeks(prev, optimistic, result.entry, weekStartDay, oldestLoadedRef.current));
+      return;
+    }
+
+    setWeeks((prev) => removeEntryFromWeeks(prev, placeholderId));
+
+    if (result.kind === 'gone') {
+      setTimerError('That timer no longer exists. It may have been deleted in another tab.');
+      return;
+    }
+
+    // The stop did not land, so the entry is still running on the server.
+    if (activeSessionRef.current === 0) {
+      // Nothing has started since: put the running timer back exactly as it was.
+      activeSessionRef.current = ++sessionRef.current;
+      serverTagIdsRef.current = serverTagIds;
+      setEntryId(id);
+      setStartedAt(snapshot.startedAt);
+      setElapsed(Math.max(0, Math.floor((Date.now() - snapshot.startedAt.getTime()) / 1000)));
+      setDescription(snapshot.description);
+      setProjectId(snapshot.projectId);
+      setIsBillable(snapshot.isBillable);
+      setSelectedTagIds(snapshot.tagIds);
+      setIsRunning(true);
+      useTimerStore.getState().startTimer(id, snapshot.projectId || null, snapshot.description, snapshot.startedAt);
+      setTimerError('The timer could not be stopped and is still running. Press Stop again.');
+    } else {
+      // A newer timer already occupies the bar, so this one cannot go back into it.
+      setStrandedStop({ id, description: snapshot.description });
+    }
+  }, [isRunning, startedAt, entryId, description, projectId, isBillable, selectedTagIds, projects, allTags, weekStartDay, sendStop]);
+
+  const retryStrandedStop = useCallback(async () => {
+    if (!strandedStop) return;
+    const result = await sendStop(strandedStop.id, { stop: 'now' });
+    if (result.kind === 'stopped') {
+      setWeeks((prev) => replaceEntryInWeeks(prev, result.entry, result.entry, weekStartDay, oldestLoadedRef.current));
+      setStrandedStop(null);
+    } else if (result.kind === 'gone') {
+      setStrandedStop(null);
+    }
+  }, [strandedStop, sendStop, weekStartDay]);
 
   const handlePlay = useCallback((entry: TimeEntry) => {
-    setSelectedTagIds(entry.tags.map((t) => t.id));
     handleStart({
       projectId: entry.project?.id ?? '',
       description: entry.description ?? '',
       isBillable: entry.isBillable,
+      tagIds: entry.tags.map((t) => t.id),
     });
   }, [handleStart]);
 
@@ -589,7 +796,7 @@ export default function TimerPage() {
     });
     if (!res.ok) return;
     const created: TimeEntry = await res.json();
-    setWeeks((prev) => insertEntryIntoWeeks(prev, created, weekStartDay));
+    setWeeks((prev) => insertEntryIntoWeeks(prev, created, weekStartDay, oldestLoadedRef.current));
   };
 
   const handleEditSave = async () => {
@@ -629,7 +836,7 @@ export default function TimerPage() {
         return;
       }
       const updated: TimeEntry = await res.json();
-      setWeeks((prev) => replaceEntryInWeeks(prev, editingEntry, updated, weekStartDay));
+      setWeeks((prev) => replaceEntryInWeeks(prev, editingEntry, updated, weekStartDay, oldestLoadedRef.current));
       setEditingEntry(null);
     } finally {
       setEditSaving(false);
@@ -657,7 +864,7 @@ export default function TimerPage() {
       });
       if (res.ok) {
         const updated: TimeEntry = await res.json();
-        setWeeks((prev) => replaceEntryInWeeks(prev, entry, updated, weekStartDay));
+        setWeeks((prev) => replaceEntryInWeeks(prev, entry, updated, weekStartDay, oldestLoadedRef.current));
       }
     } catch { /* silent revert — row shows original value */ }
   };
@@ -866,7 +1073,7 @@ export default function TimerPage() {
 
           <OriginButton
             onClick={isRunning ? handleStop : () => handleStart()}
-            disabled={loading || storePaused}
+            disabled={storePaused}
             className="px-5 py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 flex-shrink-0"
             style={{
               background: storePaused ? 'rgba(245,158,11,0.15)' : isRunning ? 'var(--error)' : 'var(--accent)',
@@ -877,6 +1084,28 @@ export default function TimerPage() {
           </OriginButton>
         </div>
       </div>
+
+      {timerError && (
+        <p role="alert" className="text-xs -mt-4" style={{ color: 'var(--error)' }}>
+          {timerError}
+        </p>
+      )}
+
+      {strandedStop && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg px-4 py-2.5 text-sm -mt-2"
+          style={{ border: '1px solid var(--error)', color: 'var(--text)' }}
+        >
+          <span>
+            {strandedStop.description ? `“${strandedStop.description}”` : 'An earlier timer'} is still
+            running on the server because its stop did not go through. Stopping it now records the current time.
+          </span>
+          <button type="button" onClick={retryStrandedStop} className="underline" style={{ color: 'var(--error)' }}>
+            Stop it now
+          </button>
+        </div>
+      )}
 
       {/* ── Entry list ───────────────────────────────────────────────────── */}
       {loadingInitial ? (
@@ -897,7 +1126,11 @@ export default function TimerPage() {
                   className="flex items-center justify-between px-4 py-2.5 rounded-t-xl overflow-hidden"
                   style={{ background: 'var(--surface-raised)', borderBottom: '1px solid var(--border)' }}
                 >
-                  <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{week.label}</span>
+                  {/* Computed at render: a label stored at load goes stale when the page
+                      stays open across a week boundary, giving two "This week" headers. */}
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    {weekLabel(week.start, week.end, weekStartDay)}
+                  </span>
                   <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>{formatHM(week.total)}</span>
                 </div>
 
@@ -1212,10 +1445,10 @@ export default function TimerPage() {
                                 {/* Play */}
                                 <button
                                   onClick={() => handlePlay(entry)}
-                                  disabled={isRunning || loading}
+                                  disabled={isRunning}
                                   className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-1 -m-1 transition-opacity disabled:cursor-not-allowed"
                                   style={{ color: 'var(--text-muted)' }}
-                                  onMouseEnter={(e) => { if (!isRunning && !loading) e.currentTarget.style.color = 'var(--accent)'; }}
+                                  onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.color = 'var(--accent)'; }}
                                   onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
                                   aria-label="Restart this entry"
                                 >
