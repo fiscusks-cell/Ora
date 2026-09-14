@@ -2,16 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
+import { serializeTimeEntry, timeEntryInclude } from '@/lib/time-entry-include';
 import { z } from 'zod';
 
-const createSchema = z.object({
-  projectId: z.string().optional(),
-  description: z.string().optional(),
-  startedAt: z.string().datetime(),
-  stoppedAt: z.string().datetime().optional(),
-  isBillable: z.boolean().default(true),
-  tagIds: z.string().array().optional(),
-});
+const createSchema = z
+  .object({
+    projectId: z.string().optional(),
+    description: z.string().optional(),
+    // Honoured only for a completed entry (a duplicate or a manual entry), where
+    // the times are the data being recorded. A running timer always starts on the
+    // server clock: a browser with a skewed clock must not shift billable time.
+    startedAt: z.string().datetime().optional(),
+    stoppedAt: z.string().datetime().optional(),
+    isBillable: z.boolean().default(true),
+    tagIds: z.string().array().optional(),
+  })
+  .refine((d) => !d.stoppedAt || d.startedAt !== undefined, {
+    message: 'startedAt is required when stoppedAt is given',
+    path: ['startedAt'],
+  });
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,15 +41,11 @@ export async function GET(req: NextRequest) {
     if (active) {
       const entries = await prisma.timeEntry.findMany({
         where: { userId, stoppedAt: null },
-        include: {
-          project: { select: { id: true, name: true, color: true, icon: true, hourlyRate: true, isBillable: true, client: { select: { id: true, name: true } } } },
-          user: { select: { id: true, name: true, email: true, avatarUrl: true } },
-          tags: { include: { tag: { select: { id: true, name: true } } } },
-        },
+        include: timeEntryInclude,
         orderBy: { startedAt: 'desc' },
         take: 1,
       });
-      return NextResponse.json(entries.map((e) => ({ ...e, tags: e.tags.map((t) => t.tag) })));
+      return NextResponse.json(entries.map((e) => serializeTimeEntry(e)));
     }
 
     if (filterUserId && filterUserId !== userId && role === 'MEMBER') {
@@ -64,18 +69,12 @@ export async function GET(req: NextRequest) {
             }
           : {}),
       },
-      include: {
-        project: { select: { id: true, name: true, color: true, icon: true, hourlyRate: true, isBillable: true, client: { select: { id: true, name: true } } } },
-        user: { select: { id: true, name: true, email: true, avatarUrl: true } },
-        tags: { include: { tag: { select: { id: true, name: true } } } },
-      },
+      include: timeEntryInclude,
       orderBy: { startedAt: 'desc' },
       take: 500,
     });
 
-    return NextResponse.json(
-      entries.map((e) => ({ ...e, tags: e.tags.map((t) => t.tag) })),
-    );
+    return NextResponse.json(entries.map((e) => serializeTimeEntry(e)));
   } catch (err) {
     console.error('[time-entries GET] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -83,6 +82,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Read before anything else, so a timer's recorded start is when the request
+  // arrived — not when authentication or a waking database finished.
+  const serverNow = new Date();
+
   try {
     const session = await auth();
     if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -110,35 +113,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    let durationSeconds: number | undefined;
-    if (stoppedAt) {
-      durationSeconds = Math.max(
-        0,
-        Math.round((new Date(stoppedAt).getTime() - new Date(startedAt).getTime()) / 1000),
-      );
-    }
+    // A running timer starts on the server clock, and any client startedAt is
+    // ignored. A completed entry keeps the times it was given.
+    const start = stoppedAt ? new Date(startedAt as string) : serverNow;
+    const stop = stoppedAt ? new Date(stoppedAt) : null;
+    const durationSeconds = stop
+      ? Math.max(0, Math.round((stop.getTime() - start.getTime()) / 1000))
+      : null;
 
     const entry = await prisma.timeEntry.create({
       data: {
         userId,
         projectId: projectId ?? null,
         description: description ?? null,
-        startedAt: new Date(startedAt),
-        stoppedAt: stoppedAt ? new Date(stoppedAt) : null,
-        durationSeconds: durationSeconds ?? null,
+        startedAt: start,
+        stoppedAt: stop,
+        durationSeconds,
         isBillable,
         ...(tagIds?.length
           ? { tags: { createMany: { data: tagIds.map((tagId) => ({ tagId })), skipDuplicates: true } } }
           : {}),
       },
-      include: {
-        project: { select: { id: true, name: true, color: true, icon: true, hourlyRate: true, isBillable: true } },
-        user: { select: { id: true, name: true, email: true } },
-        tags: { include: { tag: { select: { id: true, name: true } } } },
-      },
+      include: timeEntryInclude,
     });
 
-    return NextResponse.json({ ...entry, tags: entry.tags.map((t) => t.tag) }, { status: 201 });
+    return NextResponse.json(serializeTimeEntry(entry), { status: 201 });
   } catch (err) {
     console.error('[time-entries POST] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
