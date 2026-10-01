@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const userId = (session.user as { id: string }).id;
+  // These tokens exist only to publish invoices, which is owner/admin work.
+  // The row is per user, so a member could not break anyone else's connection
+  // -- but a connection they bind now would start being used the moment they
+  // were promoted, sending invoices to whichever tenant they authorized.
+  const authz = await requireAuth(['OWNER', 'ADMIN'], 'Admin access required');
+  if (authz instanceof NextResponse) return authz;
+  const { userId } = authz;
 
   if (!process.env.XERO_CLIENT_ID || !process.env.XERO_REDIRECT_URI) {
     return NextResponse.json({ error: 'Xero not configured' }, { status: 503 });

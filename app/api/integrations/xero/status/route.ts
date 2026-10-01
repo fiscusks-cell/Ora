@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { getValidXeroClient } from '@/lib/xero';
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const userId = (session.user as { id: string }).id;
+  // Connection state belongs to the people who can act on it; the Integrations
+  // tab is hidden from members for the same reason.
+  const authz = await requireAuth(['OWNER', 'ADMIN'], 'Admin access required');
+  if (authz instanceof NextResponse) return authz;
+  const { userId } = authz;
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { connectedXero: true, xeroTenantId: true },

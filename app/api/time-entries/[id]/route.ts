@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { serializeTimeEntry, timeEntryInclude } from '@/lib/time-entry-include';
 import { z } from 'zod';
@@ -31,10 +31,9 @@ export async function PATCH(
   const serverNow = new Date();
 
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const userId = session.user.id;
+    const authz = await requireAuth();
+    if (authz instanceof NextResponse) return authz;
+    const { userId, canSeeAmounts } = authz;
     const { id } = await params;
 
     const entry = await prisma.timeEntry.findFirst({ where: { id, userId } });
@@ -58,7 +57,7 @@ export async function PATCH(
         where: { id },
         include: timeEntryInclude,
       });
-      return NextResponse.json(serializeTimeEntry(current));
+      return NextResponse.json(serializeTimeEntry(current, canSeeAmounts));
     }
 
     // Resolve effective startedAt and stoppedAt for duration calculation
@@ -104,7 +103,7 @@ export async function PATCH(
       include: timeEntryInclude,
     });
 
-    return NextResponse.json(serializeTimeEntry(updated));
+    return NextResponse.json(serializeTimeEntry(updated, canSeeAmounts));
   } catch (err) {
     console.error('[time-entries PATCH] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -116,10 +115,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const userId = session.user.id;
+    const authz = await requireAuth();
+    if (authz instanceof NextResponse) return authz;
+    const { userId } = authz;
     const { id } = await params;
 
     const entry = await prisma.timeEntry.findFirst({ where: { id, userId } });

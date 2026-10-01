@@ -43,6 +43,10 @@ model Organization {
   stripeSubscriptionId String?       @unique
   billingPeriod        BillingPeriod @default(MONTHLY)
   currency             String        @default("USD")
+  // Whether MEMBER-role users see monetary amounts and rates. Off by default:
+  // a workspace decides to show money, it is not assumed. Billable status is
+  // a separate thing and stays visible either way.
+  showAmountsToMembers Boolean       @default(false)
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
 

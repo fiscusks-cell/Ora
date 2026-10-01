@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 
 export async function POST() {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const role = (session.user as { role: string }).role;
-    if (!['OWNER', 'ADMIN'].includes(role)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // The Stripe portal can change the subscription and payment method for the
+    // whole organization, so the role comes from the database.
+    const authz = await requireAuth(['OWNER', 'ADMIN'], 'Admin access required');
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId } = authz;
     const org = await prisma.organization.findUnique({ where: { id: organizationId } });
 
     if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 });

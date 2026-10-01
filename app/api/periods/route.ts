@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/authz';
 import { z } from 'zod';
 
 const createSchema = z.object({
@@ -11,10 +11,12 @@ const createSchema = z.object({
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // A period carries client money across the whole organization, so this is
+    // an owner/admin surface. requireAuth re-reads the role from the database
+    // rather than trusting a JWT that may predate a demotion.
+    const authz = await requireAuth(['OWNER', 'ADMIN']);
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId } = authz;
 
     const periods = await prisma.timePeriod.findMany({
       where: { organizationId },
@@ -61,10 +63,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    const authz = await requireAuth(['OWNER', 'ADMIN']);
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId } = authz;
 
     const body = await req.json();
     const parsed = createSchema.safeParse(body);

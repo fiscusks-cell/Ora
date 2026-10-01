@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { AdminOnlyNotice } from '@/components/ui/AdminOnlyNotice';
 import { format } from 'date-fns';
 import { Download, FileText } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
@@ -17,15 +19,18 @@ interface Invoice {
 }
 
 export default function InvoicesPage() {
+  const { data: session, status } = useSession();
+  const isAdmin = ['OWNER', 'ADMIN'].includes((session?.user as { role?: string })?.role ?? '');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isAdmin) return;
     fetch('/api/invoices')
       .then(r => r.json())
       .then(data => { setInvoices(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [isAdmin]);
 
   const handleDownload = async (inv: Invoice) => {
     const res = await fetch(`/api/invoices/${inv.id}/download`);
@@ -39,6 +44,17 @@ export default function InvoicesPage() {
     URL.revokeObjectURL(url);
   };
 
+  if (status === 'loading') {
+    return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
+  }
+  if (!isAdmin) {
+    return (
+      <AdminOnlyNotice
+        title="Invoices are not available to your account"
+        description="Invoices are managed by owners and admins. Your tracked time is still on the Time Tracker and in Reports."
+      />
+    );
+  }
   if (loading) return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
 
   return (

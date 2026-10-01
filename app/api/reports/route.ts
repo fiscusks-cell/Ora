@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/authz';
+import { withoutProjectRate } from '@/lib/money-visibility';
 import { amountMinor, fromMinor, rateToHundredths } from '@/lib/currency';
 
 export async function GET(req: NextRequest) {
   const authz = await requireAuth();
   if (authz instanceof NextResponse) return authz;
-  const { userId: callerId, organizationId: orgId, role } = authz;
+  const { userId: callerId, organizationId: orgId, role, canSeeAmounts } = authz;
 
   const { searchParams } = req.nextUrl;
   const startDate = searchParams.get('startDate');
@@ -195,5 +196,53 @@ export async function GET(req: NextRequest) {
     activeDays: dayMap.size,
   };
 
-  return NextResponse.json({ entries, byDay, byProject, totals });
+  if (canSeeAmounts) {
+    return NextResponse.json({ entries, byDay, byProject, totals });
+  }
+
+  // Amounts removed, and the rates with them: durationSeconds x hourlyRate is
+  // the amount, so leaving rates on the entries would hand back exactly what
+  // was taken out of the aggregates. The currency goes too, wherever its only
+  // job was to label an amount that is no longer there.
+  //
+  // Fields are omitted rather than zeroed. A zero is a number the reader can
+  // believe; an absent field cannot be mistaken for free work.
+  //
+  // isBillable and every duration stay exactly as they are.
+  return NextResponse.json({
+    entries: entries.map((entry) => {
+      const stripped = withoutProjectRate(entry);
+      if (!stripped.project) return stripped;
+      const { client, ...project } = stripped.project as typeof entry.project & object;
+      return {
+        ...stripped,
+        project: {
+          ...project,
+          client: client ? { id: client.id, name: client.name } : null,
+        },
+      };
+    }),
+    byDay,
+    byProject: byProject.map((p) => ({
+      projectId: p.projectId,
+      projectName: p.projectName,
+      projectColor: p.projectColor,
+      projectIcon: p.projectIcon,
+      clientId: p.clientId,
+      clientName: p.clientName,
+      totalSeconds: p.totalSeconds,
+      billableSeconds: p.billableSeconds,
+      members: p.members.map((m) => ({
+        userId: m.userId,
+        userName: m.userName,
+        totalSeconds: m.totalSeconds,
+        billableSeconds: m.billableSeconds,
+      })),
+    })),
+    totals: {
+      totalSeconds: totals.totalSeconds,
+      billableSeconds: totals.billableSeconds,
+      activeDays: totals.activeDays,
+    },
+  });
 }

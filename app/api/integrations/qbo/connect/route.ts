@@ -1,11 +1,15 @@
 import OAuthClient from 'intuit-oauth';
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { makeOAuthClient } from '@/lib/qbo';
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // These tokens exist only to publish invoices, which is owner/admin work.
+  // The row is per user, so a member could not break anyone else's connection
+  // -- but a connection they bind now would start being used the moment they
+  // were promoted, sending invoices to whichever tenant they authorized.
+  const authz = await requireAuth(['OWNER', 'ADMIN'], 'Admin access required');
+  if (authz instanceof NextResponse) return authz;
 
   if (!process.env.INTUIT_CLIENT_ID) {
     return NextResponse.json({ error: 'INTUIT_CLIENT_ID not configured' }, { status: 503 });

@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { withoutProjectRate } from '@/lib/money-visibility';
 
 /**
  * The one response shape for a time entry, shared by every time-entry route.
@@ -23,7 +24,17 @@ export const timeEntryInclude = {
   tags: { include: { tag: { select: { id: true, name: true } } } },
 } satisfies Prisma.TimeEntryInclude;
 
-/** Flattens the join rows so `tags` is a plain list of `{ id, name }`. */
-export function serializeTimeEntry<T extends { tags: { tag: { id: string; name: string } }[] }>(entry: T) {
-  return { ...entry, tags: entry.tags.map((t) => t.tag) };
+/**
+ * Flattens the join rows so `tags` is a plain list of `{ id, name }`, and
+ * removes the project's rate from callers who may not see money.
+ *
+ * `canSeeAmounts` is required rather than defaulted: a new call site has to
+ * decide, instead of leaking the rate by forgetting the argument.
+ */
+export function serializeTimeEntry<T extends { tags: { tag: { id: string; name: string } }[] }>(
+  entry: T,
+  canSeeAmounts: boolean,
+) {
+  const serialized = { ...entry, tags: entry.tags.map((t) => t.tag) };
+  return canSeeAmounts ? serialized : withoutProjectRate(serialized);
 }

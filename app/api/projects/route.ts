@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/authz';
+import { withoutRate } from '@/lib/money-visibility';
 import { z } from 'zod';
 
 const createSchema = z.object({
@@ -15,10 +16,10 @@ const createSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // Open to every role: the timer needs the project list to put work against.
+    const authz = await requireAuth();
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId, canSeeAmounts } = authz;
 
     const { searchParams } = new URL(req.url);
     const includeArchived = searchParams.get('includeArchived') === 'true';
@@ -34,7 +35,11 @@ export async function GET(req: NextRequest) {
       orderBy: { name: 'asc' },
     });
 
-    return NextResponse.json(projects);
+    // The client currency stays: it is the project's configuration, and without
+    // a rate it cannot be turned back into an amount.
+    return NextResponse.json(
+      canSeeAmounts ? projects : projects.map((p) => withoutRate(p)),
+    );
   } catch (err) {
     console.error('[projects GET] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -43,10 +48,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // Members may create projects — blocking that is friction with no benefit in
+    // a small team — but only an owner or admin may set a rate, which is money a
+    // member is not necessarily allowed to see.
+    const authz = await requireAuth();
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId, role } = authz;
 
     const body = await req.json();
     const parsed = createSchema.safeParse(body);
@@ -58,6 +65,16 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, description, clientId, color, icon, hourlyRate, isBillable } = parsed.data;
+
+    if (role === 'MEMBER' && hourlyRate > 0) {
+      return NextResponse.json(
+        {
+          error:
+            'Only an owner or admin can set a project rate. Create the project without a rate and ask an admin to add it.',
+        },
+        { status: 403 },
+      );
+    }
 
     if (clientId) {
       const client = await prisma.client.findFirst({
@@ -76,7 +93,7 @@ export async function POST(req: NextRequest) {
         clientId: clientId ?? null,
         color,
         icon: icon ?? null,
-        hourlyRate,
+        hourlyRate: role === 'MEMBER' ? 0 : hourlyRate,
         isBillable,
       },
       include: {

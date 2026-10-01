@@ -8,6 +8,7 @@ const VALID_CURRENCY_CODES = CURRENCIES.map((c) => c.code) as [string, ...string
 
 const patchSchema = z.object({
   currency: z.enum(VALID_CURRENCY_CODES as [string, ...string[]]).optional(),
+  showAmountsToMembers: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -16,12 +17,21 @@ export async function GET() {
 
   const org = await prisma.organization.findUnique({
     where: { id: authz.organizationId },
-    select: { name: true, plan: true, billingPeriod: true, currency: true },
+    select: {
+      name: true,
+      plan: true,
+      billingPeriod: true,
+      currency: true,
+      showAmountsToMembers: true,
+    },
   });
 
   if (!org) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  return NextResponse.json(org);
+  // canSeeAmounts is the answer for *this* caller; showAmountsToMembers is the
+  // workspace setting behind it. The UI needs both: the first to decide what to
+  // render, the second to show the toggle its current position.
+  return NextResponse.json({ ...org, canSeeAmounts: authz.canSeeAmounts });
 }
 
 export async function PATCH(req: NextRequest) {
@@ -37,7 +47,7 @@ export async function PATCH(req: NextRequest) {
   const updated = await prisma.organization.update({
     where: { id: authz.organizationId },
     data: parsed.data,
-    select: { currency: true },
+    select: { currency: true, showAmountsToMembers: true },
   });
 
   return NextResponse.json(updated);

@@ -21,6 +21,7 @@ interface OrgInfo {
   plan: PlanKey;
   billingPeriod: string;
   currency: string;
+  showAmountsToMembers: boolean;
 }
 
 const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)' };
@@ -32,6 +33,9 @@ export default function SettingsPage() {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>(() =>
     searchParams.get('tab') === 'integrations' ? 'integrations' : 'profile'
+  );
+  const isAdmin = ['OWNER', 'ADMIN'].includes(
+    (session?.user as { role?: string } | undefined)?.role ?? '',
   );
   const [integrations, setIntegrations] = useState<IntegrationStatus>({ connectedQBO: false, connectedXero: false, xeroOrgName: null });
   const [qboMsg, setQboMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -47,6 +51,10 @@ export default function SettingsPage() {
   const [orgCurrencySaving, setOrgCurrencySaving] = useState(false);
   const [orgCurrencySaved, setOrgCurrencySaved] = useState(false);
 
+  const [showAmounts, setShowAmounts] = useState(false);
+  const [showAmountsSaving, setShowAmountsSaving] = useState(false);
+  const [showAmountsError, setShowAmountsError] = useState<string | null>(null);
+
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -61,7 +69,11 @@ export default function SettingsPage() {
   useEffect(() => {
     fetch('/api/org')
       .then((r) => r.json())
-      .then((d) => { setOrg(d); if (d.currency) setOrgCurrency(d.currency); })
+      .then((d) => {
+        setOrg(d);
+        if (d.currency) setOrgCurrency(d.currency);
+        setShowAmounts(!!d.showAmountsToMembers);
+      })
       .catch(() => {});
   }, []);
 
@@ -98,6 +110,7 @@ export default function SettingsPage() {
   }, [previewUrl]);
 
   useEffect(() => {
+    if (!isAdmin) return;
     fetch('/api/integrations/qbo/status')
       .then((r) => r.json())
       .then((d) => setIntegrations((prev) => ({ ...prev, connectedQBO: !!d.connected })))
@@ -106,7 +119,7 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((d) => setIntegrations((prev) => ({ ...prev, connectedXero: !!d.connected, xeroOrgName: d.orgName ?? null })))
       .catch(() => {});
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     const qbo = searchParams.get('qbo');
@@ -182,6 +195,34 @@ export default function SettingsPage() {
     setSaving(false);
   };
 
+  /**
+   * Saves immediately on toggle rather than behind a Save button: there is one
+   * value, and a switch that needs confirming invites leaving it half-set. The
+   * optimistic flip is reverted if the request fails.
+   */
+  const handleToggleShowAmounts = async (next: boolean) => {
+    setShowAmounts(next);
+    setShowAmountsSaving(true);
+    setShowAmountsError(null);
+    try {
+      const res = await fetch('/api/org', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ showAmountsToMembers: next }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setShowAmounts(!next);
+        setShowAmountsError(data.error ?? 'Could not save. Please try again.');
+      }
+    } catch {
+      setShowAmounts(!next);
+      setShowAmountsError('Could not save. Please try again.');
+    } finally {
+      setShowAmountsSaving(false);
+    }
+  };
+
   const handleSaveOrgCurrency = async () => {
     setOrgCurrencySaving(true);
     try {
@@ -206,11 +247,13 @@ export default function SettingsPage() {
     else alert(data.error || 'Billing portal unavailable');
   };
 
+  // Integrations holds nothing a member can use: the connect, disconnect and
+  // status routes are owner/admin only, so the tab would be a button that 403s.
   const tabs: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'Profile' },
-    { id: 'organization', label: 'Organization' },
+    ...(isAdmin ? [{ id: 'organization' as Tab, label: 'Organization' }] : []),
     { id: 'billing', label: 'Billing' },
-    { id: 'integrations', label: 'Integrations' },
+    ...(isAdmin ? [{ id: 'integrations' as Tab, label: 'Integrations' }] : []),
   ];
 
   return (
@@ -385,7 +428,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {tab === 'organization' && (
+      {tab === 'organization' && isAdmin && (
         <div className="rounded-xl p-6 space-y-4" style={card}>
           <h2 className="text-base font-normal mb-4" style={{ color: 'var(--text)' }}>Organization settings</h2>
           <div>
@@ -430,6 +473,35 @@ export default function SettingsPage() {
                 {orgCurrencySaved ? '✓ Saved' : orgCurrencySaving ? 'Saving…' : 'Save currency'}
               </button>
             </div>
+          </div>
+          {/*
+            Who may see money. A workspace setting rather than a fixed rule about
+            roles, which is how Clockify and Toggl treat it: some teams share
+            revenue with everyone, others do not, and neither is the odd case.
+          */}
+          <div className="pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+            <label className="flex items-start gap-3 pt-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showAmounts}
+                disabled={showAmountsSaving}
+                onChange={(e) => handleToggleShowAmounts(e.target.checked)}
+                className="mt-0.5 w-4 h-4 flex-shrink-0 rounded accent-indigo-500 disabled:opacity-50"
+              />
+              <span>
+                <span className="block text-sm" style={{ color: 'var(--text)' }}>
+                  Show amounts to members
+                </span>
+                <span className="block text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  Lets people with the Member role see rates, amounts and revenue in
+                  reports and exports. Owners and admins always see them. Whether work
+                  is billable stays visible to everyone either way.
+                </span>
+              </span>
+            </label>
+            {showAmountsError && (
+              <p className="text-xs mt-2 text-red-400">{showAmountsError}</p>
+            )}
           </div>
           <button
             className="text-white text-sm px-4 py-2 rounded-lg transition-colors"
@@ -499,7 +571,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {tab === 'integrations' && (
+      {tab === 'integrations' && isAdmin && (
         <div className="space-y-4">
           {qboMsg && (
             <div className={`flex items-center gap-2 text-sm px-4 py-3 rounded-lg border ${

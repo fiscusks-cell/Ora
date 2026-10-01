@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/authz';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const sessionUser = session.user as { id: string; organizationId: string };
+    // The PDF itself holds line items, rates and totals: owner/admin only.
+    const authz = await requireAuth(['OWNER', 'ADMIN']);
+    if (authz instanceof NextResponse) return authz;
     const { id } = await params;
 
     const invoice = await prisma.invoice.findFirst({
-      where: { id, organizationId: sessionUser.organizationId },
+      where: { id, organizationId: authz.organizationId },
     });
 
     if (!invoice || !invoice.pdfData) {

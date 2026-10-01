@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { sendInviteEmail } from '@/lib/send-invite-email';
@@ -11,15 +11,11 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const role = (session.user as { role: string }).role;
-    if (!['OWNER', 'ADMIN'].includes(role)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // An invite grants standing access to the organization, including the ADMIN
+    // role, so the inviter's own role is re-read from the database.
+    const authz = await requireAuth(['OWNER', 'ADMIN'], 'Admin access required');
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId } = authz;
 
     const body = await req.json();
     const parsed = schema.safeParse(body);
