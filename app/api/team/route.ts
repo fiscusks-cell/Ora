@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const role = (session.user as { role: string }).role;
-    if (!['OWNER', 'ADMIN'].includes(role)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // Everyone in the org with their role and hours: administrative data, and
+    // the caller's own role is re-read from the database so a demotion applies
+    // on the next request rather than at the next token refresh.
+    const authz = await requireAuth(['OWNER', 'ADMIN'], 'Admin access required');
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId } = authz;
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
     const [members, invites] = await Promise.all([

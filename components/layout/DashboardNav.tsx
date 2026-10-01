@@ -25,13 +25,14 @@ interface DashboardNavProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type NavItem = { href: string; label: string; icon: any };
+type NavItem = { href: string; label: string; icon: any; adminOnly?: boolean };
 
 const analyzeItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/periods', label: 'Reports & Periods', icon: BarChart3 },
+  // Periods and invoices are billing surfaces, not time-tracking ones.
+  { href: '/dashboard/periods', label: 'Reports & Periods', icon: BarChart3, adminOnly: true },
   { href: '/dashboard/reports', label: 'Reports', icon: PieChart },
-  { href: '/dashboard/invoices', label: 'Invoices', icon: FileText },
+  { href: '/dashboard/invoices', label: 'Invoices', icon: FileText, adminOnly: true },
 ];
 
 const manageItems: NavItem[] = [
@@ -147,7 +148,11 @@ export function DashboardNav({ user }: DashboardNavProps) {
             style={{ transform: analyzeOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
           />
         </button>
-        {analyzeOpen && <div className="space-y-1">{analyzeItems.map(navLink)}</div>}
+        {analyzeOpen && (
+          <div className="space-y-1">
+            {analyzeItems.filter((i) => !i.adminOnly || isAdmin).map(navLink)}
+          </div>
+        )}
 
         <div style={{ borderTop: '1px solid var(--sidebar-border)', margin: '8px 4px 0' }} />
 

@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/authz';
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const sessionUser = session.user as { id: string; organizationId: string };
+    // Every row is an amount billed to a client: owner/admin only.
+    const authz = await requireAuth(['OWNER', 'ADMIN']);
+    if (authz instanceof NextResponse) return authz;
 
     const invoices = await prisma.invoice.findMany({
-      where: { organizationId: sessionUser.organizationId },
+      where: { organizationId: authz.organizationId },
       include: {
         period: { select: { startDate: true, endDate: true } },
         client: { select: { name: true } },

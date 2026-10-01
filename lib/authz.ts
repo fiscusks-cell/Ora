@@ -14,8 +14,15 @@ export interface AuthContext {
  * Validates the session and re-reads role from the DB (not from the JWT, which goes stale).
  * Pass `roles` to require one of those roles; omit to allow any authenticated member.
  * Returns AuthContext on success or a ready-to-return NextResponse on failure.
+ *
+ * `forbiddenMessage` overrides the 403 body for routes whose refusal is shown
+ * to the user, where a bare Forbidden would be less useful than naming what
+ * is required.
  */
-export async function requireAuth(roles?: AuthzRole[]): Promise<AuthContext | NextResponse> {
+export async function requireAuth(
+  roles?: AuthzRole[],
+  forbiddenMessage = 'Forbidden',
+): Promise<AuthContext | NextResponse> {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -35,7 +42,7 @@ export async function requireAuth(roles?: AuthzRole[]): Promise<AuthContext | Ne
   const role = dbUser.role as AuthzRole;
 
   if (roles && roles.length > 0 && !roles.includes(role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return NextResponse.json({ error: forbiddenMessage }, { status: 403 });
   }
 
   return { userId: sessionUser.id, organizationId: sessionUser.organizationId, role };

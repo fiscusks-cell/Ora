@@ -33,6 +33,9 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>(() =>
     searchParams.get('tab') === 'integrations' ? 'integrations' : 'profile'
   );
+  const isAdmin = ['OWNER', 'ADMIN'].includes(
+    (session?.user as { role?: string } | undefined)?.role ?? '',
+  );
   const [integrations, setIntegrations] = useState<IntegrationStatus>({ connectedQBO: false, connectedXero: false, xeroOrgName: null });
   const [qboMsg, setQboMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [xeroMsg, setXeroMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -98,6 +101,7 @@ export default function SettingsPage() {
   }, [previewUrl]);
 
   useEffect(() => {
+    if (!isAdmin) return;
     fetch('/api/integrations/qbo/status')
       .then((r) => r.json())
       .then((d) => setIntegrations((prev) => ({ ...prev, connectedQBO: !!d.connected })))
@@ -106,7 +110,7 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((d) => setIntegrations((prev) => ({ ...prev, connectedXero: !!d.connected, xeroOrgName: d.orgName ?? null })))
       .catch(() => {});
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     const qbo = searchParams.get('qbo');
@@ -206,11 +210,13 @@ export default function SettingsPage() {
     else alert(data.error || 'Billing portal unavailable');
   };
 
+  // Integrations holds nothing a member can use: the connect, disconnect and
+  // status routes are owner/admin only, so the tab would be a button that 403s.
   const tabs: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'Profile' },
     { id: 'organization', label: 'Organization' },
     { id: 'billing', label: 'Billing' },
-    { id: 'integrations', label: 'Integrations' },
+    ...(isAdmin ? [{ id: 'integrations' as Tab, label: 'Integrations' }] : []),
   ];
 
   return (
@@ -499,7 +505,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {tab === 'integrations' && (
+      {tab === 'integrations' && isAdmin && (
         <div className="space-y-4">
           {qboMsg && (
             <div className={`flex items-center gap-2 text-sm px-4 py-3 rounded-lg border ${

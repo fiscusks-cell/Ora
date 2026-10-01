@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 
 export async function PATCH(
@@ -7,15 +7,12 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const role = (session.user as { role: string }).role;
-    if (!['OWNER', 'ADMIN'].includes(role)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // Approval is the gate in front of invoicing, so the role has to come from
+    // the database. A JWT still reads ADMIN until it refreshes, which would let
+    // a demoted admin approve a period and move client money forward.
+    const authz = await requireAuth(['OWNER', 'ADMIN'], 'Admin access required');
+    if (authz instanceof NextResponse) return authz;
+    const { userId, organizationId } = authz;
     const { id } = await params;
 
     const period = await prisma.timePeriod.findFirst({ where: { id, organizationId } });
@@ -30,7 +27,7 @@ export async function PATCH(
 
     // Fetch approver's name to store in approvedBy
     const approver = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { name: true },
     });
 
@@ -39,7 +36,7 @@ export async function PATCH(
       data: {
         status: 'APPROVED',
         approvedAt: new Date(),
-        approvedBy: approver?.name ?? session.user.id,
+        approvedBy: approver?.name ?? userId,
       },
     });
 

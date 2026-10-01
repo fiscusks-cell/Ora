@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { formatDuration, formatCurrency } from '@/lib/utils';
+import { AdminOnlyNotice } from '@/components/ui/AdminOnlyNotice';
 import { groupCurrencyTotals, formatGroupedAmounts } from '@/lib/currency';
 import { format } from 'date-fns';
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
@@ -93,7 +94,7 @@ const STATUS_LABEL: Record<StatusKey, { label: string; style: React.CSSPropertie
 export default function PeriodDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const isAdmin = ['OWNER', 'ADMIN'].includes((session?.user as { role?: string })?.role ?? '');
 
   const [period, setPeriod] = useState<Period | null>(null);
@@ -226,7 +227,17 @@ export default function PeriodDetailPage() {
     }
   };
 
-  if (loading) return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
+  if (loading || sessionStatus === 'loading') {
+    return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
+  }
+  if (!isAdmin) {
+    return (
+      <AdminOnlyNotice
+        title="This billing period is not available to your account"
+        description="Periods and invoices are managed by owners and admins. Your tracked time is still on the Time Tracker and in Reports."
+      />
+    );
+  }
   if (!period) return <div className="p-8" style={{ color: 'var(--text-muted)' }}>Period not found</div>;
 
   const totalSeconds = period.stats?.totalSeconds ?? (period.entries ?? []).reduce((s, e) => s + (e.durationSeconds || 0), 0);

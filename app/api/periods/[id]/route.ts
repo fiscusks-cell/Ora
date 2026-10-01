@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/authz';
 import { amountMinor, fromMinor, rateToHundredths } from '@/lib/currency';
 import { analyzePeriodBilling, sliceEntriesByClient } from '@/lib/period-billing';
 import { composeInvoice } from '@/lib/invoice-lines';
@@ -11,10 +11,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // Returns per-project and per-client money for the period: owner/admin only.
+    const authz = await requireAuth(['OWNER', 'ADMIN']);
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId } = authz;
     const { id } = await params;
 
     const period = await prisma.timePeriod.findFirst({

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { AdminOnlyNotice } from '@/components/ui/AdminOnlyNotice';
 import { Plus, X, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -71,6 +73,8 @@ function calcBillableAmount(entries: TimeEntryLite[] | undefined): number {
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function PeriodsPage() {
+  const { data: session, status } = useSession();
+  const isAdmin = ['OWNER', 'ADMIN'].includes((session?.user as { role?: string })?.role ?? '');
   const [periods, setPeriods] = useState<Period[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
@@ -87,7 +91,7 @@ export default function PeriodsPage() {
     }
   }, []);
 
-  useEffect(() => { fetchPeriods(); }, [fetchPeriods]);
+  useEffect(() => { if (isAdmin) fetchPeriods(); }, [isAdmin, fetchPeriods]);
 
   const handleCreate = async () => {
     if (!form.startDate || !form.endDate) return;
@@ -111,6 +115,18 @@ export default function PeriodsPage() {
       setSaving(false);
     }
   };
+
+  if (status === 'loading') {
+    return <div className="p-8"><div className="h-32 skeleton rounded-xl" /></div>;
+  }
+  if (!isAdmin) {
+    return (
+      <AdminOnlyNotice
+        title="Billing periods are not available to your account"
+        description="Periods and invoices are managed by owners and admins. Your tracked time is still on the Time Tracker and in Reports."
+      />
+    );
+  }
 
   const inputStyle: React.CSSProperties = {
     background: 'var(--bg-tertiary)',

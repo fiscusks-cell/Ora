@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -12,20 +12,19 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    // Only OWNER can change roles
-    const callerRole = (session.user as { role: string }).role;
-    if (callerRole !== 'OWNER') {
-      return NextResponse.json({ error: 'Only the organization owner can change member roles' }, { status: 403 });
-    }
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // Only an owner may change roles, read from the database rather than the
+    // token: this is the route a demoted admin would use to promote themselves
+    // back, and their JWT would still say ADMIN.
+    const authz = await requireAuth(
+      ['OWNER'],
+      'Only the organization owner can change member roles',
+    );
+    if (authz instanceof NextResponse) return authz;
+    const { userId: callerId, organizationId } = authz;
     const { userId } = await params;
 
     // Cannot change own role
-    if (userId === session.user.id) {
+    if (userId === callerId) {
       return NextResponse.json({ error: 'Cannot change your own role' }, { status: 400 });
     }
 
@@ -64,19 +63,15 @@ export async function DELETE(
   { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const callerRole = (session.user as { role: string }).role;
-    if (!['OWNER', 'ADMIN'].includes(callerRole)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // Removing a member deletes their time entries with them, so the caller's
+    // role comes from the database, not from a token that may predate a demotion.
+    const authz = await requireAuth(['OWNER', 'ADMIN'], 'Admin access required');
+    if (authz instanceof NextResponse) return authz;
+    const { userId: callerId, organizationId } = authz;
     const { userId } = await params;
 
     // Cannot remove self
-    if (userId === session.user.id) {
+    if (userId === callerId) {
       return NextResponse.json({ error: 'Cannot remove yourself from the organization' }, { status: 400 });
     }
 
