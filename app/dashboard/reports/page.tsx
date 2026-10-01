@@ -68,9 +68,11 @@ interface TimeEntry {
     name: string;
     color: string;
     icon?: string | null;
-    hourlyRate: any;
+    // Absent when the viewer may not see money: the server omits rates as well
+    // as totals, because duration x rate is the total.
+    hourlyRate?: any;
     isBillable: boolean;
-    client: { id: string; name: string; currency: string } | null;
+    client: { id: string; name: string; currency?: string } | null;
   } | null;
   user: { id: string; name: string | null };
 }
@@ -86,8 +88,8 @@ interface MemberStat {
   userName: string;
   totalSeconds: number;
   billableSeconds: number;
-  billableAmountMinor: number;
-  billableAmount: number;
+  billableAmountMinor?: number;
+  billableAmount?: number;
 }
 
 interface ProjectStat {
@@ -97,11 +99,11 @@ interface ProjectStat {
   projectIcon: string | null;
   clientId: string | null;
   clientName: string | null;
-  clientCurrency: string;
+  clientCurrency?: string;
   totalSeconds: number;
   billableSeconds: number;
-  billableAmountMinor: number;
-  billableAmount: number;
+  billableAmountMinor?: number;
+  billableAmount?: number;
   members: MemberStat[];
 }
 
@@ -112,7 +114,7 @@ interface ReportData {
   totals: {
     totalSeconds: number;
     billableSeconds: number;
-    totalAmount: number;
+    totalAmount?: number;
     activeDays: number;
   };
 }
@@ -219,11 +221,26 @@ function workloadCellClass(seconds: number) {
 // exactly with the Summary aggregates and the PDF.
 function entryRevenueMinor(entry: TimeEntry): number {
   if (!entry.isBillable || !entry.project) return 0;
+  // No rate means the viewer may not see money. Nothing that calls this is
+  // rendered in that case, and returning 0 keeps it from inventing a number.
+  if (entry.project.hourlyRate == null) return 0;
   const currency = entry.project.client?.currency ?? 'USD';
   return amountMinor(
     entry.durationSeconds ?? 0,
     rateToHundredths(entry.project.hourlyRate),
     currency,
+  );
+}
+
+/**
+ * Narrows project rows to the ones that actually carry money, for the currency
+ * grouper. Yields nothing when the viewer may not see amounts.
+ */
+function moneyRows(byProject: ProjectStat[]) {
+  return byProject.flatMap((p) =>
+    p.clientCurrency != null && p.billableAmountMinor != null
+      ? [{ clientCurrency: p.clientCurrency, billableAmountMinor: p.billableAmountMinor }]
+      : [],
   );
 }
 
@@ -291,6 +308,9 @@ export default function ReportsPage() {
   const [projectDetails, setProjectDetails] = useState<
     Record<string, NonNullable<TimeEntry['project']>>
   >({});
+  // null until /api/org answers. Money is rendered only on an explicit true, so
+  // the first paint never shows an amount column it then has to take away.
+  const [canSeeAmounts, setCanSeeAmounts] = useState<boolean | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
 
@@ -470,12 +490,17 @@ export default function ReportsPage() {
       .catch(console.error);
   }, []);
 
-  // ── Fetch org name (for PDF footer) ─────────────────────────────────────────
+  // ── Fetch org name (PDF footer) and whether this viewer may see money ───────
   useEffect(() => {
     fetch('/api/org')
       .then((r) => r.json())
-      .then((d: { name?: string }) => setOrgName(d.name ?? ''))
-      .catch(() => {});
+      .then((d: { name?: string; canSeeAmounts?: boolean }) => {
+        setOrgName(d.name ?? '');
+        // The server decides this from the database role and the workspace
+        // setting. The page only mirrors it; the payload is already stripped.
+        setCanSeeAmounts(d.canSeeAmounts === true);
+      })
+      .catch(() => setCanSeeAmounts(false));
   }, []);
 
 
@@ -567,7 +592,9 @@ export default function ReportsPage() {
   // ── Profitability rows ──────────────────────────────────────────────────────
   const profitRows = useMemo(() => {
     if (!data) return [];
-    return [...data.byProject].sort((a, b) => b.billableAmountMinor - a.billableAmountMinor);
+    return [...data.byProject].sort(
+      (a, b) => (b.billableAmountMinor ?? 0) - (a.billableAmountMinor ?? 0),
+    );
   }, [data]);
 
   // ── Summary breakdown percentages ───────────────────────────────────────────
@@ -792,6 +819,8 @@ export default function ReportsPage() {
         dateRange,
         entries: data.entries,
         byDay: data.byDay,
+        // Drops the Revenue column and card rather than printing zeros.
+        showAmounts: canSeeAmounts === true,
         totals: {
           totalSeconds: data.totals.totalSeconds,
           billableSeconds: data.totals.billableSeconds,
@@ -813,10 +842,15 @@ export default function ReportsPage() {
     }
   }
 
+  // The Amount column is dropped from the export, not filled with zeros: the
+  // rates are not in the payload, so a zero would read as work that earned
+  // nothing rather than a figure withheld.
   function exportSummaryCSV() {
     if (!data) return;
+    const showMoney = canSeeAmounts === true;
     const rows: string[][] = [
-      ['Project', 'Client', 'Member', 'Date', 'Duration (h)', 'Billable', 'Amount'],
+      ['Project', 'Client', 'Member', 'Date', 'Duration (h)', 'Billable',
+        ...(showMoney ? ['Amount'] : [])],
     ];
     for (const entry of data.entries) {
       const cur = entry.project?.client?.currency ?? 'USD';
@@ -827,7 +861,9 @@ export default function ReportsPage() {
         format(new Date(entry.startedAt), 'yyyy-MM-dd'),
         ((entry.durationSeconds ?? 0) / 3600).toFixed(2),
         entry.isBillable ? 'Yes' : 'No',
-        fromMinor(entryRevenueMinor(entry), cur).toFixed(currencyDecimals(cur)),
+        ...(showMoney
+          ? [fromMinor(entryRevenueMinor(entry), cur).toFixed(currencyDecimals(cur))]
+          : []),
       ]);
     }
     downloadCSV(rows, 'ora-summary.csv');
@@ -835,8 +871,10 @@ export default function ReportsPage() {
 
   function exportDetailedCSV() {
     if (!data) return;
+    const showMoney = canSeeAmounts === true;
     const rows: string[][] = [
-      ['Date', 'Member', 'Client', 'Project', 'Description', 'Start', 'End', 'Duration (h)', 'Billable', 'Amount'],
+      ['Date', 'Member', 'Client', 'Project', 'Description', 'Start', 'End',
+        'Duration (h)', 'Billable', ...(showMoney ? ['Amount'] : [])],
     ];
     for (const entry of sortedEntries) {
       const cur = entry.project?.client?.currency ?? 'USD';
@@ -850,7 +888,9 @@ export default function ReportsPage() {
         entry.stoppedAt ? fmtTime(entry.stoppedAt) : '',
         ((entry.durationSeconds ?? 0) / 3600).toFixed(2),
         entry.isBillable ? 'Yes' : 'No',
-        fromMinor(entryRevenueMinor(entry), cur).toFixed(currencyDecimals(cur)),
+        ...(showMoney
+          ? [fromMinor(entryRevenueMinor(entry), cur).toFixed(currencyDecimals(cur))]
+          : []),
       ]);
     }
     downloadCSV(rows, 'ora-detailed.csv');
@@ -898,7 +938,9 @@ export default function ReportsPage() {
       userId: report.filters.userId,
       billable: report.filters.billable as '' | 'true' | 'false',
     });
-    setActiveTab(report.tab);
+    // A report saved while amounts were visible can name the Profitability tab;
+    // fall back to Summary rather than restoring a tab that renders nothing.
+    setActiveTab(report.tab === 'profitability' && !canSeeAmounts ? 'summary' : report.tab);
   }
 
   // ── Filter bar ──────────────────────────────────────────────────────────────
@@ -1136,7 +1178,12 @@ export default function ReportsPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard label="Total Hours" value={fmtHours(data.totals.totalSeconds)} />
               <StatCard label="Billable Hours" value={fmtHours(data.totals.billableSeconds)} />
-              <StatCard label="Total Amount" value={formatGroupedAmounts(groupCurrencyTotals(data.byProject))} />
+              {canSeeAmounts && (
+                <StatCard
+                  label="Total Amount"
+                  value={formatGroupedAmounts(groupCurrencyTotals(moneyRows(data.byProject)))}
+                />
+              )}
               <StatCard
                 label="Avg Daily Hours"
                 value={data.totals.activeDays > 0 ? fmtHours(data.totals.totalSeconds / data.totals.activeDays) : '0.0h'}
@@ -1268,7 +1315,9 @@ export default function ReportsPage() {
                     <th className="text-left px-4 py-3 text-slate-400 hidden md:table-cell">Client</th>
                     <th className="text-right px-4 py-3 text-slate-400">Duration</th>
                     <th className="text-right px-4 py-3 text-slate-400 hidden sm:table-cell">%</th>
-                    <th className="text-right px-4 py-3 text-slate-400">Amount</th>
+                    {canSeeAmounts && (
+                      <th className="text-right px-4 py-3 text-slate-400">Amount</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -1302,13 +1351,15 @@ export default function ReportsPage() {
                           <td className="px-4 py-3 text-right text-slate-400 hidden sm:table-cell">
                             {pct}%
                           </td>
-                          <td className="px-4 py-3 text-right text-slate-200">
-                            {proj.billableAmount > 0 ? (
-                              formatCurrency(proj.billableAmount, proj.clientCurrency)
-                            ) : (
-                              <span className="text-slate-600">—</span>
-                            )}
-                          </td>
+                          {canSeeAmounts && (
+                            <td className="px-4 py-3 text-right text-slate-200">
+                              {proj.billableAmount && proj.billableAmount > 0 ? (
+                                formatCurrency(proj.billableAmount, proj.clientCurrency)
+                              ) : (
+                                <span className="text-slate-600">—</span>
+                              )}
+                            </td>
+                          )}
                         </tr>
                         {isExpanded &&
                           proj.members.map((member) => {
@@ -1327,13 +1378,15 @@ export default function ReportsPage() {
                                 <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">
                                   {memberPct}%
                                 </td>
-                                <td className="px-4 py-2.5 text-right text-slate-400">
-                                  {member.billableAmount > 0 ? (
-                                    formatCurrency(member.billableAmount, proj.clientCurrency)
-                                  ) : (
-                                    <span className="text-slate-600">—</span>
-                                  )}
-                                </td>
+                                {canSeeAmounts && (
+                                  <td className="px-4 py-2.5 text-right text-slate-400">
+                                    {member.billableAmount && member.billableAmount > 0 ? (
+                                      formatCurrency(member.billableAmount, proj.clientCurrency)
+                                    ) : (
+                                      <span className="text-slate-600">—</span>
+                                    )}
+                                  </td>
+                                )}
                               </tr>
                             );
                           })}
@@ -1349,9 +1402,11 @@ export default function ReportsPage() {
                     <td className="px-4 py-3 text-right text-slate-400 hidden sm:table-cell">
                       {breakdownPcts.total.toFixed(1)}%
                     </td>
-                    <td className="px-4 py-3 text-right text-white">
-                      {formatGroupedAmounts(groupCurrencyTotals(data.byProject))}
-                    </td>
+                    {canSeeAmounts && (
+                      <td className="px-4 py-3 text-right text-white">
+                        {formatGroupedAmounts(groupCurrencyTotals(moneyRows(data.byProject)))}
+                      </td>
+                    )}
                   </tr>
                 </tbody>
               </table>
@@ -1406,7 +1461,7 @@ export default function ReportsPage() {
                           ['end', 'End'],
                           ['duration', 'Duration'],
                           ['billable', '$'],
-                          ['amount', 'Amount'],
+                          ...(canSeeAmounts ? [['amount', 'Amount']] : []),
                         ] as [string, string][]
                       ).map(([col, label]) => (
                         <th
@@ -1597,13 +1652,15 @@ export default function ReportsPage() {
                           </td>
 
                           {/* Amount */}
-                          <td className="px-4 py-3 text-slate-200 text-right whitespace-nowrap">
-                            {amtMinor > 0 ? (
-                              formatMinor(amtMinor, entry.project?.client?.currency ?? 'USD')
-                            ) : (
-                              <span className="text-slate-600">—</span>
-                            )}
-                          </td>
+                          {canSeeAmounts && (
+                            <td className="px-4 py-3 text-slate-200 text-right whitespace-nowrap">
+                              {amtMinor > 0 ? (
+                                formatMinor(amtMinor, entry.project?.client?.currency ?? 'USD')
+                              ) : (
+                                <span className="text-slate-600">—</span>
+                              )}
+                            </td>
+                          )}
                         </tr>
                       );
                     })}
@@ -1747,7 +1804,7 @@ export default function ReportsPage() {
       )}
 
       {/* ══════════════════════════════ PROFITABILITY TAB ══════════════════════════════ */}
-      {activeTab === 'profitability' && (
+      {activeTab === 'profitability' && canSeeAmounts && (
         <div className="space-y-6">
           <FilterBar showMember={false} showBillable={false} />
 
@@ -1767,7 +1824,7 @@ export default function ReportsPage() {
           {!loading && data && (
             <>
               {(() => {
-                const revenueTotals = groupCurrencyTotals(profitRows);
+                const revenueTotals = groupCurrencyTotals(moneyRows(profitRows));
                 const totalSecs = profitRows.reduce((s, r) => s + r.totalSeconds, 0);
                 const billSecs = profitRows.reduce((s, r) => s + r.billableSeconds, 0);
                 const billPct = totalSecs > 0 ? (billSecs / totalSecs) * 100 : 0;
@@ -1783,7 +1840,10 @@ export default function ReportsPage() {
                       </p>
                       {mostProfitable && (
                         <p className="text-sm text-slate-400 mt-1">
-                          {formatCurrency(mostProfitable.billableAmount, mostProfitable.clientCurrency)}
+                          {formatCurrency(
+                            mostProfitable.billableAmount ?? 0,
+                            mostProfitable.clientCurrency,
+                          )}
                         </p>
                       )}
                     </div>
@@ -1863,7 +1923,7 @@ export default function ReportsPage() {
                               {billPct.toFixed(1)}%
                             </td>
                             <td className="px-4 py-3 text-right text-slate-200">
-                              {proj.billableAmount > 0 ? (
+                              {proj.billableAmount && proj.billableAmount > 0 ? (
                                 formatCurrency(proj.billableAmount, proj.clientCurrency)
                               ) : (
                                 <span className="text-slate-600">—</span>
@@ -1892,7 +1952,7 @@ export default function ReportsPage() {
                               {overallPct.toFixed(1)}%
                             </td>
                             <td className="px-4 py-3 text-right text-white">
-                              {formatGroupedAmounts(groupCurrencyTotals(profitRows))}
+                              {formatGroupedAmounts(groupCurrencyTotals(moneyRows(profitRows)))}
                             </td>
                           </tr>
                         );

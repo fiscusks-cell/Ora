@@ -8,6 +8,18 @@ export interface AuthContext {
   userId: string;
   organizationId: string;
   role: AuthzRole;
+  /**
+   * Whether this caller may see monetary amounts and rates.
+   *
+   * Owners and admins always may. For a member it is the workspace's
+   * `showAmountsToMembers` setting, following how Clockify and Toggl treat
+   * this: a workspace decides whether to show money, rather than the product
+   * hardcoding a rule about roles.
+   *
+   * This covers amounts and the rates they are computed from. It does not
+   * cover `isBillable`, which describes the work rather than what it earns.
+   */
+  canSeeAmounts: boolean;
 }
 
 /**
@@ -30,9 +42,11 @@ export async function requireAuth(
 
   const sessionUser = session.user as { id: string; organizationId: string };
 
+  // The organization's money setting rides along on the query that already
+  // re-reads the role, so deciding visibility costs no extra round trip.
   const dbUser = await prisma.user.findUnique({
     where: { id: sessionUser.id },
-    select: { role: true },
+    select: { role: true, organization: { select: { showAmountsToMembers: true } } },
   });
 
   if (!dbUser) {
@@ -45,5 +59,10 @@ export async function requireAuth(
     return NextResponse.json({ error: forbiddenMessage }, { status: 403 });
   }
 
-  return { userId: sessionUser.id, organizationId: sessionUser.organizationId, role };
+  return {
+    userId: sessionUser.id,
+    organizationId: sessionUser.organizationId,
+    role,
+    canSeeAmounts: role !== 'MEMBER' || dbUser.organization.showAmountsToMembers,
+  };
 }

@@ -18,8 +18,8 @@ interface PDFEntry {
   isBillable: boolean;
   description: string | null;
   project: {
-    hourlyRate: unknown;
-    client: { id: string; name: string; currency: string } | null;
+    hourlyRate?: unknown;
+    client: { id: string; name: string; currency?: string } | null;
   } | null;
 }
 
@@ -34,6 +34,13 @@ export interface ReportPDFProps {
   entries: PDFEntry[];
   byDay: PDFByDay[];
   totals: { totalSeconds: number; billableSeconds: number; activeDays: number };
+  /**
+   * Whether to print the Revenue card and column at all. Required rather than
+   * defaulted: a caller has to decide, instead of printing money by omission.
+   * False drops the column rather than filling it with zeros — the rates are
+   * not in the payload, so zeros would misreport the work as unpaid.
+   */
+  showAmounts: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -144,7 +151,7 @@ const styles = StyleSheet.create({
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function ReportPDF({ orgName, dateRange, entries, byDay, totals }: ReportPDFProps) {
+export function ReportPDF({ orgName, dateRange, entries, byDay, totals, showAmounts }: ReportPDFProps) {
   const { totalSeconds, billableSeconds, activeDays } = totals;
 
   // ── Summary metrics ────────────────────────────────────────────────────────
@@ -233,7 +240,7 @@ export function ReportPDF({ orgName, dateRange, entries, byDay, totals }: Report
     const cur = e.project?.client?.currency ?? 'USD';
     const desc = e.description?.trim() || '(No description)';
     const secs = e.durationSeconds ?? 0;
-    const rateHundredths = e.project ? rateToHundredths(e.project.hourlyRate) : 0;
+    const rateHundredths = showAmounts && e.project ? rateToHundredths(e.project.hourlyRate) : 0;
     const revMinor = e.isBillable ? amountMinor(secs, rateHundredths, cur) : 0;
 
     if (!clientMap.has(cid)) {
@@ -303,10 +310,12 @@ export function ReportPDF({ orgName, dateRange, entries, byDay, totals }: Report
             <Text style={styles.statValue}>{fmtHMS(billableSeconds)}</Text>
             <Text style={styles.statSub}>{billablePct}% of total</Text>
           </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>Revenue</Text>
-            <Text style={styles.statValue}>{revenueStr || '—'}</Text>
-          </View>
+          {showAmounts && (
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Revenue</Text>
+              <Text style={styles.statValue}>{revenueStr || '—'}</Text>
+            </View>
+          )}
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Avg Daily Hours</Text>
             <Text style={styles.statValue}>{avgDailyHours}</Text>
@@ -404,7 +413,7 @@ export function ReportPDF({ orgName, dateRange, entries, byDay, totals }: Report
                 <Text style={[styles.thText, styles.colDesc]}>Description</Text>
                 <Text style={[styles.thText, styles.colDur]}>Duration</Text>
                 <Text style={[styles.thText, styles.colPct]}>%</Text>
-                <Text style={[styles.thText, styles.colRev]}>Revenue</Text>
+                {showAmounts && <Text style={[styles.thText, styles.colRev]}>Revenue</Text>}
               </View>
 
               {clientRows.map((client, ci) => (
@@ -419,9 +428,11 @@ export function ReportPDF({ orgName, dateRange, entries, byDay, totals }: Report
                     <Text style={[styles.colPct, { fontFamily: 'Helvetica-Bold', fontSize: 9, color: ACCENT }]}>
                       {client.pct.toFixed(1)}%
                     </Text>
-                    <Text style={[styles.colRev, { fontFamily: 'Helvetica-Bold', fontSize: 9, color: ACCENT }]}>
-                      {client.revenueMinor > 0 ? formatMinor(client.revenueMinor, client.currency) : '—'}
-                    </Text>
+                    {showAmounts && (
+                      <Text style={[styles.colRev, { fontFamily: 'Helvetica-Bold', fontSize: 9, color: ACCENT }]}>
+                        {client.revenueMinor > 0 ? formatMinor(client.revenueMinor, client.currency) : '—'}
+                      </Text>
+                    )}
                   </View>
                   {client.descList.map((row, di) => (
                     <View key={di} style={styles.tableRow}>
@@ -430,9 +441,11 @@ export function ReportPDF({ orgName, dateRange, entries, byDay, totals }: Report
                       </Text>
                       <Text style={styles.colDur}>{fmtHMS(row.seconds)}</Text>
                       <Text style={styles.colPct}>{row.pct.toFixed(1)}%</Text>
-                      <Text style={styles.colRev}>
-                        {row.revenueMinor > 0 ? formatMinor(row.revenueMinor, client.currency) : '—'}
-                      </Text>
+                      {showAmounts && (
+                        <Text style={styles.colRev}>
+                          {row.revenueMinor > 0 ? formatMinor(row.revenueMinor, client.currency) : '—'}
+                        </Text>
+                      )}
                     </View>
                   ))}
                 </View>

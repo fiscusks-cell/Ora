@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/authz';
+import { withoutRate } from '@/lib/money-visibility';
 import { z } from 'zod';
 
 const createSchema = z.object({
@@ -16,10 +16,10 @@ const createSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    // Open to every role: the timer needs the project list to put work against.
+    const authz = await requireAuth();
+    if (authz instanceof NextResponse) return authz;
+    const { organizationId, canSeeAmounts } = authz;
 
     const { searchParams } = new URL(req.url);
     const includeArchived = searchParams.get('includeArchived') === 'true';
@@ -35,7 +35,11 @@ export async function GET(req: NextRequest) {
       orderBy: { name: 'asc' },
     });
 
-    return NextResponse.json(projects);
+    // The client currency stays: it is the project's configuration, and without
+    // a rate it cannot be turned back into an amount.
+    return NextResponse.json(
+      canSeeAmounts ? projects : projects.map((p) => withoutRate(p)),
+    );
   } catch (err) {
     console.error('[projects GET] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

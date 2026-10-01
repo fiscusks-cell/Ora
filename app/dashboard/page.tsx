@@ -96,9 +96,10 @@ export default async function DashboardPage() {
     todayEntries,
     weekEntries,
     lastWeekEntries,
-    monthBillableEntries,
+    monthEntries,
     activeEntry,
     recentEntries,
+    viewer,
   ] = await Promise.all([
     prisma.timeEntry.findMany({
       where: {
@@ -121,12 +122,13 @@ export default async function DashboardPage() {
         stoppedAt: { not: null },
       },
     }),
+    // No isBillable filter: this one query feeds both the billable amount and
+    // the total hours tracked, and the split is made below.
     prisma.timeEntry.findMany({
       where: {
         userId: sessionUser.id,
         startedAt: { gte: monthStart, lte: monthEnd },
         stoppedAt: { not: null },
-        isBillable: true,
       },
       include: { project: true },
     }),
@@ -139,18 +141,33 @@ export default async function DashboardPage() {
       take: 10,
       include: { project: { include: { client: true } } },
     }),
+    // Same rule as the API: the role and the workspace setting both come from
+    // the database, never from the session token, which may predate a demotion
+    // or a change to the setting.
+    prisma.user.findUnique({
+      where: { id: sessionUser.id },
+      select: { role: true, organization: { select: { showAmountsToMembers: true } } },
+    }),
   ]);
+
+  // Fails closed: no row means no amounts.
+  const canSeeAmounts = viewer
+    ? viewer.role !== 'MEMBER' || viewer.organization.showAmountsToMembers
+    : false;
 
   // Compute totals
   const todaySeconds = sumSeconds(todayEntries);
   const weekSeconds = sumSeconds(weekEntries);
   const lastWeekSeconds = sumSeconds(lastWeekEntries);
 
-  const monthBillable = monthBillableEntries.reduce((acc, e) => {
-    const seconds = e.durationSeconds ?? (e.stoppedAt ? Math.round((e.stoppedAt.getTime() - e.startedAt.getTime()) / 1000) : 0);
-    const rate = e.project ? Number(e.project.hourlyRate) : 0;
-    return acc + (seconds / 3600) * rate;
-  }, 0);
+  const monthTrackedSeconds = sumSeconds(monthEntries);
+  const monthBillable = monthEntries
+    .filter((e) => e.isBillable)
+    .reduce((acc, e) => {
+      const seconds = e.durationSeconds ?? (e.stoppedAt ? Math.round((e.stoppedAt.getTime() - e.startedAt.getTime()) / 1000) : 0);
+      const rate = e.project ? Number(e.project.hourlyRate) : 0;
+      return acc + (seconds / 3600) * rate;
+    }, 0);
 
   // Greeting
   const hour = now.getHours();
@@ -196,11 +213,24 @@ export default async function DashboardPage() {
         <StatCard label="Today" value={formatHM(todaySeconds)} />
         <StatCard label="This week" value={formatHM(weekSeconds)} />
         <StatCard label="Last week" value={formatHM(lastWeekSeconds)} />
-        <StatCard
-          label="Month billable"
-          value={formatCurrency(monthBillable)}
-          highlight
-        />
+        {/*
+          The card stays in place rather than leaving a hole in the row of four:
+          someone who may not see amounts sees the hours they tracked instead,
+          which is the part of the figure that was theirs anyway.
+        */}
+        {canSeeAmounts ? (
+          <StatCard
+            label="Month billable"
+            value={formatCurrency(monthBillable)}
+            highlight
+          />
+        ) : (
+          <StatCard
+            label="Month tracked"
+            value={formatHM(monthTrackedSeconds)}
+            highlight
+          />
+        )}
       </div>
 
       {/* Recent entries */}

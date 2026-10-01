@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { requireAuth } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { serializeTimeEntry, timeEntryInclude } from '@/lib/time-entry-include';
@@ -26,7 +25,7 @@ export async function GET(req: NextRequest) {
   try {
     const ctx = await requireAuth();
     if (ctx instanceof NextResponse) return ctx;
-    const { userId, organizationId, role } = ctx;
+    const { userId, organizationId, role, canSeeAmounts } = ctx;
 
     const { searchParams } = new URL(req.url);
     const active = searchParams.get('active') === 'true';
@@ -45,7 +44,7 @@ export async function GET(req: NextRequest) {
         orderBy: { startedAt: 'desc' },
         take: 1,
       });
-      return NextResponse.json(entries.map((e) => serializeTimeEntry(e)));
+      return NextResponse.json(entries.map((e) => serializeTimeEntry(e, canSeeAmounts)));
     }
 
     if (filterUserId && filterUserId !== userId && role === 'MEMBER') {
@@ -74,7 +73,7 @@ export async function GET(req: NextRequest) {
       take: 500,
     });
 
-    return NextResponse.json(entries.map((e) => serializeTimeEntry(e)));
+    return NextResponse.json(entries.map((e) => serializeTimeEntry(e, canSeeAmounts)));
   } catch (err) {
     console.error('[time-entries GET] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -87,11 +86,9 @@ export async function POST(req: NextRequest) {
   const serverNow = new Date();
 
   try {
-    const session = await auth();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const userId = session.user.id;
-    const organizationId = (session.user as { organizationId: string }).organizationId;
+    const authz = await requireAuth();
+    if (authz instanceof NextResponse) return authz;
+    const { userId, organizationId, canSeeAmounts } = authz;
 
     const body = await req.json();
     const parsed = createSchema.safeParse(body);
@@ -137,7 +134,7 @@ export async function POST(req: NextRequest) {
       include: timeEntryInclude,
     });
 
-    return NextResponse.json(serializeTimeEntry(entry), { status: 201 });
+    return NextResponse.json(serializeTimeEntry(entry, canSeeAmounts), { status: 201 });
   } catch (err) {
     console.error('[time-entries POST] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
