@@ -9,9 +9,11 @@ import { Check, DollarSign, FileText } from 'lucide-react';
 
 function Stage({ title, children, body }: { title: string; children: React.ReactNode; body: string }) {
   return (
-    <li className="relative flex flex-col gap-5">
-      {/* flex-1 so the three cards share one height and the titles align */}
-      <div className="flex-1 rounded-cards border border-frost bg-snow p-5 text-void shadow-elevation-sm">{children}</div>
+    // Each stage spans the list's two rows through a subgrid, so all three cards
+    // share row one and all three titles start row two — equal card heights and
+    // aligned titles at every width, whatever the body copy wraps to.
+    <li className="relative flex flex-col gap-5 md:row-span-2 md:grid md:grid-rows-subgrid md:gap-5">
+      <div className="rounded-cards border border-frost bg-snow p-5 text-void shadow-elevation-sm">{children}</div>
       <div>
         <h3 className="font-display text-heading-sm font-semibold text-void">{title}</h3>
         <p className="mt-2 max-w-[42ch] text-body text-iron-veil">{body}</p>
@@ -31,7 +33,7 @@ export function HowItWorks() {
           Hours are tracked by the people doing the work, approved once as a billing period, and published as one invoice per client — in the accounting system, not beside it.
         </p>
 
-        <ol className="relative mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
+        <ol className="relative mt-12 grid gap-10 md:grid-cols-3 md:grid-rows-[auto_auto] md:gap-x-8 md:gap-y-5">
           {/* the rule that ties the three states together */}
           <div
             aria-hidden="true"
