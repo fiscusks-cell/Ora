@@ -400,55 +400,12 @@ export default function SettingsPage() {
               </select>
             </div>
           </div>
-
-          <div className="rounded-xl p-6" style={card}>
-            <h2 className="text-base font-normal mb-2" style={{ color: 'var(--text)' }}>Change password</h2>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Leave blank to keep your current password</p>
-            <div className="space-y-4">
-              <input
-                type="password"
-                placeholder="Current password"
-                className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{ ...inputStyle, '--tw-placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
-              />
-              <input
-                type="password"
-                placeholder="New password (min 8 chars)"
-                className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{ ...inputStyle, '--tw-placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
-              />
-              <button
-                className="text-white text-sm px-4 py-2 rounded-lg transition-colors"
-                style={{ background: 'var(--accent)' }}
-              >
-                Update password
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
       {tab === 'organization' && isAdmin && (
         <div className="rounded-xl p-6 space-y-4" style={card}>
           <h2 className="text-base font-normal mb-4" style={{ color: 'var(--text)' }}>Organization settings</h2>
-          <div>
-            <label className="block text-sm mb-1.5" style={{ color: 'var(--text-muted)' }}>Organization name</label>
-            <input
-              className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1.5" style={{ color: 'var(--text-muted)' }}>Default billing period</label>
-            <select
-              className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              style={{ ...inputStyle, color: 'var(--text-secondary)' }}
-            >
-              <option value="WEEKLY">Weekly</option>
-              <option value="BIWEEKLY">Bi-weekly</option>
-              <option value="MONTHLY">Monthly</option>
-            </select>
-          </div>
           <div>
             <label className="block text-sm mb-1.5" style={{ color: 'var(--text-muted)' }}>Default currency</label>
             <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>New clients will default to this currency. Existing clients are unaffected.</p>
@@ -503,12 +460,6 @@ export default function SettingsPage() {
               <p className="text-xs mt-2 text-red-400">{showAmountsError}</p>
             )}
           </div>
-          <button
-            className="text-white text-sm px-4 py-2 rounded-lg transition-colors"
-            style={{ background: 'var(--accent)' }}
-          >
-            Save
-          </button>
         </div>
       )}
 
