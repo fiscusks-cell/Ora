@@ -1,32 +1,36 @@
 /*
  * DIRECTION — the landing page
  *
- * THESIS: Prove the mechanism, don't illustrate the category. A running timer at
- * the top of one aurora beam becomes an issued invoice at the bottom. Refused:
- * the clock illustration, the gradient headline, the icon-card grid.
+ * THESIS: Prove the mechanism, don't illustrate the category. A beam of light
+ * lands on the running product; below, the same workflow is shown as real
+ * states until it ends as an issued invoice. Refused: the clock illustration,
+ * the gradient headline, the icon-card grid, screenshots floating in cards.
  *
- * OWN-WORLD: Void and Obsidian canvas, Charcoal cards with Slate Edge borders,
- * pill controls, Sora display at tight tracking over Inter body; Electric Iris is
- * the one action color, Ember Pulse only as punctuation and the beam's warm stop.
- * Light bands in Linen/Snow alternate with the dark ones.
+ * OWN-WORLD: Void and Obsidian canvas, product surfaces in Charcoal with
+ * hairline rings, Snow cells on Linen bands, pill controls, Sora display at
+ * tight tracking over Inter body; Electric Iris is the one action color,
+ * Ember Pulse only as punctuation and the beam's warm reach.
  *
- * STORY: A firm owner or a freelancer lands, sees the product running inside the
- * beam, reads that hours become invoices in the books, believes it because the
- * workflow is shown as real states with real integrations, and starts free.
+ * STORY: A firm owner or a freelancer lands, sees the timer running at full
+ * size, reads that hours become invoices in the books, believes it because the
+ * workflow is shown as states with real integrations, and starts free.
  *
- * FIRST VIEWPORT: nav; headline left (two lines, display face), subhead, two pill
- * CTAs, the integrations row; the product mockup on the right, over the beam,
- * its counter ticking. Primary action: "Start free".
+ * FIRST VIEWPORT (≥1024, 980px ≈ 1.09vh): copy top-left in a 460/560px
+ * column, ending above the dissolve; the product beside it at 1:1, running
+ * from its column to 8px past the right edge (so the timer bar's counter is
+ * always on screen), 620px tall, bottom-aligned, its foot dissolving into the
+ * next band's Linen; the beam enters from the top edge and lands on its top.
+ * Primary action: "Start free".
  *
- * FORM: Persuade. Hero → How it works (light) → Capabilities (dark) → Pricing
- * (light) → Close (dark) → Footer. Code-led; the beam entrance and the live
- * counter are the page's single authored motion.
+ * FORM: Persuade. Hero → How it works (light bento) → Capabilities (dark, the
+ * report bleeding right) → Pricing (light) → Close (dark) → Footer. The beam
+ * is CSS only; the live counter is the page's single authored motion.
  */
 import Link from 'next/link';
 import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { MarketingNav } from './components/landing/MarketingNav';
 import { MarketingFooter } from './components/landing/MarketingFooter';
-import { AuroraBeam } from './components/landing/AuroraBeam';
+import { HeroBeam } from './components/landing/HeroBeam';
 import { ProductMockup } from './components/landing/ProductMockup';
 import { HowItWorks } from './components/landing/HowItWorks';
 import { Capabilities } from './components/landing/Capabilities';
@@ -44,13 +48,13 @@ export default function LandingPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden bg-void">
-        <AuroraBeam />
-        <div className="relative mx-auto grid max-w-[var(--page-max-width)] items-center gap-12 px-5 pb-16 pt-28 sm:px-8 sm:pt-32 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:pb-24 lg:pt-40">
-          <div className="rise-in max-w-[640px]">
-            <h1 className="font-display text-[clamp(2.75rem,6.4vw,5rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-snow [text-wrap:balance]">
+        <div className="relative mx-auto grid max-w-[1216px] gap-14 px-5 pt-28 sm:px-8 sm:pt-32 lg:min-h-[980px] lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:pt-0 xl:grid-cols-[minmax(0,560px)_minmax(0,1fr)] xl:gap-12">
+          {/* the copy: top-anchored so it ends above the dissolve at every width */}
+          <div data-hero-copy className="rise-in relative z-10 max-w-[560px] lg:self-start lg:pt-32">
+            <h1 className="font-display text-[clamp(2.75rem,5.8vw,5.25rem)] font-semibold leading-[0.92] tracking-[-0.04em] text-snow [text-wrap:balance]">
               Time, tracked. Invoices, done.
             </h1>
-            <p className="mt-6 max-w-[52ch] text-subheading text-smoke">
+            <p className="mt-6 max-w-[46ch] text-subheading text-smoke">
               ORA turns the hours you track into client invoices in QuickBooks Online or Xero — approved as a billing period, one invoice per client, with the time report attached. For firms that bill by the hour, and the freelancers who do too.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -59,17 +63,26 @@ export default function LandingPage() {
             </div>
             <p className="mt-4 text-caption text-smoke">Free plan · no credit card</p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-smoke">
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 text-smoke">
               <span className="text-caption">Publishes to</span>
               <span className="inline-flex items-center gap-2 text-body"><SiQuickbooks className="h-5 w-5" aria-hidden="true" /> QuickBooks Online</span>
               <span className="inline-flex items-center gap-2 text-body"><SiXero className="h-5 w-5" aria-hidden="true" /> Xero</span>
             </div>
           </div>
 
-          <div className="rise-in w-full lg:justify-self-end" style={{ animationDelay: '120ms' }}>
-            <ProductMockup />
+          {/* the product: beside the copy, from its column's left edge to 8px past the
+              viewport's right edge (the column starts 532px in at lg and at 50vw + 32px
+              from xl), cropped there and dissolved at the foot; the beam lands on its top */}
+          <div className="rise-in relative lg:self-end" style={{ animationDelay: '120ms' }}>
+            <HeroBeam />
+            <div className="relative z-10 w-full lg:w-[calc(100vw_-_524px)] xl:w-[calc(50vw_-_24px)]">
+              <ProductMockup />
+            </div>
           </div>
         </div>
+
+        {/* the dissolve into the next band — to its Linen, so no line appears at the boundary */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[300px] bg-gradient-to-b from-transparent to-[var(--surface-linen)]" />
       </section>
 
       <HowItWorks />
@@ -78,9 +91,9 @@ export default function LandingPage() {
 
       {/* ── Close ────────────────────────────────────────────────────────── */}
       <section className="bg-void text-snow">
-        <div className="mx-auto max-w-[var(--page-max-width)] px-5 py-20 sm:px-8 lg:py-28">
-          <div className="max-w-[720px]">
-            <h2 className="font-display text-[clamp(2.25rem,5vw,4rem)] font-semibold leading-[1] tracking-[-0.035em] text-snow [text-wrap:balance]">
+        <div className="mx-auto max-w-[1216px] px-5 py-24 sm:px-8 lg:py-32">
+          <div className="max-w-[760px]">
+            <h2 className="font-display text-[clamp(2.25rem,5vw,4.25rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-snow [text-wrap:balance]">
               Close the month with every hour invoiced.
             </h2>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">

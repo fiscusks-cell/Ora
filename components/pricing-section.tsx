@@ -5,8 +5,10 @@ import { Check } from 'lucide-react';
 import { PLANS, PLAN_ORDER, yearlyMonthlyPrice, type PlanDefinition } from '@/lib/plans';
 
 /**
- * Pricing on a light band: Snow cards on Linen, Frost borders, the one
- * highlighted plan in Electric Iris. The monthly/yearly toggle is the only state.
+ * Pricing on a light band: five equal columns from 1280 up; below that the
+ * content width cannot hold five, so the cards drop to two rows of equal
+ * width on the same grid (3 + 2 at 1024, 2 + 2 + 1 at 768, one column on a
+ * phone). The monthly/yearly toggle is the only state.
  */
 
 function PlanCard({ plan, yearly }: { plan: PlanDefinition; yearly: boolean }) {
@@ -16,35 +18,31 @@ function PlanCard({ plan, yearly }: { plan: PlanDefinition; yearly: boolean }) {
   const href = plan.enterprise ? 'mailto:hello@getora.app' : '/auth/signup';
 
   return (
-    <li className="relative flex w-full flex-col sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
+    <li className="relative flex flex-col">
       {plan.highlight && (
-        <span className="absolute -top-3 left-6 rounded-tags bg-ember-pulse px-3 py-1 text-caption font-medium text-void">
+        <span className="absolute -top-3 left-5 rounded-tags bg-ember-pulse px-3 py-1 text-caption font-medium text-void">
           Most popular
         </span>
       )}
-      <div
-        className={`flex flex-1 flex-col rounded-cards bg-snow p-6 sm:p-7 ${
-          plan.highlight ? 'border-2 border-electric-iris' : 'border border-frost'
-        }`}
-      >
+      <div className={`flex flex-1 flex-col rounded-cards bg-snow p-5 ${plan.highlight ? 'border-2 border-electric-iris' : 'border border-frost'}`}>
         <p className="text-body font-medium text-void">{plan.name}</p>
-        <p className="mt-0.5 text-body text-iron-veil">{plan.description}</p>
+        <p className="mt-0.5 min-h-[2.5rem] text-body text-iron-veil">{plan.description}</p>
 
-        <div className="mt-5 flex items-baseline gap-1.5">
-          <span className="font-display text-[2.75rem] font-semibold leading-none tracking-[-0.04em] text-void tabular-nums">${price}</span>
-          <span className="text-body text-iron-veil">/month</span>
+        <div className="mt-4 flex items-baseline gap-1">
+          <span className="font-display text-[2.25rem] font-semibold leading-none tracking-[-0.04em] text-void tabular-nums">${price}</span>
+          <span className="text-caption text-iron-veil">/month</span>
         </div>
-        <p className="mt-1.5 h-5 text-caption text-iron-veil">
+        <p className="mt-1.5 text-caption text-iron-veil">
           {yearly && plan.monthlyPrice > 0 ? `Billed $${yearlyTotal}/year` : plan.monthlyPrice === 0 ? 'Free forever' : 'Billed monthly'}
         </p>
 
-        <p className="mt-5 border-y border-linen py-3 text-body text-void">{plan.seatsLabel}</p>
+        <p className="mt-4 border-y border-linen py-2.5 text-body text-void">{plan.seatsLabel}</p>
 
-        <ul className="mb-7 mt-4 flex-1 space-y-2.5">
+        <ul className="mb-6 mt-3 flex-1 space-y-2">
           {plan.features.map((f) => (
-            <li key={f} className="flex items-start gap-2.5 text-body text-iron-veil">
+            <li key={f} className="flex items-start gap-2 text-body text-iron-veil">
               <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-electric-iris" aria-hidden="true" />
-              {f}
+              <span>{f}</span>
             </li>
           ))}
         </ul>
@@ -69,18 +67,17 @@ export function PricingSection() {
 
   return (
     <section id="pricing" className="scroll-mt-20 bg-[var(--surface-linen)] text-void">
-      <div className="mx-auto max-w-[var(--page-max-width)] px-5 py-20 sm:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1216px] px-5 py-20 sm:px-8 lg:py-28">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="font-display text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-void [text-wrap:balance]">
+            <h2 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-void [text-wrap:balance]">
               Simple pricing.
             </h2>
-            <p className="mt-3 max-w-[48ch] text-body-lg text-iron-veil">
+            <p className="mt-4 max-w-[48ch] text-subheading text-iron-veil">
               Start free. Pay when you need more people or the integrations.
             </p>
           </div>
 
-          {/* monthly / yearly */}
           <div className="inline-flex self-start rounded-buttons border border-frost bg-snow p-1 md:self-auto" role="group" aria-label="Billing period">
             <button
               type="button"
@@ -102,7 +99,7 @@ export function PricingSection() {
           </div>
         </div>
 
-        <ul className="mt-12 flex flex-wrap justify-center gap-5">
+        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {PLAN_ORDER.map((key) => (
             <PlanCard key={key} plan={PLANS[key]} yearly={yearly} />
           ))}

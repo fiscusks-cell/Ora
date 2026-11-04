@@ -14,9 +14,10 @@ export function MarketingFooter() {
         </nav>
       </div>
       <div className="border-t border-slate-edge/40">
-        <p className="mx-auto max-w-[var(--page-max-width)] px-5 py-6 text-caption text-smoke sm:px-8">
-          &copy; {new Date().getFullYear()}{' '}ORA &middot; Powered by Fiscus LLC
-        </p>
+        <div className="mx-auto flex max-w-[var(--page-max-width)] flex-wrap items-center justify-between gap-x-8 gap-y-2 px-5 py-6 text-caption text-smoke sm:px-8">
+          <p>&copy; {new Date().getFullYear()}{' '}ORA &middot; Powered by Fiscus LLC</p>
+          <p>Screens shown are illustrative &mdash; names and figures are not real clients.</p>
+        </div>
       </div>
     </footer>
   );
