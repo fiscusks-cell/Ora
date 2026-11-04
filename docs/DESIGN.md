@@ -12,8 +12,8 @@ This document describes the design system **as implemented in this repository**.
 |---|---|---|
 | `app/globals.css` — tokens, theme aliases | **done** | `@theme static` tokens; 27 legacy aliases resolve to them in both modes |
 | `app/layout.tsx` — fonts | **done** | Inter via `next/font`; Sora loaded as the display face |
-| Landing (`/`, `/pricing`) | pending | hardcoded slate/yellow palette today |
-| Sign-in, sign-up, forgot/reset password, invite | pending | hardcoded palette; the auth video scrim still carries two colors from the previous (never implemented) spec — fix with this step |
+| Landing (`/`, `/pricing`) | **done** | `app/components/landing/*` + `components/pricing-section.tsx`; aurora hero, live product mockup, three product states, light/dark bands, pill controls; zero horizontal overflow at 1440/1280/1024/768/414 |
+| Sign-in, sign-up, forgot/reset password, invite | pending | hardcoded palette; keep the video background (`public/auth/`) and the NextAuth form handling; the scrim already uses Void / Linen |
 | Dashboard: timer, reports, projects, clients, periods, invoices, settings, home | pending | reads the aliases; Reports is hardcoded `slate-*` and ignores the theme |
 | `components/reports/ReportPDF.tsx` | **out of scope** | a printable business document with its own react-pdf stylesheet; decided separately, tokens must not leak in |
 
@@ -133,7 +133,7 @@ Two consequences of the spec itself, flagged rather than silently altered: **Ele
 
 ## Components
 
-Reconstructions of the target language, in ORA terms. Mark each *implemented* in its page commit.
+The marketing set is implemented in `app/components/landing/`: `OraMark`/`OraWordmark` (the clock mark in `currentColor` with an Ember hand), `MarketingNav` (transparent, Void-blurred once scrolled, `tone` per band), `MarketingFooter`, `AuroraBeam` (glow + core line + sunburst, one per page), `ProductMockup` (the timer screen as hero evidence, synthetic data, live counter), `HowItWorks` (three product states on a light band), `Capabilities` (reports mockup + the six true claims), and `PricingSection` on tokens. Everything below that is not yet marked *implemented* is the target for the dashboard commits.
 
 ### Primary Pill Button
 **Role:** the single most important action on a screen (Start, Save, Publish).

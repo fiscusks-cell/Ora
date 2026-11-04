@@ -1,243 +1,114 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { PLANS, PLAN_ORDER, yearlyMonthlyPrice, type PlanDefinition } from '@/lib/plans';
 
-// ─── palette ─────────────────────────────────────────────────────────────────
+/**
+ * Pricing on a light band: Snow cards on Linen, Frost borders, the one
+ * highlighted plan in Electric Iris. The monthly/yearly toggle is the only state.
+ */
 
-const C = {
-  canvas:  '#f8f7f4',
-  card:    '#ffffff',
-  border:  '#d4d6cf',
-  text:    '#1a1f26',
-  muted:   '#8b95a1',
-  indigo:  '#4f46e5',
-  indigoH: '#4338ca',
-} as const;
-
-// ─── sub-components ──────────────────────────────────────────────────────────
-
-function CheckIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="flex-shrink-0 mt-0.5" aria-hidden="true">
-      <path d="M2 6.5l3 3 6-6" stroke={C.indigo} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-interface PlanCardProps {
-  plan: PlanDefinition;
-  yearly: boolean;
-}
-
-function PlanCard({ plan, yearly }: PlanCardProps) {
+function PlanCard({ plan, yearly }: { plan: PlanDefinition; yearly: boolean }) {
   const price = yearly ? yearlyMonthlyPrice(plan.monthlyPrice) : plan.monthlyPrice;
   const yearlyTotal = plan.monthlyPrice * 10;
   const cta = plan.enterprise ? 'Contact sales' : 'Start free trial';
   const href = plan.enterprise ? 'mailto:hello@getora.app' : '/auth/signup';
 
   return (
-    <div className="w-full sm:w-[calc(50%-10px)] lg:w-72 flex-shrink-0 flex flex-col">
-      {/* "Most popular" label — consistent height on every card */}
-      <div className="h-7 flex items-end justify-center pb-1.5">
-        {plan.highlight && (
-          <span
-            className={`text-[11px] tracking-[-0.02em]`}
-            style={{ color: C.indigo }}
-          >
-            Most popular
-          </span>
-        )}
-      </div>
-
-      {/* Card */}
+    <li className="relative flex w-full flex-col sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]">
+      {plan.highlight && (
+        <span className="absolute -top-3 left-6 rounded-tags bg-ember-pulse px-3 py-1 text-caption font-medium text-void">
+          Most popular
+        </span>
+      )}
       <div
-        className="flex-1 rounded-[20px] p-8 flex flex-col"
-        style={{
-          background: C.card,
-          border: plan.highlight ? `2px solid ${C.indigo}` : `1px solid ${C.border}`,
-        }}
+        className={`flex flex-1 flex-col rounded-cards bg-snow p-6 sm:p-7 ${
+          plan.highlight ? 'border-2 border-electric-iris' : 'border border-frost'
+        }`}
       >
-        {/* Plan name */}
-        <p
-          className={`text-[12px] tracking-[0.04em] mb-4`}
-          style={{ color: C.muted }}
-        >
-          {plan.name.toUpperCase()}
+        <p className="text-body font-medium text-void">{plan.name}</p>
+        <p className="mt-0.5 text-body text-iron-veil">{plan.description}</p>
+
+        <div className="mt-5 flex items-baseline gap-1.5">
+          <span className="font-display text-[2.75rem] font-semibold leading-none tracking-[-0.04em] text-void tabular-nums">${price}</span>
+          <span className="text-body text-iron-veil">/month</span>
+        </div>
+        <p className="mt-1.5 h-5 text-caption text-iron-veil">
+          {yearly && plan.monthlyPrice > 0 ? `Billed $${yearlyTotal}/year` : plan.monthlyPrice === 0 ? 'Free forever' : 'Billed monthly'}
         </p>
 
-        {/* Price */}
-        <div className="mb-1 flex items-end gap-1">
-          <span
-            className={`text-[48px] leading-none tracking-[-0.04em]`}
-            style={{ color: C.text }}
-          >
-            ${price}
-          </span>
-          <span
-            className={`text-[13px] tracking-[-0.02em] pb-1`}
-            style={{ color: C.muted }}
-          >
-            /month
-          </span>
-        </div>
-        {yearly && plan.monthlyPrice > 0 && (
-          <p
-            className={`text-[11px] tracking-[-0.02em] mb-1`}
-            style={{ color: C.muted }}
-          >
-            billed ${yearlyTotal}/year
-          </p>
-        )}
+        <p className="mt-5 border-y border-linen py-3 text-body text-void">{plan.seatsLabel}</p>
 
-        {/* Description */}
-        <p
-          className={`text-[14px] leading-normal tracking-[-0.001em] font-normal mt-2 mb-6`}
-          style={{ color: C.muted }}
-        >
-          {plan.description}
-        </p>
-
-        {/* Seat count — visually distinct from feature list */}
-        <div
-          className="py-3 mb-5"
-          style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}
-        >
-          <span
-            className={`text-[14px] tracking-[-0.02em]`}
-            style={{ color: C.text }}
-          >
-            {plan.seatsLabel}
-          </span>
-        </div>
-
-        {/* Features */}
-        <ul className="space-y-2.5 flex-1 mb-8">
+        <ul className="mb-7 mt-4 flex-1 space-y-2.5">
           {plan.features.map((f) => (
-            <li key={f} className="flex items-start gap-2">
-              <CheckIcon />
-              <span
-                className={`text-[14px] leading-normal tracking-[-0.001em] font-normal`}
-                style={{ color: C.muted }}
-              >
-                {f}
-              </span>
+            <li key={f} className="flex items-start gap-2.5 text-body text-iron-veil">
+              <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-electric-iris" aria-hidden="true" />
+              {f}
             </li>
           ))}
         </ul>
 
-        {/* CTA */}
         <Link
           href={href}
-          className={`block text-center text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors`}
-          style={
+          className={`block rounded-buttons py-2.5 text-center text-body font-medium transition-[background-color,color,border-color,box-shadow] duration-200 ${
             plan.highlight
-              ? { background: C.indigo, color: '#ffffff' }
-              : { border: `1px solid ${C.border}`, color: C.muted }
-          }
-          onMouseEnter={
-            plan.highlight
-              ? (e) => (e.currentTarget.style.background = C.indigoH)
-              : (e) => {
-                  e.currentTarget.style.borderColor = C.text;
-                  e.currentTarget.style.color = C.text;
-                }
-          }
-          onMouseLeave={
-            plan.highlight
-              ? (e) => (e.currentTarget.style.background = C.indigo)
-              : (e) => {
-                  e.currentTarget.style.borderColor = C.border;
-                  e.currentTarget.style.color = C.muted;
-                }
-          }
+              ? 'bg-electric-iris text-snow hover:bg-[var(--accent-hover)] hover:shadow-[0_0_0_4px_rgba(86,131,218,0.18)]'
+              : 'border border-frost text-void hover:border-void'
+          }`}
         >
           {cta}
         </Link>
       </div>
-    </div>
+    </li>
   );
 }
-
-// ─── main export ─────────────────────────────────────────────────────────────
 
 export function PricingSection() {
   const [yearly, setYearly] = useState(false);
 
   return (
-    <section id="pricing" className="py-24 px-6">
-      <div className="max-w-[1200px] mx-auto">
-        {/* Eyebrow */}
-        <p
-          className={`text-[12px] tracking-[0.06em] text-center mb-3`}
-          style={{ color: C.indigo }}
-        >
-          PRICING
-        </p>
+    <section id="pricing" className="scroll-mt-20 bg-[var(--surface-linen)] text-void">
+      <div className="mx-auto max-w-[var(--page-max-width)] px-5 py-20 sm:px-8 lg:py-24">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="font-display text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-void [text-wrap:balance]">
+              Simple pricing.
+            </h2>
+            <p className="mt-3 max-w-[48ch] text-body-lg text-iron-veil">
+              Start free. Pay when you need more people or the integrations.
+            </p>
+          </div>
 
-        {/* Heading */}
-        <h2
-          className={`text-[40px] md:text-[48px] leading-tight tracking-[-0.022em] font-normal text-center mb-3`}
-          style={{ color: C.text }}
-        >
-          Simple, transparent pricing
-        </h2>
-        <p
-          className={`text-[18px] leading-normal tracking-[-0.001em] font-normal text-center mb-10`}
-          style={{ color: C.muted }}
-        >
-          Start free. Upgrade when you need more users or integrations.
-        </p>
-
-        {/* Monthly / Yearly toggle */}
-        <div className="flex justify-center mb-14">
-          <div
-            className="flex items-center p-1 rounded-[8px] gap-1"
-            style={{ border: `1px solid ${C.border}` }}
-          >
+          {/* monthly / yearly */}
+          <div className="inline-flex self-start rounded-buttons border border-frost bg-snow p-1 md:self-auto" role="group" aria-label="Billing period">
             <button
+              type="button"
               onClick={() => setYearly(false)}
-              className={`text-[13px] tracking-[-0.02em] px-4 py-1.5 rounded-[6px] transition-colors`}
-              style={
-                !yearly
-                  ? { background: C.text, color: '#ffffff' }
-                  : { color: C.muted }
-              }
+              aria-pressed={!yearly}
+              className={`rounded-buttons px-4 py-1.5 text-body transition-colors ${!yearly ? 'bg-void text-snow' : 'text-iron-veil hover:text-void'}`}
             >
               Monthly
             </button>
             <button
+              type="button"
               onClick={() => setYearly(true)}
-              className={`text-[13px] tracking-[-0.02em] px-4 py-1.5 rounded-[6px] transition-colors flex items-center gap-2`}
-              style={
-                yearly
-                  ? { background: C.text, color: '#ffffff' }
-                  : { color: C.muted }
-              }
+              aria-pressed={yearly}
+              className={`inline-flex items-center gap-2 rounded-buttons px-4 py-1.5 text-body transition-colors ${yearly ? 'bg-void text-snow' : 'text-iron-veil hover:text-void'}`}
             >
               Yearly
-              <span
-                className="text-[11px] tracking-[-0.01em]"
-                style={{ color: yearly ? 'rgba(199,210,254,0.9)' : C.indigo }}
-              >
-                2 months free
-              </span>
+              <span className={`text-caption ${yearly ? 'text-ember-pulse' : 'text-electric-iris'}`}>2 months free</span>
             </button>
           </div>
         </div>
 
-        {/* Cards — flex-wrap: 3 per row on lg+, 2 on sm, 1 on mobile */}
-        <div className="flex flex-wrap gap-5 justify-center">
+        <ul className="mt-12 flex flex-wrap justify-center gap-5">
           {PLAN_ORDER.map((key) => (
             <PlanCard key={key} plan={PLANS[key]} yearly={yearly} />
           ))}
-        </div>
+        </ul>
 
-        {/* Footnote */}
-        <p
-          className={`text-center text-[12px] tracking-[-0.02em] mt-10`}
-          style={{ color: C.muted }}
-        >
+        <p className="mt-10 text-center text-caption text-iron-veil">
           All paid plans include a 14-day free trial. No credit card required.
         </p>
       </div>
