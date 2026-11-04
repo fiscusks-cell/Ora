@@ -2,10 +2,19 @@
 
 import { useState } from 'react';
 import { signIn, signOut } from 'next-auth/react';
-import Link from 'next/link';
-import { Eye, EyeOff, AlertCircle, CheckCircle, Clock, UserX } from 'lucide-react';
-import { OriginButton } from '@/components/ui/origin-button';
-import { AuthVideoBackground } from '@/components/auth/auth-video-background';
+import { AlertCircle, CheckCircle, Clock, UserX } from 'lucide-react';
+import { AuthShell } from '@/components/auth/AuthShell';
+import {
+  AuthLink,
+  Banner,
+  Field,
+  PanelFooter,
+  PasswordInput,
+  PrimaryButton,
+  PrimaryLink,
+  SubmitButton,
+  TextInput,
+} from '@/components/auth/fields';
 
 export type InviteState =
   | 'valid'
@@ -24,72 +33,38 @@ interface Props {
   signedInAs?: string;
 }
 
-const inputCls =
-  'w-full bg-[#f7f7f5] dark:bg-[#1a1f26] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[8px] px-3 py-2.5 text-sm text-[#1a1f26] dark:text-white placeholder-[#8b95a1] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
-const labelCls = 'text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
-
-function OraLogo() {
-  return (
-    <div className="flex items-center justify-center gap-2.5 mb-10">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <circle cx="16" cy="16" r="14" stroke="#3730A3" strokeWidth="2.5" />
-        <circle cx="16" cy="16" r="10" stroke="#3730A3" strokeWidth="1.5" />
-        <line x1="16" y1="8" x2="16" y2="16" stroke="#3730A3" strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="16" y1="16" x2="21" y2="19" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="16" cy="16" r="1.5" fill="#6366F1" />
-      </svg>
-      <span className="text-xl tracking-[-0.04em] text-[#1a1f26] dark:text-white">ORA</span>
-    </div>
-  );
-}
-
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="ora-fade min-h-screen flex items-center justify-center px-4">
-      <AuthVideoBackground />
-      <div className="relative z-10 w-full max-w-sm">
-        <OraLogo />
-        <div className="relative z-10 bg-white dark:bg-[#212832] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[20px] p-10">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
+/**
+ * The five non-form states share this card. `tone` picks the icon color:
+ * attention states take Ember Pulse (the warm accent is for exactly this),
+ * success takes the ok state color, the dead link stays muted.
+ */
 function StatusCard({
   icon: Icon,
-  iconColor,
+  tone,
   title,
   body,
   footer,
 }: {
   icon: React.ElementType;
-  iconColor: string;
+  tone: 'muted' | 'attention' | 'ok';
   title: string;
   body: React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const color = tone === 'ok' ? 'text-ok' : tone === 'attention' ? 'text-ember-pulse' : 'text-ink-muted';
   return (
     <div className="text-center">
-      <Icon className={`w-10 h-10 mx-auto mb-4 ${iconColor}`} />
-      <h1 className="text-[22px] leading-tight tracking-[-0.022em] font-normal text-[#1a1f26] dark:text-white mb-3">
-        {title}
-      </h1>
-      <div className="text-[14px] leading-relaxed text-[#8b95a1] mb-6">{body}</div>
+      <Icon className={`mx-auto mb-4 h-10 w-10 ${color}`} aria-hidden="true" />
+      <h1 className="font-display text-heading font-semibold text-ink [text-wrap:balance]">{title}</h1>
+      <div className="mb-6 mt-3 text-body text-ink-secondary">{body}</div>
       {footer}
     </div>
   );
 }
 
-function ErrorBanner({ message }: { message: string }) {
-  return (
-    <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2.5 rounded-[8px] mb-5 flex items-start gap-2">
-      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-      {message}
-    </div>
-  );
-}
+const Strong = ({ children }: { children: React.ReactNode }) => (
+  <strong className="font-medium text-ink">{children}</strong>
+);
 
 export default function InviteAcceptClient({
   state,
@@ -100,7 +75,6 @@ export default function InviteAcceptClient({
 }: Props) {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState('');
@@ -160,127 +134,94 @@ export default function InviteAcceptClient({
 
   if (state === 'invalid') {
     return (
-      <Shell>
+      <AuthShell>
         <StatusCard
           icon={AlertCircle}
-          iconColor="text-[#8b95a1]"
+          tone="muted"
           title="Invalid invitation link"
           body="This link doesn't exist or has already been used. Ask your admin to send you a new invitation."
-          footer={
-            <Link
-              href="/auth/signin"
-              className="text-[13px] tracking-[-0.02em] text-indigo-400 hover:underline"
-            >
-              Sign in instead →
-            </Link>
-          }
+          footer={<AuthLink href="/auth/signin">Sign in instead →</AuthLink>}
         />
-      </Shell>
+      </AuthShell>
     );
   }
 
   if (state === 'expired') {
     return (
-      <Shell>
+      <AuthShell>
         <StatusCard
           icon={Clock}
-          iconColor="text-amber-400"
+          tone="attention"
           title="Invitation expired"
           body="This invite link was valid for 7 days and has now expired. Ask your admin to resend it — your new link will be valid immediately."
-          footer={
-            <Link
-              href="/auth/signin"
-              className="text-[13px] tracking-[-0.02em] text-indigo-400 hover:underline"
-            >
-              Sign in instead →
-            </Link>
-          }
+          footer={<AuthLink href="/auth/signin">Sign in instead →</AuthLink>}
         />
-      </Shell>
+      </AuthShell>
     );
   }
 
   if (state === 'already_accepted') {
     return (
-      <Shell>
+      <AuthShell>
         <StatusCard
           icon={CheckCircle}
-          iconColor="text-emerald-400"
+          tone="ok"
           title="Already a member"
           body={
             <>
-              An account for <strong className="text-[#1a1f26] dark:text-white">{email}</strong>{' '}
-              already exists in{' '}
-              <strong className="text-[#1a1f26] dark:text-white">{orgName}</strong>. Sign in to
+              An account for <Strong>{email}</Strong> already exists in <Strong>{orgName}</Strong>. Sign in to
               continue.
             </>
           }
-          footer={
-            <Link
-              href="/auth/signin"
-              className="inline-block w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors"
-            >
-              Sign in
-            </Link>
-          }
+          footer={<PrimaryLink href="/auth/signin">Sign in</PrimaryLink>}
         />
-      </Shell>
+      </AuthShell>
     );
   }
 
   if (state === 'different_org') {
     return (
-      <Shell>
+      <AuthShell>
         <StatusCard
           icon={UserX}
-          iconColor="text-amber-400"
+          tone="attention"
           title="Account conflict"
           body={
             <>
-              <strong className="text-[#1a1f26] dark:text-white">{email}</strong> is already
-              registered with a different ORA workspace. Accepting this invite would move you out of
-              that workspace, which isn&apos;t allowed.
+              <Strong>{email}</Strong> is already registered with a different ORA workspace. Accepting this
+              invite would move you out of that workspace, which isn&apos;t allowed.
               <br />
               <br />
-              To join <strong className="text-[#1a1f26] dark:text-white">{orgName}</strong>,
-              register with a different email address and ask your admin to send a new invitation to
-              that address.
+              To join <Strong>{orgName}</Strong>, register with a different email address and ask your admin to
+              send a new invitation to that address.
             </>
           }
-          footer={
-            <Link
-              href="/auth/signin"
-              className="text-[13px] tracking-[-0.02em] text-indigo-400 hover:underline"
-            >
-              Sign in to your existing account →
-            </Link>
-          }
+          footer={<AuthLink href="/auth/signin">Sign in to your existing account →</AuthLink>}
         />
-      </Shell>
+      </AuthShell>
     );
   }
 
   if (state === 'wrong_user') {
+    // Signed in as someone else: offer a sign-out that returns to this invite.
     return (
-      <Shell>
+      <AuthShell>
         <StatusCard
           icon={AlertCircle}
-          iconColor="text-amber-400"
+          tone="attention"
           title="Wrong account"
           body={
             <>
-              This invitation is for{' '}
-              <strong className="text-[#1a1f26] dark:text-white">{email}</strong>.
+              This invitation is for <Strong>{email}</Strong>.
               <br />
               <br />
-              Sign out first, then open this link again to accept the invitation with the correct
-              account.
+              Sign out first, then open this link again to accept the invitation with the correct account.
             </>
           }
           footer={
             <>
-              {error && <ErrorBanner message={error} />}
-              <OriginButton
+              {error && <Banner tone="error">{error}</Banner>}
+              <PrimaryButton
                 onClick={async () => {
                   setSigningOut(true);
                   setError('');
@@ -293,14 +234,13 @@ export default function InviteAcceptClient({
                   }
                 }}
                 disabled={signingOut}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors"
               >
                 {signingOut ? 'Signing out…' : 'Sign out and accept'}
-              </OriginButton>
+              </PrimaryButton>
             </>
           }
         />
-      </Shell>
+      </AuthShell>
     );
   }
 
@@ -308,85 +248,52 @@ export default function InviteAcceptClient({
   const roleLabel = role === 'OWNER' ? 'Owner' : role === 'ADMIN' ? 'Admin' : 'Member';
 
   return (
-    <Shell>
-      <h1 className="text-[28px] leading-tight tracking-[-0.022em] font-normal text-[#1a1f26] dark:text-white text-center mb-2">
-        Join {orgName}
-      </h1>
-      <p className="text-[14px] text-[#8b95a1] text-center mb-8">
-        You&apos;ve been invited as a{' '}
-        <span className="font-medium text-[#1a1f26] dark:text-white">{roleLabel}</span>. Set up
-        your account to continue.
-      </p>
+    <AuthShell>
+      <div className="mb-8 text-center">
+        <h1 className="font-display text-display-sm font-semibold text-ink [text-wrap:balance]">Join {orgName}</h1>
+        <p className="mt-2 text-body-lg text-ink-secondary">
+          You&apos;ve been invited as a <Strong>{roleLabel}</Strong>. Set up your account to continue.
+        </p>
+      </div>
 
-      {error && <ErrorBanner message={error} />}
+      {error && <Banner tone="error">{error}</Banner>}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className={labelCls}>Email</label>
-          <input
-            type="email"
-            value={email}
-            disabled
-            className={`${inputCls} opacity-60 cursor-not-allowed`}
-          />
-        </div>
+        <Field label="Email">
+          <TextInput type="email" value={email} disabled readOnly />
+        </Field>
 
-        <div>
-          <label className={labelCls}>
-            Full name <span className="text-red-400">*</span>
-          </label>
-          <input
+        <Field label="Full name" required>
+          <TextInput
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            placeholder="Your name"
             autoFocus
-            className={inputCls}
+            autoComplete="name"
+            placeholder="Your name"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label className={labelCls}>
-            Password <span className="text-red-400">*</span>
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              placeholder="At least 8 characters"
-              className={`${inputCls} pr-10`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b95a1] hover:text-[#1a1f26] dark:hover:text-white transition-colors"
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
+        <Field label="Password" required>
+          <PasswordInput
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            autoComplete="new-password"
+            placeholder="At least 8 characters"
+          />
+        </Field>
 
-        <OriginButton
-          type="submit"
-          disabled={!name.trim() || password.length < 8 || loading}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none"
-        >
+        <SubmitButton disabled={!name.trim() || password.length < 8 || loading}>
           {loading ? 'Creating account…' : 'Join workspace'}
-        </OriginButton>
+        </SubmitButton>
       </form>
 
-      <div className="mt-8 pt-6 border-t border-[#d4d6cf] dark:border-[#3a4550] text-center">
-        <span className="text-[13px] tracking-[-0.02em] text-[#8b95a1]">
-          Already have an account?{' '}
-          <Link href="/auth/signin" className="text-indigo-400 hover:underline">
-            Sign in
-          </Link>
-        </span>
-      </div>
-    </Shell>
+      <PanelFooter>
+        Already have an account? <AuthLink href="/auth/signin">Sign in</AuthLink>
+      </PanelFooter>
+    </AuthShell>
   );
 }

@@ -13,7 +13,7 @@ This document describes the design system **as implemented in this repository**.
 | `app/globals.css` — tokens, theme aliases | **done** | `@theme static` tokens; 27 legacy aliases resolve to them in both modes |
 | `app/layout.tsx` — fonts | **done** | Inter via `next/font`; Sora loaded as the display face |
 | Landing (`/`, `/pricing`) | **done** | `app/components/landing/*` + `components/pricing-section.tsx`; aurora hero, live product mockup, three product states, light/dark bands, pill controls; zero horizontal overflow at 1440/1280/1024/768/414 |
-| Sign-in, sign-up, forgot/reset password, invite | pending | hardcoded palette; keep the video background (`public/auth/`) and the NextAuth form handling; the scrim already uses Void / Linen |
+| Sign-in, sign-up, forgot/reset password, invite | **done** | `components/auth/AuthShell.tsx` + `fields.tsx` on the semantic utilities; theme follows `[data-theme]` (no more `dark:` media variants); video background and NextAuth form handling unchanged |
 | Dashboard: timer, reports, projects, clients, periods, invoices, settings, home | pending | reads the aliases; Reports is hardcoded `slate-*` and ignores the theme |
 | `components/reports/ReportPDF.tsx` | **out of scope** | a printable business document with its own react-pdf stylesheet; decided separately, tokens must not leak in |
 
@@ -123,6 +123,23 @@ Note the dark mode inverts elevation: the canvas is `#303236` and cards are dark
 | **accent on surface** | 6.9 → 5.1 | 5.2 → **3.7** |
 
 Two consequences of the spec itself, flagged rather than silently altered: **Electric Iris used as small text** falls below AA (4.5:1) in both modes, where the previous blues passed; and dark secondary text on the canvas sits at 4.4. The brand color is kept exact. If small accent text needs AA, the fix is a derived `--accent-text` tone adopted page by page — an open decision, not part of the token commit.
+
+### Semantic, theme-aware utilities
+
+The palette tokens are absolute — `bg-snow` is always white. Themed surfaces (auth, dashboard) use a second set, defined in `@theme inline` and resolving through the per-theme aliases, so one class is right in both modes:
+
+| Utility family | Resolves to | Dark | Light |
+|---|---|---|---|
+| `bg-canvas` | `--bg` | Obsidian Canvas | Linen `#f6f6f6` |
+| `bg-panel` / `bg-panel-raised` | `--surface` / `--surface-raised` | Charcoal Card / raised | Snow / Linen |
+| `bg-well` | `--bg-tertiary` | Void | Linen `#f6f6f6` |
+| `border-line` / `border-line-soft` | `--border` / `--border-light` | Slate Edge | Frost / Linen |
+| `text-ink` / `text-ink-secondary` / `text-ink-muted` | `--text` / `--text-secondary` / `--text-muted` | Snow / Smoke / Iron Veil | Void / Iron Veil / Smoke |
+| `bg-accent`, `text-accent`, `ring-accent` / `*-accent-hover` | `--accent` / `--accent-hover` | Electric Iris | Electric Iris |
+| `text-danger`, `bg-danger-soft`, `border-danger-line` | `--error`, `--error-bg`, `--error-border` | state reds | state reds |
+| `text-ok`, `bg-ok-soft`, `border-ok-line` | `--success`, `--success-bg`, `--success-border` | state greens | state greens |
+
+Opacity modifiers work on them (`ring-accent/30`). The always-dark landing uses the palette directly. Do not use Tailwind's `dark:` variant: in v4 it follows the OS `prefers-color-scheme`, not the app's `[data-theme]`, so it can disagree with the toggle.
 
 ### Tailwind integration
 

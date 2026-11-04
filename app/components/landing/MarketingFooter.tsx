@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { OraWordmark } from './OraMark';
+import { OraWordmark } from '@/components/brand/OraMark';
 
 export function MarketingFooter() {
   return (

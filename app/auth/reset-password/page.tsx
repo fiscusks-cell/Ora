@@ -1,12 +1,9 @@
 'use client';
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
-import { OriginButton } from '@/components/ui/origin-button';
-
-const inputCls =
-  'w-full bg-[#f7f7f5] dark:bg-[#1a1f26] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[8px] px-3 py-2.5 text-sm text-[#1a1f26] dark:text-white placeholder-[#8b95a1] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
+import { Check, CheckCircle2 } from 'lucide-react';
+import { AuthShell, AuthHeading } from '@/components/auth/AuthShell';
+import { AuthLink, Banner, Field, PanelFooter, PasswordInput, SubmitButton } from '@/components/auth/fields';
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -15,24 +12,17 @@ function ResetPasswordForm() {
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   if (!token) {
     return (
-      <div className="text-center py-2">
-        <p className="text-[13px] tracking-[-0.02em] text-red-500 mb-6">
-          Invalid reset link — no token found.
-        </p>
-        <Link
-          href="/auth/forgot-password"
-          className="text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
-        >
+      <div className="py-2 text-center">
+        <p className="mb-6 text-body text-danger">Invalid reset link — no token found.</p>
+        <AuthLink href="/auth/forgot-password" className="text-ink-secondary hover:text-ink">
           Request a new link
-        </Link>
+        </AuthLink>
       </div>
     );
   }
@@ -68,150 +58,81 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="text-center py-2">
-        <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+      <div className="py-2 text-center">
+        <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full border border-ok-line bg-ok-soft">
+          <CheckCircle2 className="h-6 w-6 text-ok" aria-hidden="true" />
         </div>
-        <h2 className="text-[28px] leading-tight tracking-[-0.022em] font-normal text-[#1a1f26] dark:text-white mb-3">
-          Password reset
-        </h2>
-        <p className="text-[13px] tracking-[-0.02em] text-[#8b95a1]">
-          Redirecting you to sign in…
-        </p>
+        <h2 className="font-display text-heading font-semibold text-ink">Password reset</h2>
+        <p className="mt-3 text-body text-ink-secondary">Redirecting you to sign in…</p>
       </div>
     );
   }
 
-  const labelCls = 'text-[13px] tracking-[-0.02em] text-[#8b95a1] block mb-2';
+  const hints = [
+    { ok: password.length >= 8, label: 'At least 8 characters' },
+    { ok: /[A-Z]/.test(password), label: 'One uppercase letter' },
+    { ok: /[0-9]/.test(password), label: 'One number' },
+    { ok: password.length > 0 && password === confirm, label: 'Passwords match' },
+  ];
 
   return (
     <>
-      <h1 className="text-[36px] leading-tight tracking-[-0.022em] font-normal text-[#1a1f26] dark:text-white text-center mb-2">
-        Set new password
-      </h1>
-      <p className="text-[18px] leading-normal tracking-[-0.001em] font-normal text-[#8b95a1] text-center mb-8">
-        Choose a strong password for your account.
-      </p>
+      <AuthHeading title="Set new password" subtitle="Choose a strong password for your account." />
 
-      {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[13px] tracking-[-0.02em] px-3 py-2 rounded-[8px] mb-6">
-          {error}
-        </div>
-      )}
+      {error && <Banner tone="error">{error}</Banner>}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className={labelCls}>New password</label>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoFocus
-              placeholder="Min 8 chars, 1 uppercase, 1 number"
-              className={`${inputCls} pr-10`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b95a1] hover:text-[#1a1f26] dark:hover:text-white transition-colors"
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
+        <Field label="New password">
+          <PasswordInput
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoFocus
+            autoComplete="new-password"
+            placeholder="Min 8 chars, 1 uppercase, 1 number"
+          />
+        </Field>
+        <Field label="Confirm password">
+          <PasswordInput
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+            autoComplete="new-password"
+            placeholder="Repeat password"
+          />
+        </Field>
 
-        <div>
-          <label className={labelCls}>Confirm password</label>
-          <div className="relative">
-            <input
-              type={showConfirm ? 'text' : 'password'}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-              placeholder="Repeat password"
-              className={`${inputCls} pr-10`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b95a1] hover:text-[#1a1f26] dark:hover:text-white transition-colors"
-            >
-              {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Password strength hints */}
-        <ul className="space-y-1.5 pl-1">
-          {[
-            { ok: password.length >= 8, label: 'At least 8 characters' },
-            { ok: /[A-Z]/.test(password), label: 'One uppercase letter' },
-            { ok: /[0-9]/.test(password), label: 'One number' },
-            { ok: password.length > 0 && password === confirm, label: 'Passwords match' },
-          ].map(({ ok, label }) => (
-            <li
-              key={label}
-              className={`flex items-center gap-1.5 text-[12px] tracking-[-0.02em] ${ok ? 'text-emerald-500' : 'text-[#8b95a1]'}`}
-            >
-              <span>{ok ? '✓' : '·'}</span> {label}
+        <ul className="space-y-1.5 pl-1" aria-live="polite">
+          {hints.map(({ ok, label }) => (
+            <li key={label} className={`flex items-center gap-2 text-caption ${ok ? 'text-ok' : 'text-ink-secondary'}`}>
+              {ok ? (
+                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+              ) : (
+                <span className="inline-block h-1 w-1 rounded-full bg-current" aria-hidden="true" />
+              )}
+              {label}
             </li>
           ))}
         </ul>
 
-        <OriginButton
-          type="submit"
-          disabled={loading}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] tracking-[-0.02em] py-2.5 rounded-[8px] transition-colors shadow-none"
-        >
-          {loading ? 'Saving…' : 'Reset password'}
-        </OriginButton>
+        <SubmitButton disabled={loading}>{loading ? 'Saving…' : 'Reset password'}</SubmitButton>
       </form>
 
-      <div className="mt-8 pt-6 border-t border-[#d4d6cf] dark:border-[#3a4550] text-center">
-        <Link
-          href="/auth/signin"
-          className="text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
-        >
+      <PanelFooter>
+        <AuthLink href="/auth/signin" className="text-ink-secondary hover:text-ink">
           Back to sign in
-        </Link>
-      </div>
+        </AuthLink>
+      </PanelFooter>
     </>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen bg-[#f7f7f5] dark:bg-[#1a1f26] flex items-center justify-center px-4">
-      <Link
-        href="/"
-        className="fixed top-5 left-5 text-[13px] tracking-[-0.02em] text-[#8b95a1] hover:underline transition-colors"
-      >
-        ← Home
-      </Link>
-
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2.5 mb-10">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="14" stroke="#3730A3" strokeWidth="2.5" />
-            <circle cx="16" cy="16" r="10" stroke="#3730A3" strokeWidth="1.5" />
-            <line x1="16" y1="8" x2="16" y2="16" stroke="#3730A3" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="16" y1="16" x2="21" y2="19" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="16" cy="16" r="1.5" fill="#6366F1" />
-          </svg>
-          <span className="text-xl tracking-[-0.04em] text-[#1a1f26] dark:text-white">ORA</span>
-        </div>
-
-        <div className="bg-white dark:bg-[#212832] border border-[#d4d6cf] dark:border-[#3a4550] rounded-[20px] p-10">
-          <Suspense fallback={null}>
-            <ResetPasswordForm />
-          </Suspense>
-        </div>
-      </div>
-    </div>
+    <AuthShell>
+      <Suspense fallback={null}>
+        <ResetPasswordForm />
+      </Suspense>
+    </AuthShell>
   );
 }

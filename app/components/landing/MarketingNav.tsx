@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { OraWordmark } from './OraMark';
+import { OraWordmark } from '@/components/brand/OraMark';
 
 /**
  * Transparent over the hero, a blurred Void bar once scrolled. `tone` matches the

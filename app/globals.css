@@ -96,6 +96,29 @@
 @theme inline {
   --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-sora),  ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* ── Semantic, theme-aware utilities ──────────────────────────────────────
+     The palette tokens above are absolute (Snow is always white). These resolve
+     through the per-theme aliases below, so bg-panel is Charcoal in dark mode
+     and Snow in light mode. Themed surfaces (auth, dashboard) use these; the
+     always-dark landing uses the palette directly.                            */
+  --color-canvas:        var(--bg);
+  --color-panel:         var(--surface);
+  --color-panel-raised:  var(--surface-raised);
+  --color-well:          var(--bg-tertiary);
+  --color-line:          var(--border);
+  --color-line-soft:     var(--border-light);
+  --color-ink:           var(--text);
+  --color-ink-secondary: var(--text-secondary);
+  --color-ink-muted:     var(--text-muted);
+  --color-accent:        var(--accent);
+  --color-accent-hover:  var(--accent-hover);
+  --color-danger:        var(--error);
+  --color-danger-soft:   var(--error-bg);
+  --color-danger-line:   var(--error-border);
+  --color-ok:            var(--success);
+  --color-ok-soft:       var(--success-bg);
+  --color-ok-line:       var(--success-border);
 }
 
 :root {
