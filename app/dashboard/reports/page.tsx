@@ -1105,7 +1105,8 @@ export default function ReportsPage() {
 
       {/* Tab bar */}
       <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
-        {TABS.map((tab) => (
+        {/* Profitability is money: hide the button as well as the panel. */}
+        {TABS.filter((tab) => tab.value !== 'profitability' || canSeeAmounts).map((tab) => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}

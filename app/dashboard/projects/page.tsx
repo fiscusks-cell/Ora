@@ -44,6 +44,9 @@ export default function ProjectsPage() {
   const isAdmin = ['OWNER', 'ADMIN'].includes((session?.user as { role?: string })?.role ?? '');
 
   const [orgCurrency, setOrgCurrency] = useState('USD');
+  // null until /api/org answers. The rate column renders only on an explicit
+  // true, so the first paint never shows a column it then has to take away.
+  const [canSeeAmounts, setCanSeeAmounts] = useState<boolean | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [showDialog, setShowDialog] = useState(false);
@@ -51,6 +54,7 @@ export default function ProjectsPage() {
   const dialogMouseDown = useRef(false);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
   const [showInlineClient, setShowInlineClient] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [iconSearch, setIconSearch] = useState('');
@@ -61,26 +65,39 @@ export default function ProjectsPage() {
   useEffect(() => {
     fetchProjects();
     fetchClients();
-    fetch('/api/org').then((r) => r.json()).then((d) => { if (d.currency) setOrgCurrency(d.currency); }).catch(() => {});
+    fetch('/api/org')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.currency) setOrgCurrency(d.currency);
+        // Decided server-side from the database role and the workspace setting.
+        // The project payload is already stripped of rates whenever this is false.
+        setCanSeeAmounts(d.canSeeAmounts === true);
+      })
+      .catch(() => setCanSeeAmounts(false));
   }, [fetchProjects, fetchClients]);
 
-  const openNew = () => { setEditProject(null); setForm(DEFAULT_FORM); setIconSearch(''); setShowDialog(true); };
+  const openNew = () => { setEditProject(null); setForm(DEFAULT_FORM); setIconSearch(''); setFormError(''); setShowDialog(true); };
   const openEdit = (p: Project) => { setEditProject(p); setForm({ name: p.name, description: p.description ?? '', clientId: p.client?.id ?? '', color: p.color, icon: p.icon ?? '', hourlyRate: String(Number(p.hourlyRate).toFixed(2)), isBillable: p.isBillable }); setIconSearch(''); setShowDialog(true); };
-  const closeDialog = () => { setShowDialog(false); setEditProject(null); setShowInlineClient(false); setIconSearch(''); };
+  const closeDialog = () => { setShowDialog(false); setEditProject(null); setShowInlineClient(false); setIconSearch(''); setFormError(''); };
 
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
     if (!editProject && !form.icon) return;
     setSaving(true);
+    setFormError('');
     try {
       const body = { name: form.name.trim(), description: form.description.trim() || null, color: form.color, icon: form.icon || null, clientId: form.clientId || undefined, hourlyRate: parseFloat(form.hourlyRate) || 0, isBillable: form.isBillable };
-      if (editProject) {
-        const res = await fetch(`/api/projects/${editProject.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        if (res.ok) { const updated: Project = await res.json(); setProjects((prev) => prev.map((p) => (p.id === editProject.id ? updated : p))); }
-      } else {
-        const res = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        if (res.ok) { const created: Project = await res.json(); setProjects((prev) => [created, ...prev]); }
+      const res = editProject
+        ? await fetch(`/api/projects/${editProject.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        : await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) {
+        // A dialog that closes on a 403 reads as success. Stay open and say why.
+        const data = await res.json().catch(() => ({}));
+        setFormError(data.error ?? `Could not save the project (HTTP ${res.status}).`);
+        return;
       }
+      const saved: Project = await res.json();
+      setProjects((prev) => (editProject ? prev.map((p) => (p.id === editProject.id ? saved : p)) : [saved, ...prev]));
       closeDialog();
     } finally { setSaving(false); }
   };
@@ -127,15 +144,19 @@ export default function ProjectsPage() {
       header: 'Client',
       render: (p) => <span style={{ color: 'var(--text-secondary)' }}>{p.client?.name ?? '—'}</span>,
     },
-    {
-      key: 'hourlyRate',
-      header: 'Hourly Rate',
-      render: (p) => {
-        const currency = getCurrency(p.client?.currency ?? 'USD');
-        const decimals = p.client?.currency === 'JPY' ? 0 : 2;
-        return <span className="" style={{ color: 'var(--text-secondary)' }}>{currency.symbol} {Number(p.hourlyRate).toFixed(decimals)}</span>;
-      },
-    },
+    // Money. The API omits hourlyRate for anyone who may not see amounts, so the
+    // column is dropped rather than left to render NaN.
+    ...(canSeeAmounts
+      ? [{
+          key: 'hourlyRate',
+          header: 'Hourly Rate',
+          render: (p: Project) => {
+            const currency = getCurrency(p.client?.currency ?? 'USD');
+            const decimals = p.client?.currency === 'JPY' ? 0 : 2;
+            return <span style={{ color: 'var(--text-secondary)' }}>{currency.symbol} {Number(p.hourlyRate).toFixed(decimals)}</span>;
+          },
+        } satisfies Column<Project>]
+      : []),
     {
       key: 'status',
       header: 'Status',
@@ -302,13 +323,18 @@ export default function ProjectsPage() {
                   </p>
                 )}
               </div>
-              <div>
-                <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Hourly rate{selectedClient ? ` (${getCurrency(selectedClient.currency).label})` : ''}</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm select-none" style={{ color: 'var(--text-muted)' }}>{rateSymbol}</span>
-                  <input type="number" min="0" step="0.01" value={form.hourlyRate} onChange={(e) => setForm((f) => ({ ...f, hourlyRate: e.target.value }))} className="w-full rounded-lg pl-14 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties} placeholder="0.00" />
+              {/* Only an owner or admin may price a project. The API refuses a
+                  member's rate, so the field is not offered; the form still sends
+                  the default 0, which the API accepts from anyone. */}
+              {isAdmin && (
+                <div>
+                  <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Hourly rate{selectedClient ? ` (${getCurrency(selectedClient.currency).label})` : ''}</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm select-none" style={{ color: 'var(--text-muted)' }}>{rateSymbol}</span>
+                    <input type="number" min="0" step="0.01" value={form.hourlyRate} onChange={(e) => setForm((f) => ({ ...f, hourlyRate: e.target.value }))} className="w-full rounded-lg pl-14 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text)', '--tw-ring-color': 'var(--accent)' } as React.CSSProperties} placeholder="0.00" />
+                  </div>
                 </div>
-              </div>
+              )}
               <label className="flex items-center gap-3 cursor-pointer">
                 <div className="relative">
                   <input type="checkbox" checked={form.isBillable} onChange={(e) => setForm((f) => ({ ...f, isBillable: e.target.checked }))} className="sr-only" />
@@ -318,6 +344,9 @@ export default function ProjectsPage() {
                 <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Billable project</span>
               </label>
             </div>
+            {formError && (
+              <p role="alert" className="text-sm mt-4" style={{ color: 'var(--error)' }}>{formError}</p>
+            )}
             <div className="flex gap-3 mt-6">
               <button onClick={closeDialog} className="flex-1 py-2.5 rounded-lg text-sm transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Cancel</button>
               <button onClick={handleSubmit} disabled={!form.name.trim() || saving || (!editProject && !form.icon)} className="flex-1 text-white py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)' }}>{saving ? 'Saving...' : editProject ? 'Save changes' : 'Create project'}</button>
