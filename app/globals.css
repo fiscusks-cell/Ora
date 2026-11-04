@@ -1,11 +1,220 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Design tokens — the single source for color, type, radius, shadow and spacing.
+   Reference: docs/DESIGN.md. Every value below is from that spec; derivations
+   (color-mix) are the only additions and are marked as such.
+
+   `@theme static` so every token is emitted as a CSS variable even before any
+   page uses its utility — the alias layer further down depends on them existing.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme static {
+  /* ── Colors ─────────────────────────────────────────────────────────────── */
+  --color-obsidian-canvas: #303236;   /* dark page background                  */
+  --color-void:            #090a0c;   /* deepest surface, backdrops, borders    */
+  --color-charcoal-card:   #111111;   /* dark card and panel surface            */
+  --color-slate-edge:      #4a4b50;   /* hairline borders on dark               */
+  --color-iron-veil:       #6b6c6d;   /* muted fills, disabled, muted text      */
+  --color-smoke:           #95979e;   /* secondary text, icon strokes           */
+  --color-ash:             #a9a9aa;   /* tertiary text in dense lists           */
+  --color-frost:           #d1d1d1;   /* borders and inputs on light            */
+  --color-linen:           #e5e5e7;   /* light surface tint, dividers           */
+  --color-snow:            #ffffff;   /* light card surface, text on dark       */
+  --color-electric-iris:   #5683da;   /* the one primary action color           */
+  --color-ember-pulse:     #ff8964;   /* warm accent: dots, tags, gradient stop */
+  --color-molasses:        #5a250a;   /* deep ember for dark-context borders    */
+
+  /* ── Named radii ────────────────────────────────────────────────────────────
+     Only the spec's named shapes. The generic names (--radius-md 4px,
+     --radius-3xl 30px) are left out on purpose: they would override Tailwind's
+     own rounded-md / rounded-3xl, which pages already use at other sizes.      */
+  --radius-tags:    9999px;
+  --radius-buttons: 9999px;
+  --radius-cards:   12px;
+  --radius-inputs:  4px;
+  --radius-panels:  30px;
+
+  /* ── Shadows ────────────────────────────────────────────────────────────────
+     Exposed as "elevation" so they never overwrite Tailwind's shadow-sm/md/xl,
+     which pages already use. --shadow-subtle is the spec's focus ring.         */
+  --shadow-subtle:        rgba(255, 255, 255, 0.4) 0px 0px 0px 6px;
+  --shadow-elevation-sm:  rgba(0, 0, 0, 0.15) 0px 4px 6px 0px;
+  --shadow-elevation-md:  rgba(0, 0, 0, 0.35) 0px 4px 16px 0px;
+  --shadow-elevation-xl:  rgba(0, 0, 0, 0.5) 0px 6px 25px 0px;
+
+  /* ── Type scale ─────────────────────────────────────────────────────────────
+     Each role is one utility (text-body, text-heading …) carrying its size,
+     line-height and tracking together. Tracking tightens with size.           */
+  --text-caption:                   11px;
+  --text-caption--line-height:      1.38;
+  --text-caption--letter-spacing:   -0.1px;
+  --text-body:                      14px;
+  --text-body--line-height:         1.5;
+  --text-body--letter-spacing:      -0.14px;
+  --text-body-lg:                   16px;
+  --text-body-lg--line-height:      1.5;
+  --text-body-lg--letter-spacing:   -0.16px;
+  --text-subheading:                18px;
+  --text-subheading--line-height:   1.5;
+  --text-subheading--letter-spacing: -0.36px;
+  --text-heading-sm:                22px;
+  --text-heading-sm--line-height:   1.25;
+  --text-heading:                   24px;
+  --text-heading--line-height:      1.25;
+  --text-heading--letter-spacing:   -0.48px;
+  --text-display-sm:                32px;
+  --text-display-sm--line-height:   1;
+  --text-display-sm--letter-spacing: -1.6px;
+  --text-display:                   80px;
+  --text-display--line-height:      0.9;
+  --text-display--letter-spacing:   -4px;
+
+  /* The spec's standalone leading / tracking tokens, for when a role's size is
+     wanted without its paired metrics.                                        */
+  --leading-caption:     1.38;
+  --leading-body:        1.5;
+  --leading-subheading:  1.5;
+  --leading-heading:     1.25;
+  --leading-display-sm:  1;
+  --leading-display:     0.9;
+  --tracking-caption:    -0.1px;
+  --tracking-body:       -0.14px;
+  --tracking-body-lg:    -0.16px;
+  --tracking-subheading: -0.36px;
+  --tracking-heading:    -0.48px;
+  --tracking-display-sm: -1.6px;
+  --tracking-display:    -4px;
+}
+
+/* Fonts are loaded by next/font in app/layout.tsx, which puts the real family
+   names on <html> as --font-inter and --font-sora. `inline` so the utilities
+   carry the fallback chain themselves.
+   Sora stands in for the spec's Esbuild (its named substitute) until a licensed
+   Esbuild file is supplied — then swap the loader in layout.tsx; nothing here
+   changes. */
+@theme inline {
+  --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-sora),  ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  /* ── Surfaces: the spec's five levels ───────────────────────────────────── */
+  --surface-obsidian-canvas: #303236;
+  --surface-void:            #090a0c;
+  --surface-charcoal-card:   #111111;
+  --surface-light-canvas:    #ffffff;
+  --surface-linen:           #f6f6f6;   /* warmer than --color-linen; secondary light bands */
+
+  /* ── Layout ─────────────────────────────────────────────────────────────── */
+  --page-max-width: 1200px;
+  --section-gap:    96px;
+  --card-padding:   24px;
+  --element-gap:    12px;
+
+  /* ── Spacing ────────────────────────────────────────────────────────────────
+     Documented here for completeness; this scale is Tailwind's default scale
+     exactly (p-1 … p-60), so pages use the utilities. Kept out of @theme on
+     purpose: --spacing-4 there would redefine p-4 to 4px.                     */
+  --spacing-unit: 4px;
+  --spacing-4: 4px;    --spacing-8: 8px;    --spacing-12: 12px;  --spacing-16: 16px;
+  --spacing-20: 20px;  --spacing-24: 24px;  --spacing-28: 28px;  --spacing-32: 32px;
+  --spacing-36: 36px;  --spacing-40: 40px;  --spacing-64: 64px;  --spacing-160: 160px;
+  --spacing-180: 180px; --spacing-240: 240px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Theme aliases — the 27 names every page already reads.
+
+   This is the compatibility layer for the redesign: pages keep working on these
+   names while they are migrated to the tokens above one commit at a time. Every
+   name below resolves to a spec token; the only derived values are color-mix()
+   tones, marked where they occur. Remove an alias only once no page uses it.
+
+   Success and error are semantic state colors, not brand accents, and the spec
+   defines none; the existing greens and reds stay.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root,
+[data-theme="dark"] {
+  --bg:              var(--color-obsidian-canvas);
+  --surface:         var(--color-charcoal-card);
+  /* derived: a step up from the card toward the border tone, for hover rows */
+  --surface-raised:  color-mix(in oklab, var(--color-charcoal-card) 85%, var(--color-slate-edge));
+  --border:          var(--color-slate-edge);
+  --text:            var(--color-snow);
+  --text-secondary:  var(--color-smoke);
+  --text-muted:      var(--color-iron-veil);
+  --accent:          var(--color-electric-iris);
+  /* derived: the spec names no hover tone */
+  --accent-hover:    color-mix(in oklab, var(--color-electric-iris) 85%, var(--color-void));
+  --sidebar-bg:           var(--color-charcoal-card);
+  --sidebar-border:       var(--color-slate-edge);
+  --sidebar-text:         var(--color-snow);
+  --sidebar-muted:        var(--color-smoke);
+  --sidebar-active:       var(--color-electric-iris);
+  --sidebar-item-active:  rgba(255, 255, 255, 0.09);
+  --sidebar-item-hover:   rgba(255, 255, 255, 0.05);
+  --success:         #34d399;
+  --error:           #f87171;
+  --card:            var(--color-charcoal-card);
+  --bg-tertiary:     var(--color-void);
+  /* derived: the border at half strength */
+  --border-light:    color-mix(in oklab, var(--color-slate-edge) 50%, transparent);
+  --success-bg:      #052e16;
+  --success-border:  #166534;
+  --error-bg:        #450a0a;
+  --error-border:    #991b1b;
+  --skeleton-from:   var(--color-slate-edge);
+  --skeleton-via:    var(--color-iron-veil);
+  --skeleton-to:     var(--color-slate-edge);
+}
+
+[data-theme="light"] {
+  --bg:              var(--surface-linen);
+  --surface:         var(--color-snow);
+  --surface-raised:  var(--color-linen);
+  --border:          var(--color-frost);
+  --text:            var(--color-void);
+  --text-secondary:  var(--color-iron-veil);
+  --text-muted:      var(--color-smoke);
+  --accent:          var(--color-electric-iris);
+  /* derived: the spec names no hover tone */
+  --accent-hover:    color-mix(in oklab, var(--color-electric-iris) 85%, var(--color-void));
+  --sidebar-bg:           var(--color-snow);
+  --sidebar-border:       var(--color-frost);
+  --sidebar-text:         var(--color-void);
+  --sidebar-muted:        var(--color-iron-veil);
+  --sidebar-active:       var(--color-electric-iris);
+  --sidebar-item-active:  rgba(0, 0, 0, 0.07);
+  --sidebar-item-hover:   rgba(0, 0, 0, 0.04);
+  --success:         #10b981;
+  --error:           #ef4444;
+  --card:            var(--color-snow);
+  --bg-tertiary:     var(--surface-linen);
+  --border-light:    var(--color-linen);
+  --success-bg:      #f0fdf4;
+  --success-border:  #bbf7d0;
+  --error-bg:        #fef2f2;
+  --error-border:    #fecaca;
+  --skeleton-from:   var(--color-linen);
+  --skeleton-via:    var(--color-frost);
+  --skeleton-to:     var(--color-linen);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Base + utilities (unchanged behavior)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
+
+html { scroll-behavior: smooth; }
+canvas { display: block; }
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
@@ -22,7 +231,6 @@ body {
   99% { opacity: 0; }
   100% { opacity: 1; }
 }
-
 .timer-colon {
   animation: timer-tick 1s step-end infinite;
 }
@@ -32,78 +240,9 @@ body {
   background-size: 200% 100%;
   animation: skeleton-wave 1.5s infinite;
 }
-
 @keyframes skeleton-wave {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
-}
-
-html { scroll-behavior: smooth; }
-canvas { display: block; }
-
-/* ── Theme ───────────────────────────────────────────────── */
-
-:root,
-[data-theme="dark"] {
-  --bg:              #0f0f0f;
-  --surface:         #1a1a1a;
-  --surface-raised:  #242424;
-  --border:          rgba(255,255,255,0.08);
-  --text:            #f5f5f5;
-  --text-secondary:  #a0a0a0;
-  --text-muted:      #555555;
-  --accent:          #60a5fa;
-  --accent-hover:    #3b82f6;
-  --sidebar-bg:           #111111;
-  --sidebar-border:       rgba(255,255,255,0.07);
-  --sidebar-text:         #f0f0f0;
-  --sidebar-muted:        rgba(255,255,255,0.45);
-  --sidebar-active:       #1e3a5f;
-  --sidebar-item-active:  rgba(255,255,255,0.09);
-  --sidebar-item-hover:   rgba(255,255,255,0.05);
-  --success:         #34d399;
-  --error:           #f87171;
-  --card:            #171717;
-  --bg-tertiary:     #1c1c1c;
-  --border-light:    #222222;
-  --success-bg:      #052e16;
-  --success-border:  #166534;
-  --error-bg:        #450a0a;
-  --error-border:    #991b1b;
-  --skeleton-from:   #1e293b;
-  --skeleton-via:    #334155;
-  --skeleton-to:     #1e293b;
-}
-
-[data-theme="light"] {
-  --bg:              #f8f7f4;
-  --surface:         #ffffff;
-  --surface-raised:  #f0efe9;
-  --border:          rgba(0,0,0,0.08);
-  --text:            #1a1a1a;
-  --text-secondary:  #666666;
-  --text-muted:      #999999;
-  --accent:          #2563eb;
-  --accent-hover:    #1d4ed8;
-  --sidebar-bg:           #ffffff;
-  --sidebar-border:       rgba(0,0,0,0.08);
-  --sidebar-text:         #111827;
-  --sidebar-muted:        #6b7280;
-  --sidebar-active:       #4338ca;
-  --sidebar-item-active:  rgba(0,0,0,0.07);
-  --sidebar-item-hover:   rgba(0,0,0,0.04);
-  --success:         #10b981;
-  --error:           #ef4444;
-  --card:            #ffffff;
-  --bg-tertiary:     #f1f0ed;
-  --border-light:    #f0f0f0;
-  --success-bg:      #f0fdf4;
-  --success-border:  #bbf7d0;
-  --error-bg:        #fef2f2;
-  --error-border:    #fecaca;
-  --skeleton-from:   #e5e5e5;
-  --skeleton-via:    #d4d4d4;
-  --skeleton-to:     #e5e5e5;
 }
 
 /* Page-mount fade — auth + dashboard */

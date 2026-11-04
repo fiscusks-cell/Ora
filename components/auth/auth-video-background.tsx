@@ -52,12 +52,14 @@ export function AuthVideoBackground() {
     el.play().catch((err) => console.log("video autoplay rejected:", err));
   }, [base]);
 
-  // Abyssal Ink over the clip so white type stays legible; Bone White when the
-  // light theme is running the dark clip, which needs a heavier veil.
+  // Void (#090a0c) over the clip so white type stays legible; the Linen surface
+  // (#f6f6f6) when the light theme is running the dark clip, which needs a
+  // heavier veil. Both are tokens from docs/DESIGN.md; literals here because this
+  // is an inline gradient string, not a stylesheet.
   const scrim =
     theme === "light" && !HAS_LIGHT_VARIANT
-      ? "linear-gradient(to bottom, rgba(247,247,245,0.86), rgba(247,247,245,0.94))"
-      : "linear-gradient(to bottom, rgba(34,47,48,0.55), rgba(34,47,48,0.78))";
+      ? "linear-gradient(to bottom, rgba(246,246,246,0.86), rgba(246,246,246,0.94))"
+      : "linear-gradient(to bottom, rgba(9,10,12,0.55), rgba(9,10,12,0.78))";
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">

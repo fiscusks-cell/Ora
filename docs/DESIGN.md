@@ -1,186 +1,195 @@
-# Integrated Biosciences — Style Reference
-> bioluminescent laboratory at midnight
+# ORA — Style Reference
 
-**Theme:** mixed
+> Aurora through a midnight observatory — the hero is a vertical beam of violet melting into coral, and every quiet section below it borrows that same two-color story told at lower volume.
 
-Integrated Biosciences operates in a darkroom-laboratory visual language: a near-black canvas with cool green undertones, restrained white typography, and a single bioluminescent lime accent that activates only on small interactive elements like arrow buttons, tag dots, and progress indicators. The entire type system runs on a single weight of Aspekta — hierarchy is sculpted purely through size and aggressive negative letter-spacing, which makes 111px and 158px display lines feel architectural rather than decorative. Roboto Mono is reserved for technical labels, nav items, and metadata, reinforcing the instrumentation-bench character of the brand. Surfaces stay mostly flat — no shadows, no gradients — with thin hairline borders in #c9cbbe or #4d5757 doing all the delineation. Light sections flip to a warm off-white canvas (#f7f7f5) with white cards, but the green accent persists as a constant biological signal.
+**Theme:** mixed — a dark graphite canvas for the product, light bands for editorial sections, and a user-controlled light/dark toggle inside the app.
 
-## Colors
+This document describes the design system **as implemented in this repository**. Anything listed as *pending* below is not yet in the code. Derived from the Huly style extraction (June 2026); the ORA-specific decisions are in *Implementation notes*.
 
-| Name | Value | Role |
-|------|-------|------|
-| Bioluminescent Lime | `#cef79e` | Green wash for highlight backgrounds, decorative bands, and soft emphasis behind content |
-| Abyssal Ink | `#222f30` | Primary text, borders, dark canvas sections, nav backgrounds. Near-black with a cool green undertone — it is not pure black, it carries the same green note as the accent. Darkest content surface |
-| Bone White | `#f7f7f5` | Light-section page canvas, hero/section backgrounds when in light mode. Warm off-white with the faintest cream cast |
-| Paper | `#ffffff` | Card surfaces on light sections, elevated containers, icon fills, body text on dark surfaces. The brightest surface in the system |
-| Graphite | `#4d5757` | Secondary body text, muted metadata, subdued borders, ghost button outlines. Mid-tone with a green undertone matching the system |
-| Lichen | `#c9cbbe` | Hairline borders, subtle dividers, placeholder metadata text. Warm desaturated green-beige that disappears on white but is visible on #f7f7f5 |
-| Tissue | `#e7e8e1` | Alternate card surface — warmer light gray used to differentiate secondary cards or muted content blocks from the white primary surface |
-| Frost | `#eeeeee` | Neutral light card surface when a non-warm alternate is needed |
-| Void | `#000000` | Footer background, pure black anchors. Used sparingly as a true neutral when the Abyssal Ink is too colored |
+## Status
 
-## Typography
+| Surface | Tokens applied | Notes |
+|---|---|---|
+| `app/globals.css` — tokens, theme aliases | **done** | `@theme static` tokens; 27 legacy aliases resolve to them in both modes |
+| `app/layout.tsx` — fonts | **done** | Inter via `next/font`; Sora loaded as the display face |
+| Landing (`/`, `/pricing`) | pending | hardcoded slate/yellow palette today |
+| Sign-in, sign-up, forgot/reset password, invite | pending | hardcoded palette; the auth video scrim still carries two colors from the previous (never implemented) spec — fix with this step |
+| Dashboard: timer, reports, projects, clients, periods, invoices, settings, home | pending | reads the aliases; Reports is hardcoded `slate-*` and ignores the theme |
+| `components/reports/ReportPDF.tsx` | **out of scope** | a printable business document with its own react-pdf stylesheet; decided separately, tokens must not leak in |
 
-### Aspekta — Sole display and body typeface. Every size from caption to display runs on a single 400 weight — hierarchy is carved by size and tightening tracking, never by weight. Negative letter-spacing scales linearly with size: -0.001em at body, -0.03em at the largest display, keeping the letterforms optically balanced as they grow. The flat single-weight treatment gives the brand its lab-instrument calm — no bold shouting, no italic emotion.
-- **Substitute:** Inter Tight at weight 400, or Söhne Buch
-- **Weights:** 400
-- **Sizes:** 16px, 18px, 19px, 22px, 24px, 36px, 42px, 58px, 75px, 89px, 111px, 158px
-- **Line height:** 1.00–1.30
-- **Letter spacing:** -0.03em at 158px, -0.02em at 89–111px, -0.006em at 36–42px, -0.001em at 16–19px
+## Tokens — Colors
 
-### Roboto Mono — Technical labels, nav items, section markers (01/02 counters), tags, publication metadata, button text. Monospaced geometry signals instrumentation and scientific precision — it is the voice of the lab notebook, contrasted against Aspekta's editorial clarity.
-- **Substitute:** JetBrains Mono, IBM Plex Mono
-- **Weights:** 400
-- **Sizes:** 13px, 14px, 15px
-- **Line height:** 1.00–1.23
-- **Letter spacing:** -0.02em at 13px, -0.008em at 14px, -0.007em at 15px
+| Name | Value | Token / utility | Role |
+|------|-------|-------|------|
+| Obsidian Canvas | `#303236` | `--color-obsidian-canvas` · `bg-obsidian-canvas` | Dark page background — near-black with a whisper of warmth, the default stage for product screens |
+| Void | `#090a0c` | `--color-void` | Deepest surface: hero gradient base, modal backdrops, borders that should vanish into the canvas; also primary text on light |
+| Charcoal Card | `#111111` | `--color-charcoal-card` | Card and panel surfaces on the dark canvas (elevation is *darker*, not lighter) |
+| Slate Edge | `#4a4b50` | `--color-slate-edge` | Hairline borders and dividers on dark |
+| Iron Veil | `#6b6c6d` | `--color-iron-veil` | Muted fills, disabled washes; muted text on dark, secondary text on light |
+| Smoke | `#95979e` | `--color-smoke` | Secondary text and icon strokes on dark; muted text on light — the workhorse mid-gray |
+| Ash | `#a9a9aa` | `--color-ash` | Tertiary text in content-heavy lists |
+| Frost | `#d1d1d1` | `--color-frost` | Borders, inputs and secondary CTA outlines on light |
+| Linen | `#e5e5e7` | `--color-linen` | Light surface tint, dividers, raised/hover surfaces on light |
+| Snow | `#ffffff` | `--color-snow` | Light card surface; primary text on dark. Never the primary CTA color |
+| Electric Iris | `#5683da` | `--color-electric-iris` | **The** primary action color and active indicator — vivid violet-blue that reads as switched-on, not corporate |
+| Ember Pulse | `#ff8964` | `--color-ember-pulse` | Secondary accent: notification dots, tag text, the aurora's warm stop. Punctuation, never a second primary |
+| Molasses | `#5a250a` | `--color-molasses` | Deep ember for dark-context borders and tag fills when coral is too bright |
 
-### Type Scale
+Semantic state colors (success, error) are **not** brand accents. The spec defines none; the app keeps its existing greens and reds under `--success`, `--error`, `--success-bg/-border`, `--error-bg/-border`.
 
-| Role | Size | Line Height | Letter Spacing |
-|------|------|-------------|----------------|
-| caption | 13px | 1.23 | -0.26px |
-| body | 18px | 1.3 | -0.018px |
-| body-lg | 22px | 1.3 | -0.13px |
-| subheading | 24px | 1.2 | -0.14px |
-| heading-sm | 36px | 1.2 | -0.22px |
-| heading-lg | 58px | 1.1 | -0.7px |
-| display | 75px | 1.1 | -1.5px |
-| display-lg | 89px | 1.1 | -1.78px |
-| display-xl | 111px | 1 | -2.22px |
-| hero | 158px | 1 | -4.74px |
+## Surfaces
 
-## Spacing & Layout
+| Level | Name | Value | Token | Purpose |
+|-------|------|-------|-------|---------|
+| 0 | Obsidian Canvas | `#303236` | `--surface-obsidian-canvas` | Dark page background |
+| 1 | Void | `#090a0c` | `--surface-void` | Deepest dark surface; input wells on dark |
+| 2 | Charcoal Card | `#111111` | `--surface-charcoal-card` | Cards one step above the canvas |
+| 3 | Light Canvas | `#ffffff` | `--surface-light-canvas` | Light cards and editorial bands |
+| 4 | Linen | `#f6f6f6` | `--surface-linen` | Light page background; secondary light bands. Warmer than `--color-linen` |
 
-**Base unit:** 4px
+Pick a background mode first. A component is dark or light, never both.
 
-**Density:** comfortable
+## Tokens — Typography
 
-- **Page max-width:** 1200px
-- **Section gap:** 80-120px
-- **Card padding:** 40px
-- **Element gap:** 8-20px
+### Inter — all functional UI text · `--font-inter` → `font-sans`
+Body, nav, buttons, list items, captions, small headings. Weight 500–600 for emphasis, 400 for body, 300 sparingly for quiet metadata. Loaded by `next/font` in `app/layout.tsx`.
 
-### Border Radius
+### Display — hero headlines and section openers · `font-display`
+The spec names **Esbuild**, a licensed face, and lists **Sora** (Google) and General Sans as substitutes. **Sora is what the code loads** (`--font-sora`, variable weight). Never below 28px; its tight tracking crushes small sizes. To adopt Esbuild: replace the `Sora()` loader in `app/layout.tsx` with `next/font/local` on the same variable name — nothing else changes.
 
-- **nav:** 12px
-- **tags:** 9999px
-- **cards:** 16-20px
-- **buttons:** 8px
-- **largeCards:** 40px
+### Type scale — one utility per role
+
+| Role | Utility | Size | Line height | Tracking |
+|------|---------|------|-------------|----------|
+| caption | `text-caption` | 11px | 1.38 | -0.1px |
+| body | `text-body` | 14px | 1.5 | -0.14px |
+| body-lg | `text-body-lg` | 16px | 1.5 | -0.16px |
+| subheading | `text-subheading` | 18px | 1.5 | -0.36px |
+| heading-sm | `text-heading-sm` | 22px | 1.25 | — |
+| heading | `text-heading` | 24px | 1.25 | -0.48px |
+| display-sm | `text-display-sm` | 32px | 1 | -1.6px |
+| display | `text-display` | 80px | 0.9 | -4px |
+
+Each utility sets size, line-height and tracking together. The standalone `leading-*` and `tracking-*` tokens exist for the rare case a role's size is wanted alone. Tracking compresses with size: -0.14px at body, -4px at display.
+
+## Tokens — Spacing & Shapes
+
+**Base unit:** 4px · **Density:** comfortable
+
+**Spacing:** 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 64, 160, 180, 240 px. This is Tailwind's default scale exactly (`p-1` … `p-60`), so pages use the utilities. The `--spacing-*` custom properties in `globals.css` document the scale; they are deliberately **not** in `@theme`, where `--spacing-4` would redefine `p-4` to 4px.
+
+**Radii** (named, as utilities): `rounded-tags` 9999px · `rounded-buttons` 9999px · `rounded-cards` 12px · `rounded-inputs` 4px · `rounded-panels` 30px. The spec's generic names (`--radius-md` 4px, `--radius-3xl` 30px) are not defined because they would override Tailwind's `rounded-md`/`rounded-3xl`, which pages already use at Tailwind's sizes.
+
+**Shadows:** `shadow-elevation-sm` `rgba(0,0,0,.15) 0 4px 6px` · `shadow-elevation-md` `rgba(0,0,0,.35) 0 4px 16px` · `shadow-elevation-xl` `rgba(0,0,0,.5) 0 6px 25px` · `shadow-subtle` `rgba(255,255,255,.4) 0 0 0 6px` (focus ring). Named "elevation" so they never overwrite Tailwind's `shadow-sm/md/xl`. On dark cards prefer borders to shadows.
+
+**Layout:** `--page-max-width` 1200px · `--section-gap` 96px · `--card-padding` 24px · `--element-gap` 12px.
+
+## Implementation notes
+
+### The alias layer — how pages migrate without breaking
+
+Every page reads one of 27 legacy variables (`--bg`, `--surface`, `--text`, `--text-muted`, `--accent`, `--sidebar-*`, …). `globals.css` now defines each as an alias onto a spec token, in both `[data-theme="dark"]` and `[data-theme="light"]`. Pages keep working unchanged and are moved onto the token names one commit at a time; an alias is removed only when nothing reads it.
+
+| Legacy name | Dark | Light |
+|---|---|---|
+| `--bg` | Obsidian Canvas | Linen `#f6f6f6` |
+| `--surface`, `--card`, `--sidebar-bg` | Charcoal Card | Snow |
+| `--surface-raised` | *derived:* card mixed 15% toward Slate Edge | Linen `#e5e5e7` |
+| `--border`, `--sidebar-border` | Slate Edge | Frost |
+| `--border-light` | *derived:* Slate Edge at 50% | Linen `#e5e5e7` |
+| `--text`, `--sidebar-text` | Snow | Void |
+| `--text-secondary`, `--sidebar-muted` | Smoke | Iron Veil |
+| `--text-muted` | Iron Veil | Smoke |
+| `--accent`, `--sidebar-active` | Electric Iris | Electric Iris |
+| `--accent-hover` | *derived:* Iris mixed 15% toward Void | same |
+| `--bg-tertiary` (input wells) | Void | Linen `#f6f6f6` |
+| `--sidebar-item-active/-hover` | white at 9% / 5% | black at 7% / 4% |
+| `--success`, `--error` and their bg/border | unchanged | unchanged |
+| `--skeleton-*` | Slate Edge / Iron Veil | Linen / Frost |
+
+Note the dark mode inverts elevation: the canvas is `#303236` and cards are darker (`#111111`). The sidebar is therefore darker than the content area, which is the intended look.
+
+### Measured contrast of the aliases (WCAG, before → after)
+
+| Pair | Dark | Light |
+|---|---|---|
+| text on bg | 17.6 → 12.8 | 16.3 → 18.9 |
+| text on surface | 16.0 → 18.9 | 17.4 → 20.4 |
+| secondary on bg | 7.3 → **4.4** | 5.4 → 4.9 |
+| secondary on surface | 6.7 → 6.5 | 5.7 → 5.3 |
+| muted on bg | 2.6 → 2.4 | 2.7 → 2.7 |
+| muted on surface | 2.3 → 3.6 | 2.9 → 2.9 |
+| **accent on bg** | 7.5 → **3.5** | 4.8 → **3.4** |
+| **accent on surface** | 6.9 → 5.1 | 5.2 → **3.7** |
+
+Two consequences of the spec itself, flagged rather than silently altered: **Electric Iris used as small text** falls below AA (4.5:1) in both modes, where the previous blues passed; and dark secondary text on the canvas sits at 4.4. The brand color is kept exact. If small accent text needs AA, the fix is a derived `--accent-text` tone adopted page by page — an open decision, not part of the token commit.
+
+### Tailwind integration
+
+- Tokens live in `@theme static` so every variable is emitted even before a page uses its utility; the alias layer depends on that.
+- Fonts live in `@theme inline` so `font-sans` / `font-display` carry the fallback chain and resolve the `next/font` variables set on `<html>`.
+- Namespaces kept out of `@theme` because they would collide with Tailwind's own scale: spacing, generic radii, `shadow-sm/md/xl`. See each section above.
+- Theme switching is `[data-theme]` on `<html>`: SSR renders `light`; `ThemeProvider` applies `localStorage['ora-theme']` or `prefers-color-scheme` on mount. A bare `:root` resolves to the dark set.
 
 ## Components
 
-### Hero Display Headline
-**Role:** Primary page-level headline
+Reconstructions of the target language, in ORA terms. Mark each *implemented* in its page commit.
 
-Set in Aspekta 400 at 111–158px, line-height 1.0, letter-spacing -0.03em. White (#ffffff) on Abyssal Ink (#222f30). Left-aligned, no max-width constraint — the line breaks are generous. Period-terminated. This is the single largest typographic element in the system and sets the brand's architectural tone.
+### Primary Pill Button
+**Role:** the single most important action on a screen (Start, Save, Publish).
+Filled Electric Iris, white text, Inter 14px weight 500, `rounded-buttons`, 12px 24px padding. Hover: `--accent-hover`. One per screen.
 
-### Section Sub-Headline
-**Role:** Section-level statement
+### Ghost Pill Button
+**Role:** secondary actions, nav actions.
+Transparent, 1px border (Slate Edge on dark, Frost on light), text in the surface's primary text color, Inter 14px weight 500, `rounded-buttons`, 10px 20px padding. Hover fills with the surface's raised tone.
 
-Aspekta 400 at 36–42px, line-height 1.2, letter-spacing -0.006em. Rendered in muted Graphite (#4d5757) on dark backgrounds, or Abyssal Ink on light. Reads as a quiet, reflective counterpoint to the hero — the voice of the researcher explaining, not announcing.
+### Card
+**Role:** every panel in the dashboard, feature cards on the landing page.
+Charcoal Card on dark / Snow on light, `rounded-cards`, `--card-padding` 24px, 1px border in the surface's border color. **Borders, not shadows, for elevation on dark.** An optional radial Ember glow bleeding from one corner is the only decoration.
 
-### Pill Navigation Button
-**Role:** Active/highlighted nav item
+### Tag / Chip
+**Role:** status badges, filter pills, project and client labels.
+`rounded-tags`, 4px 10px padding, Inter 11px weight 500, text in the category color, background the same color at 12% opacity. Electric Iris for active/selected, Ember Pulse for attention, Ash for done/archived.
 
-Outlined pill shape, border 1px in #c9cbbe on dark surfaces or #4d5757 on light, radius 12px. Roboto Mono 13–14px at 400, letter-spacing -0.02em. Text in matching border color. When active, fills with Bioluminescent Lime (#cef79e) and text flips to Abyssal Ink.
+### Top Navigation (landing)
+Transparent over the hero, backdrop blur once scrolled. Logo left, Inter 14px links center, outlined *Sign in* ghost pill and filled *Sign up* iris pill right.
 
-### Filled Action Button (Work With Us)
-**Role:** Primary site-level CTA
+### Aurora Hero Background (landing only)
+A narrow vertical beam on Void: `linear-gradient(180deg, Electric Iris @60% → Ember Pulse → white)`, 15–25% of page width, with a warm radial sunburst (`#ffaa81 → #ffda9f → transparent`) at its base. **Once per page.** Never a full-surface fill.
 
-Filled rectangle, background #222f30 (dark) or #ffffff (light), text in opposite surface color. No border. Radius 8px. Roboto Mono 13–14px uppercase tracking -0.02em. Compact horizontal padding ~12-16px, vertical 8px. Restrained size — this system does not shout with button scale.
+### Light Section Band (landing)
+Snow or `--surface-linen` background, display heading in Void, Inter body in Obsidian Canvas. Dark hero → light band → dark band is the page's structural rhythm, with `--section-gap` between.
 
-### Arrow CTA Button
-**Role:** Secondary directional action
-
-40×40px square, radius 8px, filled Bioluminescent Lime (#cef79e) with Abyssal Ink arrow icon. Used at the end of card titles, section footers, and inline links. This is the only place the green accent fills a shape — it functions as a green traffic light pointing forward.
-
-### Outlined Ghost Button (Discover Our Platform)
-**Role:** Low-emphasis CTA
-
-Transparent background, border 1px in #4d5757, text in #ffffff or #222f30. Radius 8px. Roboto Mono 14px. Pairs with the Arrow CTA button when two actions sit side by side.
-
-### Section Counter (01/02)
-**Role:** Section numbering marker
-
-Small pill containing a section number, border 1px in #4d5757, radius 9999px. Roboto Mono 13px. Sits above or beside the section headline as a navigational anchor — the table-of-contents voice of the page.
-
-### News Article Card
-**Role:** Editorial content block
-
-White (#ffffff) surface on Bone White (#f7f7f5) canvas, radius 20–40px, no shadow. 40px internal padding. Two-column layout: left half is a dark full-bleed scientific image (radius 12-16px on the image itself), right half is title + meta + excerpt + 'READ ARTICLE' link. Generous breathing room — this card occupies a full viewport-width band.
-
-### Publication Tag
-**Role:** Category indicator
-
-Small green-dot prefix + Roboto Mono uppercase label. Dot is 6px Bioluminescent Lime circle. Label in Roboto Mono 13px in #4d5757 or #c9cbbe. Functions as the system's only color-coded classification marker.
-
-### Hero Section Background
-**Role:** Dark canvas surface
-
-Full-bleed Abyssal Ink (#222f30). No gradient, no texture. Headline left-aligned in upper third, supporting text left-aligned in lower third. Massive vertical breathing room — minimum 400px of negative space between headline and copy.
-
-### Light Section Background
-**Role:** Light canvas surface
-
-Full-bleed Bone White (#f7f7f5) with white cards. Used for editorial/newsroom sections, creating a flip from the dark content sections. The transition itself is the visual signal — no divider line is needed.
-
-### Hairline Divider
-**Role:** Section/content separator
-
-1px line in #c9cbbe (on light) or #4d5757 (on dark). Full width or column-width. The system uses only horizontal dividers — never vertical, never double, never dashed.
-
-### Footer
-**Role:** Site closure
-
-Pure black (#000000) background — a deeper note than the Abyssal Ink used in content sections. White text, Roboto Mono for links, Aspekta for any larger text. Signals the absolute end of the site.
+### Product Screenshot Frame (landing)
+A real dashboard screenshot inside a `rounded-cards` frame with `shadow-elevation-xl`, floating over the aurora. The product is the photography — no stock imagery, no 3D renders.
 
 ## Do's and Don'ts
 
 ### Do
-- Use Aspekta at weight 400 for all display and body text — never bold, never semibold, never italic. Hierarchy is size and tracking only.
-- Set Bioluminescent Lime (#cef79e) fills at exactly 40×40px for arrow buttons and 6px diameter for tag dots. Never scale the accent larger than a micro-surface.
-- Apply letter-spacing proportionally: -0.03em at 158px, -0.02em at 89–111px, -0.006em at 36–42px, -0.001em at 16–19px. The tracking is what keeps the flat weight readable at extreme sizes.
-- Use 1px hairlines in #c9cbbe (on light) or #4d5757 (on dark) for all dividers and card borders. Never use thicker borders, never use shadows for depth.
-- Reserve Roboto Mono for nav items, section counters (01/02), publication tags, dates, and button text. Never use it for headlines or body copy longer than a label.
-- Maintain 80–120px vertical section gaps. The system breathes — compression destroys the lab-instrument calm.
-- Pair every action with its opposite surface: dark button (#222f30 fill) on light canvas, light button (#ffffff fill) on dark canvas. Never use Bioluminescent Lime as a primary button background.
+- Use `rounded-buttons`/`rounded-tags` (9999px) for every button, tag and pill control — pill geometry is the system's signature shape
+- Reserve the display face for 28px and up; never for body, nav, or anything below 22px
+- Pick a background mode first: dark canvas for product screens, Snow/Linen for editorial bands — never blend them in one component
+- Use Electric Iris for the single most important action per screen; let Ember Pulse appear only as warm punctuation
+- Apply the aurora gradient as one narrow beam per page, never as a background fill
+- Set body text to `text-body` (14px / 1.5 / -0.14px) and let tracking tighten with size
+- On dark cards, delineate with Slate Edge borders, not drop shadows
 
 ### Don't
-- Do not introduce a second weight of Aspekta or any other sans-serif for headings. The single-weight system is the brand's identity — adding bold breaks it.
-- Do not use #cef79 as a background for body text, large surfaces, gradients, or hero overlays. The accent is rationed at micro-scale for a reason.
-- Do not apply box-shadows, drop-shadows, or any elevation effect. Depth comes from color contrast and borders only.
-- Do not use pure #000000 for content sections — reserve it for the footer. Content dark surfaces are #222f30 with its green undertone.
-- Do not use the warm neutrals (#e7e8e1, #c9cbbe) on dark sections. They disappear against Abyssal Ink and break the surface hierarchy.
-- Do not place images outside of rounded containers (minimum radius 12px) or without the dark scientific treatment. Lifestyle photography breaks the lab-instrument language.
-- Do not use multiple accent colors. The system's power is in monochrome discipline plus one signal. Adding a second chromatic role dilutes the brand's visual tension.
+- Don't use sharp corners (0–8px) on buttons or tags
+- Don't introduce a third accent — iris and ember are the entire chromatic vocabulary; success and error are state, not accent
+- Don't put Obsidian Canvas text on the dark canvas, or white text on a white band — the dark palette has narrow readable bands; check the contrast table
+- Don't let dashboard tokens into `ReportPDF.tsx`
+- Don't add `--spacing-*`, `--radius-md`/`-3xl`, or `--shadow-sm/md/xl` to `@theme` — see Implementation notes for what each would break
 
-## Elevation
+## Gradient System
 
-This system is deliberately flat. No box-shadows appear anywhere. Depth is communicated exclusively through surface color contrast (Abyssal Ink vs Paper vs Bone White) and border hairlines. The visual philosophy treats the interface as a printed scientific poster — every element is a flat ink shape on a flat surface, and the hierarchy comes from size, color, and spacing rather than from any sense of floating or lifting.
+**Aurora beam** (hero only): `linear-gradient(180deg, #5683da99, #ff8964, #ffffff)` as a narrow vertical streak. Once per page.
 
-## Surfaces
+**Radial sunburst** (card glows): `radial-gradient(#ffaa81, #ffda9f, transparent)` as a 200–400px circle bleeding from a card corner at 30–50% opacity.
 
-- **Page Canvas — Light** (`#f7f7f5`) — Base background for light sections (Newsroom, editorial)
-- **Page Canvas — Dark** (`#222f30`) — Base background for dark sections (Hero, What We Do, content)
-- **Card Surface — Light** (`#ffffff`) — Elevated cards on light canvas, icon fills on dark
-- **Card Surface — Warm Alternate** (`#e7e8e1`) — Secondary card tone on light sections
-- **Accent Fill** (`#cef79`) — Interactive micro-surfaces — arrow buttons, active tags, accent dots
-- **Footer Ground** (`#000000`) — Absolute-dark closure surface
+**Section transition** (rare): white → `#d5d8f6` for a light-to-product bridge.
 
-## Imagery
-
-Scientific microscopy and 3D molecular renders dominate — cell clusters, protein structures, and neural networks rendered in a single dark-green-to-black palette so they integrate with the Abyssal Ink canvas. Photography is not used; all imagery is generated or illustrated. Imagery is always contained within rounded rectangles (radius 12–16px) and paired with white cards. The green Bioluminescent Lime is echoed in the imagery's highlights, creating visual continuity between the interface accent and the scientific subject matter. The Newsroom section's lead image is a tight crop of glowing cell structures on black — full-bleed within the card, with no text overlay, letting the subject speak.
-
-## Layout
-
-Max-width 1200px centered for all content. Dark sections (hero, 'What We Do', platform) are full-bleed in Abyssal Ink with content constrained to the 1200px column and generous left-padding for text. Light sections (Newsroom) are full-bleed in Bone White with the same 1200px content column. Hero is asymmetric: headline occupies the left two-thirds, large amounts of right-side and bottom negative space. Section rhythm alternates: dark band → dark band → light band, with no dividers between same-mode sections. Card layouts are two-column (image-left, text-right) for editorial blocks, and single-column stacked for text-heavy content. Navigation is a single horizontal bar — logo left, nav links right, with a pill-shaped active indicator. No sticky header, no sidebar, no mega-menu — the navigation is intentionally minimal so the content commands attention.
+Never stack two full-opacity gradients in one viewport.
 
 ## Similar Brands
-
-- **Arc Institute** — Dark green-black canvas with single vivid accent, oversized single-weight display type, biotech/scientific instrumentation aesthetic
-- **Chai Discovery** — Near-black backgrounds, bioluminescent accent color, flat minimal surfaces, single-weight large display typography in a bio/AI context
-- **EvolutionaryScale** — Dark-mode biotech interface, extreme type-size contrast between tiny mono labels and massive sans-serif display lines, hairline borders, single accent color
-- **Notion AI landing pages** — Oversized single-weight display headlines, generous negative space, muted secondary text color, minimal surface decoration
-- **Linear** — Dark canvas with hairline borders, single accent color used sparingly on interactive elements, mono labels for technical metadata
+Linear (dark canvas, one vivid accent, pill controls, product-UI-as-hero) · Vercel (vertical beam hero, 80px display with tight tracking) · Arc (dark-first, warm-to-cool washes) · Resend (alternating dark/light bands, minimal shadow, 9999px buttons) · Stripe (gradient beams, screenshots over atmosphere, Inter as the workhorse).
