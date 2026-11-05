@@ -15,13 +15,15 @@
  * size, reads that hours become invoices in the books, believes it because the
  * workflow is shown as states with real integrations, and starts free.
  *
- * FIRST VIEWPORT (≥1024, 980px ≈ 1.09vh): copy top-left in a 460/560px
- * column, ending above the dissolve; the product beside it at 1:1, running
- * from its column to 8px past the right edge (so the timer bar's counter is
- * always on screen), 620px tall, bottom-aligned, its foot dissolving into the
- * next band's Linen; behind everything, the beam clip (a generated light beam
- * with drifting fog on true black) under `lighten`, its core at 48% across
- * the product column, bleeding past both edges. Primary action: "Start free".
+ * FIRST VIEWPORT (≥1024; the hero is 100vw tall, 1440px at 1440 — the
+ * reference's 1438): copy top-left in a 560px column; behind everything the
+ * beam clip (a generated light beam with drifting fog on true black) under
+ * `lighten`, 133vw wide, its core at 56.8% of the viewport, bleeding past both
+ * edges; the product frame min(70vw, 1100px) wide at 1:1, centred on that x,
+ * its top border on the clip's flare line (61.93vw) so the light reads as
+ * hitting the window, running to the foot through the 300px dissolve into the
+ * next band's Linen. Below 1024 the clip is off and the product sits under the
+ * copy at full width. Primary action: "Start free".
  *
  * FORM: Persuade. Hero → How it works (light bento) → Capabilities (dark, the
  * report bleeding right) → Pricing (light) → Close (dark) → Footer. The beam
@@ -49,12 +51,12 @@ export default function LandingPage() {
       <MarketingNav tone="dark" />
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden bg-void">
-        {/* the beam clip, behind the grid; the section's `isolate` is the blend's backdrop */}
+      <section className="relative isolate overflow-hidden bg-void lg:min-h-[100vw]">
+        {/* the beam clip, behind everything; the section's `isolate` is the blend's backdrop */}
         <HeroVideo />
-        <div className="relative mx-auto grid max-w-[1216px] gap-14 px-5 pt-28 sm:px-8 sm:pt-32 lg:min-h-[980px] lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:pt-0 xl:grid-cols-[minmax(0,560px)_minmax(0,1fr)] xl:gap-12">
-          {/* the copy: top-anchored so it ends above the dissolve at every width */}
-          <div data-hero-copy className="rise-in relative z-10 max-w-[560px] lg:self-start lg:pt-32">
+        <div className="relative mx-auto max-w-[1216px] px-5 pt-28 sm:px-8 sm:pt-32">
+          {/* the copy: top-anchored; from lg the beam runs down to its right, to the product below */}
+          <div data-hero-copy className="rise-in relative z-10 max-w-[560px]">
             <h1 className="font-display text-[clamp(2.75rem,5.8vw,5.25rem)] font-semibold leading-[0.92] tracking-[-0.04em] text-snow [text-wrap:balance]">
               Time, tracked. Invoices, done.
             </h1>
@@ -73,15 +75,15 @@ export default function LandingPage() {
               <span className="inline-flex items-center gap-2 text-body"><SiXero className="h-5 w-5" aria-hidden="true" /> Xero</span>
             </div>
           </div>
+        </div>
 
-          {/* the product: beside the copy, from its column's left edge to 8px past the
-              viewport's right edge (the column starts 532px in at lg and at 50vw + 32px
-              from xl), cropped there and dissolved at the foot; the beam passes behind it */}
-          <div className="rise-in relative lg:self-end" style={{ animationDelay: '120ms' }}>
-            <div className="relative z-10 w-full lg:w-[calc(100vw_-_524px)] xl:w-[calc(50vw_-_24px)]">
-              <ProductMockup />
-            </div>
-          </div>
+        {/* the product: under the copy at full width below lg. From lg an absolute frame,
+            min(70vw, 1100px) wide and centred on the beam's x, its top border on the
+            clip's flare line (globals.css .hero-product), running to the hero's foot
+            where the dissolve crops it; above the clip, so the glow reads as behind
+            the window */}
+        <div className="hero-product rise-in relative z-10 mx-auto mt-14 w-full max-w-[1216px] px-5 sm:px-8 lg:absolute lg:mt-0 lg:max-w-none lg:px-0" style={{ animationDelay: '120ms' }}>
+          <ProductMockup />
         </div>
 
         {/* the dissolve into the next band — to its Linen, so no line appears at the boundary */}

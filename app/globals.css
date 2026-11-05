@@ -289,21 +289,24 @@ canvas { display: block; }
   .rise-in   { animation: rise-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
 }
 
-/* The hero's beam clip (app/components/landing/HeroVideo.tsx). Tied to the hero
-   grid: from lg the product column starts 532px in, from xl at 50vw + 32px; the
-   beam belongs 48% across that column. The box is max(133vw, 1743px) wide so the
-   1920x1080 clip always scales by width and covers the 980px hero; `left` puts
-   the clip's beam core (56.8% of its width) on that x. It bleeds past both edges
-   at every width from 1024 up. */
+/* The hero's beam clip (app/components/landing/HeroVideo.tsx) and the product
+   frame (app/page.tsx), placed from the same numbers from lg up. The clip is
+   133vw wide at its own 16:9 aspect, starting at the hero's top, and offset so
+   its beam core (measured at 56.8% of its width) sits at 56.8% of the viewport.
+   Its horizontal flare peaks at 82.78% of its height, i.e. 0.8278 x 133vw x 9/16
+   = 61.93vw from the top: the product frame's top border sits on that line,
+   centred on the same x, min(70vw, 1100px) wide, and runs to the hero's foot,
+   where the dissolve crops it. */
 @media (min-width: 64rem) {
   .hero-video {
-    width: max(133vw, 1743px);
-    left: calc(48vw + 261px - 0.568 * max(133vw, 1743px));
+    width: 133vw;
+    left: calc(56.8vw - 0.568 * 133vw);
   }
-}
-@media (min-width: 80rem) {
-  .hero-video {
-    left: calc(50vw + 293px - 0.568 * max(133vw, 1743px));
+  .hero-product {
+    top: 61.93vw;
+    bottom: 0;
+    width: min(70vw, 1100px);
+    left: calc(56.8vw - min(70vw, 1100px) / 2);
   }
 }
 

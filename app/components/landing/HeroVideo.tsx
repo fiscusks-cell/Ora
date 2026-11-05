@@ -8,12 +8,11 @@ import { useEffect, useRef } from 'react';
  * over the Void canvas. Black contributes nothing under lighten, so the clip's
  * own falloff is its edge — nothing is masked or clipped.
  *
- * Geometry lives in globals.css as `.hero-video` (it is tied to the hero grid):
- * the box is max(133vw, 1743px) wide so the clip always scales by width and
- * covers the 980px hero, and it is offset so the clip's beam core (56.8% of
- * its width) sits where the hero's beam belongs — 48% across the product
- * column. Below `lg` the product sits under the copy and there is no x that
- * keeps the beam off the text, so the clip is not drawn.
+ * Geometry lives in globals.css as `.hero-video`, next to `.hero-product`,
+ * which is placed from the same numbers: the box is 133vw wide at the clip's
+ * own aspect, starting at the hero's top, offset so the clip's beam core
+ * (56.8% of its width) sits at 56.8% of the viewport; the product frame's top
+ * edge is put on the clip's flare line. Below `lg` the clip is not drawn.
  *
  * Motion: the markup carries no autoplay. On mount, if the visitor has not
  * asked for reduced motion, the clip is started; otherwise the poster (its
@@ -35,7 +34,7 @@ export function HeroVideo() {
   }, []);
 
   return (
-    <div aria-hidden="true" className="hero-video pointer-events-none absolute top-0 hidden h-full mix-blend-lighten lg:block">
+    <div aria-hidden="true" className="hero-video pointer-events-none absolute top-0 hidden aspect-video mix-blend-lighten lg:block">
       <video
         ref={ref}
         data-hero-video
@@ -44,7 +43,7 @@ export function HeroVideo() {
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
         disablePictureInPicture
       >
         <source src="/hero/beam.webm" type="video/webm" />
