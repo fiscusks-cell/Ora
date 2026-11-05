@@ -31,17 +31,19 @@ export function MarketingNav({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
         }`}
         aria-label="Primary"
       >
-        <Link href="/" aria-label="ORA home" className="rounded-buttons">
-          <OraWordmark />
-        </Link>
-
-        <div className="hidden items-center gap-8 md:flex">
-          <Link href="/#how" className={`text-body transition-colors ${onDark ? 'text-smoke hover:text-snow' : 'text-iron-veil hover:text-void'}`}>
-            How it works
+        {/* wordmark and section links as one left group; the links stay hidden below md */}
+        <div className="flex items-center gap-10">
+          <Link href="/" aria-label="ORA home" className="rounded-buttons">
+            <OraWordmark />
           </Link>
-          <Link href="/pricing" className={`text-body transition-colors ${onDark ? 'text-smoke hover:text-snow' : 'text-iron-veil hover:text-void'}`}>
-            Pricing
-          </Link>
+          <div className="hidden items-center gap-8 md:flex">
+            <Link href="/#how" className={`text-body transition-colors ${onDark ? 'text-smoke hover:text-snow' : 'text-iron-veil hover:text-void'}`}>
+              How it works
+            </Link>
+            <Link href="/pricing" className={`text-body transition-colors ${onDark ? 'text-smoke hover:text-snow' : 'text-iron-veil hover:text-void'}`}>
+              Pricing
+            </Link>
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5">

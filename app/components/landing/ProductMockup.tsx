@@ -113,8 +113,8 @@ export function ProductMockup() {
             Timer running
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-6 w-6 rounded-full bg-electric-iris/90 text-center text-[11px] font-medium leading-6">R</span>
-            <span className="text-caption text-smoke">Rina Kelmendi</span>
+            <span className="h-6 w-6 rounded-full bg-electric-iris/90 text-center text-[11px] font-medium leading-6">E</span>
+            <span className="text-caption text-smoke">Erion Thaqi</span>
           </div>
         </div>
 
