@@ -19,18 +19,20 @@
  * column, ending above the dissolve; the product beside it at 1:1, running
  * from its column to 8px past the right edge (so the timer bar's counter is
  * always on screen), 620px tall, bottom-aligned, its foot dissolving into the
- * next band's Linen; the beam enters from the top edge and lands on its top.
- * Primary action: "Start free".
+ * next band's Linen; behind everything, the beam clip (a generated light beam
+ * with drifting fog on true black) under `lighten`, its core at 48% across
+ * the product column, bleeding past both edges. Primary action: "Start free".
  *
  * FORM: Persuade. Hero → How it works (light bento) → Capabilities (dark, the
  * report bleeding right) → Pricing (light) → Close (dark) → Footer. The beam
- * is CSS only; the live counter is the page's single authored motion.
+ * clip and the live counter are the page's only motion; under
+ * prefers-reduced-motion the clip stays on its poster (the counter still ticks).
  */
 import Link from 'next/link';
 import { SiQuickbooks, SiXero } from 'react-icons/si';
 import { MarketingNav } from './components/landing/MarketingNav';
 import { MarketingFooter } from './components/landing/MarketingFooter';
-import { HeroBeam } from './components/landing/HeroBeam';
+import { HeroVideo } from './components/landing/HeroVideo';
 import { ProductMockup } from './components/landing/ProductMockup';
 import { HowItWorks } from './components/landing/HowItWorks';
 import { Capabilities } from './components/landing/Capabilities';
@@ -48,6 +50,8 @@ export default function LandingPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden bg-void">
+        {/* the beam clip, behind the grid; the section's `isolate` is the blend's backdrop */}
+        <HeroVideo />
         <div className="relative mx-auto grid max-w-[1216px] gap-14 px-5 pt-28 sm:px-8 sm:pt-32 lg:min-h-[980px] lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:pt-0 xl:grid-cols-[minmax(0,560px)_minmax(0,1fr)] xl:gap-12">
           {/* the copy: top-anchored so it ends above the dissolve at every width */}
           <div data-hero-copy className="rise-in relative z-10 max-w-[560px] lg:self-start lg:pt-32">
@@ -72,9 +76,8 @@ export default function LandingPage() {
 
           {/* the product: beside the copy, from its column's left edge to 8px past the
               viewport's right edge (the column starts 532px in at lg and at 50vw + 32px
-              from xl), cropped there and dissolved at the foot; the beam lands on its top */}
+              from xl), cropped there and dissolved at the foot; the beam passes behind it */}
           <div className="rise-in relative lg:self-end" style={{ animationDelay: '120ms' }}>
-            <HeroBeam />
             <div className="relative z-10 w-full lg:w-[calc(100vw_-_524px)] xl:w-[calc(50vw_-_24px)]">
               <ProductMockup />
             </div>

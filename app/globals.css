@@ -281,22 +281,30 @@ canvas { display: block; }
 }
 
 /* ── Landing entrance — the beam and the hero rise once ───── */
-@keyframes aurora-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(-4%) scaleY(0.94); }
-  to   { opacity: 1; transform: translateX(-50%); }
-}
 @keyframes rise-in {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: none; }
 }
-@keyframes beam-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
 @media (prefers-reduced-motion: no-preference) {
-  .aurora-in { animation: aurora-in 1.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
-  .beam-in   { animation: beam-in 1.6s ease-out both; }
   .rise-in   { animation: rise-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+
+/* The hero's beam clip (app/components/landing/HeroVideo.tsx). Tied to the hero
+   grid: from lg the product column starts 532px in, from xl at 50vw + 32px; the
+   beam belongs 48% across that column. The box is max(133vw, 1743px) wide so the
+   1920x1080 clip always scales by width and covers the 980px hero; `left` puts
+   the clip's beam core (56.8% of its width) on that x. It bleeds past both edges
+   at every width from 1024 up. */
+@media (min-width: 64rem) {
+  .hero-video {
+    width: max(133vw, 1743px);
+    left: calc(48vw + 261px - 0.568 * max(133vw, 1743px));
+  }
+}
+@media (min-width: 80rem) {
+  .hero-video {
+    left: calc(50vw + 293px - 0.568 * max(133vw, 1743px));
+  }
 }
 
 /* Page-mount fade — auth + dashboard */

@@ -150,7 +150,7 @@ Opacity modifiers work on them (`ring-accent/30`). The always-dark landing uses 
 
 ## Components
 
-The marketing set is implemented in `app/components/landing/`: `OraMark`/`OraWordmark` (the clock mark in `currentColor` with an Ember hand), `MarketingNav` (transparent, Void-blurred once scrolled, `tone` per band), `MarketingFooter`, `AuroraBeam` (glow + core line + sunburst, one per page), `ProductMockup` (the timer screen as hero evidence, synthetic data, live counter), `HowItWorks` (three product states on a light band), `Capabilities` (reports mockup + the six true claims), and `PricingSection` on tokens. Everything below that is not yet marked *implemented* is the target for the dashboard commits.
+The marketing set is implemented in `app/components/landing/`: `OraMark`/`OraWordmark` (the clock mark in `currentColor` with an Ember hand), `MarketingNav` (transparent, Void-blurred once scrolled, `tone` per band), `MarketingFooter`, `HeroVideo` (the generated beam clip at `public/hero/`, composited with `mix-blend-mode: lighten`, poster for reduced motion, one per page), `ProductMockup` (the timer screen as hero evidence, synthetic data, live counter), `HowItWorks` (three product states on a light band), `Capabilities` (reports mockup + the six true claims), and `PricingSection` on tokens. Everything below that is not yet marked *implemented* is the target for the dashboard commits.
 
 ### Primary Pill Button
 **Role:** the single most important action on a screen (Start, Save, Publish).
