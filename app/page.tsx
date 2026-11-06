@@ -57,7 +57,7 @@ export default function LandingPage() {
         <div className="relative mx-auto max-w-[1216px] px-5 pt-28 sm:px-8 sm:pt-32">
           {/* the copy: top-anchored; from lg the beam runs down to its right, to the product below */}
           <div data-hero-copy className="rise-in relative z-10 max-w-[560px]">
-            <h1 className="font-display text-[clamp(2.75rem,5.8vw,5.25rem)] font-semibold leading-[0.92] tracking-[-0.04em] text-snow [text-wrap:balance]">
+            <h1 className="font-display text-[clamp(2.75rem,5.8vw,5.25rem)] font-bold leading-[0.92] tracking-[-0.025em] text-snow [text-wrap:balance]">
               Time, tracked. Invoices, done.
             </h1>
             <p className="mt-6 max-w-[46ch] text-subheading text-smoke">
