@@ -29,7 +29,7 @@ function PlanCard({ plan, yearly }: { plan: PlanDefinition; yearly: boolean }) {
         <p className="mt-0.5 min-h-[2.5rem] text-body text-iron-veil">{plan.description}</p>
 
         <div className="mt-4 flex items-baseline gap-1">
-          <span className="font-display text-[2.25rem] font-semibold leading-none tracking-[-0.04em] text-void tabular-nums">${price}</span>
+          <span className="font-display text-[2.25rem] font-bold leading-none tracking-[-0.025em] text-void tabular-nums">${price}</span>
           <span className="text-caption text-iron-veil">/month</span>
         </div>
         <p className="mt-1.5 text-caption text-iron-veil">
@@ -70,7 +70,7 @@ export function PricingSection() {
       <div className="mx-auto max-w-[1216px] px-5 py-20 sm:px-8 lg:py-28">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-void [text-wrap:balance]">
+            <h2 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-bold leading-[0.95] tracking-[-0.025em] text-void [text-wrap:balance]">
               Simple pricing.
             </h2>
             <p className="mt-4 max-w-[48ch] text-subheading text-iron-veil">

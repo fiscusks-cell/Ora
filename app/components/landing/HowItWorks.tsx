@@ -18,7 +18,7 @@ function Cell({ title, body, children }: { title: string; body: string; children
           whatever its body wraps to. The gradient's ramp is its top 60px; the
           title starts below the ramp, on solid Snow, so no row shows through it */}
       <div className="absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-snow from-70% via-snow/95 via-80% to-snow/0 px-6 pt-16">
-        <h3 className="font-display text-heading-sm font-semibold text-void">{title}</h3>
+        <h3 className="font-display text-heading-sm font-bold tracking-[-0.025em] text-void">{title}</h3>
         <p className="mt-1.5 max-w-[40ch] text-body text-iron-veil">{body}</p>
       </div>
     </li>
@@ -103,7 +103,7 @@ function PublishState() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-caption text-iron-veil">INV-0147 · Harbor &amp; Vale</p>
-          <p className="mt-1 font-display text-display-sm font-semibold tabular-nums tracking-[-0.03em]">$2,362.50</p>
+          <p className="mt-1 font-display text-display-sm font-bold tabular-nums tracking-[-0.025em]">$2,362.50</p>
         </div>
         <span className="shrink-0 rounded-tags bg-electric-iris/12 px-2.5 py-1 text-caption font-medium text-electric-iris">Issued</span>
       </div>
@@ -127,7 +127,7 @@ export function HowItWorks() {
   return (
     <section id="how" className="scroll-mt-20 bg-[var(--surface-linen)] text-void">
       <div className="mx-auto max-w-[1216px] px-5 pb-20 pt-24 sm:px-8 lg:pb-28 lg:pt-32">
-        <h2 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-void [text-wrap:balance]">
+        <h2 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-bold leading-[0.95] tracking-[-0.025em] text-void [text-wrap:balance]">
           From timer to invoice, in three moves.
         </h2>
         <p className="mt-5 max-w-[60ch] text-subheading text-iron-veil">

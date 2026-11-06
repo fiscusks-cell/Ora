@@ -98,7 +98,7 @@ export default function LandingPage() {
       <section className="bg-void text-snow">
         <div className="mx-auto max-w-[1216px] px-5 py-24 sm:px-8 lg:py-32">
           <div className="max-w-[760px]">
-            <h2 className="font-display text-[clamp(2.25rem,5vw,4.25rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-snow [text-wrap:balance]">
+            <h2 className="font-display text-[clamp(2.25rem,5vw,4.25rem)] font-bold leading-[0.95] tracking-[-0.025em] text-snow [text-wrap:balance]">
               Close the month with every hour invoiced.
             </h2>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">

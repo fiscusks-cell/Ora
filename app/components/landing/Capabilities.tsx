@@ -74,7 +74,7 @@ export function Capabilities() {
     <section className="relative overflow-hidden bg-obsidian-canvas text-snow">
       <div className="mx-auto grid max-w-[1216px] gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:items-center lg:gap-12 lg:py-32">
         <div>
-          <h2 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-snow [text-wrap:balance]">
+          <h2 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-bold leading-[0.95] tracking-[-0.025em] text-snow [text-wrap:balance]">
             Built for billing, not just timing.
           </h2>
           <ul className="mt-10 space-y-6">
