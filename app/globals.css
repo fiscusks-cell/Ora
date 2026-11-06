@@ -294,10 +294,12 @@ canvas { display: block; }
    draws the clip at 100vw x 56.25vw from lg, uncropped). The clip's window was
    measured from the clip itself: sides at 35.62% and 88.96% of its width, the
    glowing top edge centred at 63.70% of its height and 37px/2160 thick (its
-   lower half-maximum row at 64.07%), corner radius about 1.17% of its width.
-   The mockup sits just inside those lines so the drawn edges stay visible as
-   the window's border: top at 64.07% x 56.25vw, sides 0.2vw inside the drawn
-   sides, corners clipped a little tighter than the frame's radius. */
+   lower half-maximum row at 64.07%), and the corners' centreline radius
+   2.2% of its width (an arc fit on the 45-degree diagonal of both top corners,
+   82-85px at 3840). The mockup sits just inside those lines so the drawn
+   edges stay visible as the window's border: top at 64.07% x 56.25vw, sides
+   0.2vw inside the drawn sides, and its top corners concentric with the
+   frame's, at the centreline radius minus that inset: 2.2vw - 0.2vw. */
 @media (min-width: 64rem) {
   .hero-product {
     top: 36.04vw;
@@ -305,8 +307,8 @@ canvas { display: block; }
     left: 35.82vw;
     width: 52.94vw;
     overflow: hidden;
-    border-top-left-radius: 1vw;
-    border-top-right-radius: 1vw;
+    border-top-left-radius: 2vw;
+    border-top-right-radius: 2vw;
   }
 }
 
