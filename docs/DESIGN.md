@@ -11,7 +11,7 @@ This document describes the design system **as implemented in this repository**.
 | Surface | Tokens applied | Notes |
 |---|---|---|
 | `app/globals.css` — tokens, theme aliases | **done** | `@theme static` tokens; 27 legacy aliases resolve to them in both modes |
-| `app/layout.tsx` — fonts | **done** | Inter via `next/font/google`; Akt (OFL, variable, woff2 in `app/fonts`) via `next/font/local` as the display face |
+| `app/layout.tsx` — fonts | **done** | Akt (OFL, variable, woff2 in `app/fonts`) via `next/font/local` is the only face: `font-sans` and `font-display` |
 | Landing (`/`, `/pricing`) | **done** | `app/components/landing/*` + `components/pricing-section.tsx`; aurora hero, live product mockup, three product states, light/dark bands, pill controls; zero horizontal overflow at 1440/1280/1024/768/414 |
 | Sign-in, sign-up, forgot/reset password, invite | **done** | `components/auth/AuthShell.tsx` + `fields.tsx` on the semantic utilities; theme follows `[data-theme]` (no more `dark:` media variants); video background and NextAuth form handling unchanged |
 | Dashboard: timer, reports, projects, clients, periods, invoices, settings, home | pending | reads the aliases; Reports is hardcoded `slate-*` and ignores the theme |
@@ -51,7 +51,7 @@ Pick a background mode first. A component is dark or light, never both.
 
 ## Tokens — Typography
 
-### Inter — all functional UI text · `--font-inter` → `font-sans`
+### Akt — all functional UI text · `--font-akt` → `font-sans` (the spec names Inter; Akt replaces it so the product is one face)
 Body, nav, buttons, list items, captions, small headings. Weight 500–600 for emphasis, 400 for body, 300 sparingly for quiet metadata. Loaded by `next/font` in `app/layout.tsx`.
 
 ### Display — hero headlines and section openers · `font-display`
@@ -154,11 +154,11 @@ The marketing set is implemented in `app/components/landing/`: `OraMark`/`OraWor
 
 ### Primary Pill Button
 **Role:** the single most important action on a screen (Start, Save, Publish).
-Filled Electric Iris, white text, Inter 14px weight 500, `rounded-buttons`, 12px 24px padding. Hover: `--accent-hover`. One per screen.
+Filled Electric Iris, white text, Akt 14px weight 500, `rounded-buttons`, 12px 24px padding. Hover: `--accent-hover`. One per screen.
 
 ### Ghost Pill Button
 **Role:** secondary actions, nav actions.
-Transparent, 1px border (Slate Edge on dark, Frost on light), text in the surface's primary text color, Inter 14px weight 500, `rounded-buttons`, 10px 20px padding. Hover fills with the surface's raised tone.
+Transparent, 1px border (Slate Edge on dark, Frost on light), text in the surface's primary text color, Akt 14px weight 500, `rounded-buttons`, 10px 20px padding. Hover fills with the surface's raised tone.
 
 ### Card
 **Role:** every panel in the dashboard, feature cards on the landing page.
@@ -166,16 +166,16 @@ Charcoal Card on dark / Snow on light, `rounded-cards`, `--card-padding` 24px, 1
 
 ### Tag / Chip
 **Role:** status badges, filter pills, project and client labels.
-`rounded-tags`, 4px 10px padding, Inter 11px weight 500, text in the category color, background the same color at 12% opacity. Electric Iris for active/selected, Ember Pulse for attention, Ash for done/archived.
+`rounded-tags`, 4px 10px padding, Akt 11px weight 500, text in the category color, background the same color at 12% opacity. Electric Iris for active/selected, Ember Pulse for attention, Ash for done/archived.
 
 ### Top Navigation (landing)
-Transparent over the hero, backdrop blur once scrolled. Logo left, Inter 14px links center, outlined *Sign in* ghost pill and filled *Sign up* iris pill right.
+Transparent over the hero, backdrop blur once scrolled. Logo left, Akt 14px links center, outlined *Sign in* ghost pill and filled *Sign up* iris pill right.
 
 ### Aurora Hero Background (landing only)
 A narrow vertical beam on Void: `linear-gradient(180deg, Electric Iris @60% → Ember Pulse → white)`, 15–25% of page width, with a warm radial sunburst (`#ffaa81 → #ffda9f → transparent`) at its base. **Once per page.** Never a full-surface fill.
 
 ### Light Section Band (landing)
-Snow or `--surface-linen` background, display heading in Void, Inter body in Obsidian Canvas. Dark hero → light band → dark band is the page's structural rhythm, with `--section-gap` between.
+Snow or `--surface-linen` background, display heading in Void, Akt body in Obsidian Canvas. Dark hero → light band → dark band is the page's structural rhythm, with `--section-gap` between.
 
 ### Product Screenshot Frame (landing)
 A real dashboard screenshot inside a `rounded-cards` frame with `shadow-elevation-xl`, floating over the aurora. The product is the photography — no stock imagery, no 3D renders.
