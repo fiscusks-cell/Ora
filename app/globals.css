@@ -234,6 +234,11 @@ body {
   color: var(--text);
   min-height: 100vh;
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Inter's variable file carries an optical-size axis (opsz 14-32). Pinned at
+     its default so text renders exactly as the wght-only build Google served
+     did (verified width- and pixel-identical); remove to let text >= 16px use
+     Inter's display optical size. */
+  font-optical-sizing: none;
 }
 
 html { scroll-behavior: smooth; }
