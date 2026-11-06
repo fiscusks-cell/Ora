@@ -11,7 +11,7 @@ This document describes the design system **as implemented in this repository**.
 | Surface | Tokens applied | Notes |
 |---|---|---|
 | `app/globals.css` — tokens, theme aliases | **done** | `@theme static` tokens; 27 legacy aliases resolve to them in both modes |
-| `app/layout.tsx` — fonts | **done** | Inter via `next/font`; Sora loaded as the display face |
+| `app/layout.tsx` — fonts | **done** | Inter via `next/font/google`; Akt (OFL, variable, woff2 in `app/fonts`) via `next/font/local` as the display face |
 | Landing (`/`, `/pricing`) | **done** | `app/components/landing/*` + `components/pricing-section.tsx`; aurora hero, live product mockup, three product states, light/dark bands, pill controls; zero horizontal overflow at 1440/1280/1024/768/414 |
 | Sign-in, sign-up, forgot/reset password, invite | **done** | `components/auth/AuthShell.tsx` + `fields.tsx` on the semantic utilities; theme follows `[data-theme]` (no more `dark:` media variants); video background and NextAuth form handling unchanged |
 | Dashboard: timer, reports, projects, clients, periods, invoices, settings, home | pending | reads the aliases; Reports is hardcoded `slate-*` and ignores the theme |
@@ -55,7 +55,7 @@ Pick a background mode first. A component is dark or light, never both.
 Body, nav, buttons, list items, captions, small headings. Weight 500–600 for emphasis, 400 for body, 300 sparingly for quiet metadata. Loaded by `next/font` in `app/layout.tsx`.
 
 ### Display — hero headlines and section openers · `font-display`
-The spec names **Esbuild**, a licensed face, and lists **Sora** (Google) and General Sans as substitutes. **Sora is what the code loads** (`--font-sora`, variable weight). Never below 28px; its tight tracking crushes small sizes. To adopt Esbuild: replace the `Sora()` loader in `app/layout.tsx` with `next/font/local` on the same variable name — nothing else changes.
+The spec names **Esbuild**, a licensed face, and lists **Sora** (Google) and General Sans as substitutes. **Akt is what the code loads** (`--font-akt`, SIL OFL 1.1, variable weight 100–900, served as woff2 from `app/fonts`, licence at `public/fonts/Akt-OFL.txt`); `next/font/google` does not list it, so it is loaded with `next/font/local`. Never below 28px. The display tracking and line-heights were tuned for Sora and are pending review on Akt. To change the face: swap the loader in `app/layout.tsx` and point `--font-display` in `app/globals.css` at its variable — nothing else changes.
 
 ### Type scale — one utility per role
 

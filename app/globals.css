@@ -88,14 +88,14 @@
 }
 
 /* Fonts are loaded by next/font in app/layout.tsx, which puts the real family
-   names on <html> as --font-inter and --font-sora. `inline` so the utilities
+   names on <html> as --font-inter and --font-akt. `inline` so the utilities
    carry the fallback chain themselves.
-   Sora stands in for the spec's Esbuild (its named substitute) until a licensed
-   Esbuild file is supplied — then swap the loader in layout.tsx; nothing here
+   Akt (OFL, app/fonts) is the display face, in place of the spec's licensed
+   Esbuild. To change the face, swap the loader in layout.tsx; nothing here
    changes. */
 @theme inline {
   --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-sora),  ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-akt),   ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* ── Semantic, theme-aware utilities ──────────────────────────────────────
      The palette tokens above are absolute (Snow is always white). These resolve

@@ -1,15 +1,23 @@
 import type { Metadata } from 'next';
-import { Inter, Sora } from 'next/font/google';
+import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/components/providers';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-inter' });
-// Display face. The design spec names Esbuild, a licensed font, and lists Sora
-// as its substitute; Sora is a variable Google font, so no weight list is
-// needed. globals.css exposes it as `font-display`. To adopt Esbuild later,
-// replace this loader with next/font/local on the same variable name.
-const sora = Sora({ subsets: ['latin'], variable: '--font-sora' });
+// Display face: Akt (SIL OFL 1.1), a variable font loaded locally because
+// next/font/google's catalogue (Next 16.2.9) does not list it. The served file
+// is the woff2 on the full weight axis; the TTF beside it in app/fonts is the
+// source only and is not bundled. The licence ships at public/fonts/Akt-OFL.txt.
+// globals.css exposes the face as `font-display`.
+const akt = localFont({
+  src: './fonts/Akt-VariableFont_wght.woff2',
+  weight: '100 900',
+  style: 'normal',
+  display: 'swap',
+  variable: '--font-akt',
+});
 
 export const metadata: Metadata = {
   title: 'ORA — Time, tracked. Invoices, done.',
@@ -19,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable}`} data-theme="light">
+    <html lang="en" className={`${inter.variable} ${akt.variable}`} data-theme="light">
       <body className="antialiased min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <Providers>
           {children}
