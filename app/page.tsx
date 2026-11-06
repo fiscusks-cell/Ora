@@ -15,9 +15,10 @@
  * size, reads that hours become invoices in the books, believes it because the
  * workflow is shown as states with real integrations, and starts free.
  *
- * FIRST VIEWPORT (≥1024; the hero is the clip, 16:9, so 56.25vw tall — 810px
- * at 1440): the clip draws the composition — a beam coming down at 68.65vw
- * into a rounded window whose glowing top edge sits at 35.83vw, with fog in
+ * FIRST VIEWPORT (≥1024; the hero is the clip, 16:9 of its own width — 810px
+ * at 1440 without a scrollbar): the clip draws the composition — a beam coming
+ * down at 68.65% of the hero's width into a rounded window whose glowing top
+ * edge sits at 63.70% of its height, with fog in
  * the dark greys. The product mockup sits inside that window at 1:1 (its
  * edges are the clip's frame edges, in globals.css), running to the foot
  * through a 120px dissolve into the next band's Linen. The copy is top-left,
@@ -56,7 +57,7 @@ export default function LandingPage() {
             the viewport, which counts the scrollbar), so the clip fills it uncropped */}
         <HeroVideo />
         <div className="relative mx-auto max-w-[1216px] px-5 pt-28 sm:px-8 sm:pt-32 lg:pt-20">
-          {/* the copy: top-left, above and to the left of the clip's window; the beam comes down at 68.65vw */}
+          {/* the copy: top-left, above and to the left of the clip's window; the beam comes down at 68.65% of the hero's width */}
           <div data-hero-copy className="rise-in relative z-10 max-w-[560px]">
             <h1 className="font-display text-[clamp(2.75rem,5.8vw,5.25rem)] font-bold leading-[0.92] tracking-[-0.025em] text-snow [text-wrap:balance]">
               Time, tracked. Invoices, done.
