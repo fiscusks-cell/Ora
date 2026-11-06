@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
           <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full border border-ok-line bg-ok-soft">
             <CheckCircle2 className="h-6 w-6 text-ok" aria-hidden="true" />
           </div>
-          <h2 className="font-display text-heading font-semibold text-ink">Check your email</h2>
+          <h2 className="font-display text-heading font-bold tracking-[-0.025em] text-ink">Check your email</h2>
           <p className="mt-3 text-body-lg text-ink-secondary">
             If an account exists for <span className="text-ink">{email}</span>, we sent a reset link. Check your inbox and spam folder.
           </p>

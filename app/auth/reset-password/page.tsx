@@ -62,7 +62,7 @@ function ResetPasswordForm() {
         <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full border border-ok-line bg-ok-soft">
           <CheckCircle2 className="h-6 w-6 text-ok" aria-hidden="true" />
         </div>
-        <h2 className="font-display text-heading font-semibold text-ink">Password reset</h2>
+        <h2 className="font-display text-heading font-bold tracking-[-0.025em] text-ink">Password reset</h2>
         <p className="mt-3 text-body text-ink-secondary">Redirecting you to sign in…</p>
       </div>
     );

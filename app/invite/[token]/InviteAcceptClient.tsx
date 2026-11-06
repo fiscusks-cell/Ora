@@ -55,7 +55,7 @@ function StatusCard({
   return (
     <div className="text-center">
       <Icon className={`mx-auto mb-4 h-10 w-10 ${color}`} aria-hidden="true" />
-      <h1 className="font-display text-heading font-semibold text-ink [text-wrap:balance]">{title}</h1>
+      <h1 className="font-display text-heading font-bold tracking-[-0.025em] text-ink [text-wrap:balance]">{title}</h1>
       <div className="mb-6 mt-3 text-body text-ink-secondary">{body}</div>
       {footer}
     </div>
@@ -250,7 +250,7 @@ export default function InviteAcceptClient({
   return (
     <AuthShell>
       <div className="mb-8 text-center">
-        <h1 className="font-display text-display-sm font-semibold text-ink [text-wrap:balance]">Join {orgName}</h1>
+        <h1 className="font-display text-display-sm font-bold tracking-[-0.025em] text-ink [text-wrap:balance]">Join {orgName}</h1>
         <p className="mt-2 text-body-lg text-ink-secondary">
           You&apos;ve been invited as a <Strong>{roleLabel}</Strong>. Set up your account to continue.
         </p>

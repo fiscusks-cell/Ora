@@ -37,7 +37,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
 export function AuthHeading({ title, subtitle }: { title: string; subtitle?: React.ReactNode }) {
   return (
     <div className="mb-8 text-center">
-      <h1 className="font-display text-display-sm font-semibold text-ink [text-wrap:balance]">{title}</h1>
+      <h1 className="font-display text-display-sm font-bold tracking-[-0.025em] text-ink [text-wrap:balance]">{title}</h1>
       {subtitle && <p className="mt-2 text-body-lg text-ink-secondary">{subtitle}</p>}
     </div>
   );
