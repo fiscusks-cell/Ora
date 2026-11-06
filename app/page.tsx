@@ -51,8 +51,9 @@ export default function LandingPage() {
       <MarketingNav tone="dark" />
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden bg-void lg:h-[56.25vw]">
-        {/* the clip is the hero's background from lg: 16:9, so the hero takes its aspect */}
+      <section className="hero-stage relative isolate overflow-hidden bg-void lg:aspect-video">
+        {/* the clip is the hero's background from lg: the hero is 16:9 of its own width (not of
+            the viewport, which counts the scrollbar), so the clip fills it uncropped */}
         <HeroVideo />
         <div className="relative mx-auto max-w-[1216px] px-5 pt-28 sm:px-8 sm:pt-32 lg:pt-20">
           {/* the copy: top-left, above and to the left of the clip's window; the beam comes down at 68.65vw */}
