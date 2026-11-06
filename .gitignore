@@ -42,3 +42,6 @@ next-env.d.ts
 
 /app/generated/prisma
 .claude/
+
+# the hero clip as delivered; the served files are encoded from it
+public/hero/beam-source.mp4

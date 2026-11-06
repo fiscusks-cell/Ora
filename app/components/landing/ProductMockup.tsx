@@ -86,7 +86,7 @@ function ProjectChip({ project }: { project: ProjectKey }) {
 
 export function ProductMockup() {
   return (
-    <div data-product-mockup className="flex w-full overflow-hidden rounded-t-[10px] bg-charcoal-card text-snow ring-1 ring-slate-edge/60 lg:h-full">
+    <div data-product-mockup className="flex w-full overflow-hidden rounded-t-[10px] bg-charcoal-card text-snow ring-1 ring-slate-edge/60 lg:h-full lg:rounded-none lg:ring-0">
       {/* sidebar sliver, as the app has — only where the frame is wide enough to spare it */}
       <aside className="hidden w-[172px] shrink-0 border-r border-slate-edge/60 bg-void/60 px-3 py-4 xl:block">
         <div className="mb-5 flex items-center gap-2 px-2">

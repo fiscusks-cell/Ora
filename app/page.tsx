@@ -15,15 +15,15 @@
  * size, reads that hours become invoices in the books, believes it because the
  * workflow is shown as states with real integrations, and starts free.
  *
- * FIRST VIEWPORT (≥1024; the hero is 100vw tall, 1440px at 1440 — the
- * reference's 1438): copy top-left in a 560px column; behind everything the
- * beam clip (a generated light beam with drifting fog on true black) under
- * `lighten`, 133vw wide, its core at 56.8% of the viewport, bleeding past both
- * edges; the product frame min(70vw, 1100px) wide at 1:1, centred on that x,
- * its top border on the clip's flare line (61.93vw) so the light reads as
- * hitting the window, running to the foot through the 300px dissolve into the
- * next band's Linen. Below 1024 the clip is off and the product sits under the
- * copy at full width. Primary action: "Start free".
+ * FIRST VIEWPORT (≥1024; the hero is the clip, 16:9, so 56.25vw tall — 810px
+ * at 1440): the clip draws the composition — a beam coming down at 68.65vw
+ * into a rounded window whose glowing top edge sits at 35.83vw, with fog in
+ * the dark greys. The product mockup sits inside that window at 1:1 (its
+ * edges are the clip's frame edges, in globals.css), running to the foot
+ * through a 120px dissolve into the next band's Linen. The copy is top-left,
+ * above and to the left of the window, clear of the beam. Below 1024 the clip
+ * is off and the product sits under the copy at full width.
+ * Primary action: "Start free".
  *
  * FORM: Persuade. Hero → How it works (light bento) → Capabilities (dark, the
  * report bleeding right) → Pricing (light) → Close (dark) → Footer. The beam
@@ -51,11 +51,11 @@ export default function LandingPage() {
       <MarketingNav tone="dark" />
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden bg-void lg:min-h-[100vw]">
-        {/* the beam clip, behind everything; the section's `isolate` is the blend's backdrop */}
+      <section className="relative isolate overflow-hidden bg-void lg:h-[56.25vw]">
+        {/* the clip is the hero's background from lg: 16:9, so the hero takes its aspect */}
         <HeroVideo />
-        <div className="relative mx-auto max-w-[1216px] px-5 pt-28 sm:px-8 sm:pt-32">
-          {/* the copy: top-anchored; from lg the beam runs down to its right, to the product below */}
+        <div className="relative mx-auto max-w-[1216px] px-5 pt-28 sm:px-8 sm:pt-32 lg:pt-20">
+          {/* the copy: top-left, above and to the left of the clip's window; the beam comes down at 68.65vw */}
           <div data-hero-copy className="rise-in relative z-10 max-w-[560px]">
             <h1 className="font-display text-[clamp(2.75rem,5.8vw,5.25rem)] font-bold leading-[0.92] tracking-[-0.025em] text-snow [text-wrap:balance]">
               Time, tracked. Invoices, done.
@@ -77,17 +77,18 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* the product: under the copy at full width below lg. From lg an absolute frame,
-            min(70vw, 1100px) wide and centred on the beam's x, its top border on the
-            clip's flare line (globals.css .hero-product), running to the hero's foot
-            where the dissolve crops it; above the clip, so the glow reads as behind
-            the window */}
+        {/* the product: under the copy at full width below lg. From lg it sits inside the
+            window the clip draws (globals.css .hero-product: the clip's frame edges as
+            fractions of the viewport), its top just under the frame's glowing edge so
+            that edge reads as the window's border; it runs to the hero's foot, where
+            the dissolve crops it */}
         <div className="hero-product rise-in relative z-10 mx-auto mt-14 w-full max-w-[1216px] px-5 sm:px-8 lg:absolute lg:mt-0 lg:max-w-none lg:px-0" style={{ animationDelay: '120ms' }}>
           <ProductMockup />
         </div>
 
-        {/* the dissolve into the next band — to its Linen, so no line appears at the boundary */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[300px] bg-gradient-to-b from-transparent to-[var(--surface-linen)]" />
+        {/* the dissolve into the next band — to its Linen, so no line appears at the boundary;
+            shorter from lg, where the window's visible part is under 300px tall */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[300px] bg-gradient-to-b from-transparent to-[var(--surface-linen)] lg:h-[120px]" />
       </section>
 
       <HowItWorks />

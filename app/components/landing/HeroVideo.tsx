@@ -3,20 +3,18 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * The hero's beam: a generated clip (a light beam with drifting fog on true
- * black) behind the hero content, composited with `mix-blend-mode: lighten`
- * over the Void canvas. Black contributes nothing under lighten, so the clip's
- * own falloff is its edge — nothing is masked or clipped.
- *
- * Geometry lives in globals.css as `.hero-video`, next to `.hero-product`,
- * which is placed from the same numbers: the box is 133vw wide at the clip's
- * own aspect, starting at the hero's top, offset so the clip's beam core
- * (56.8% of its width) sits at 56.8% of the viewport; the product frame's top
- * edge is put on the clip's flare line. Below `lg` the clip is not drawn.
+ * The hero's background: a generated clip that carries the whole composition
+ * — a beam coming down into a rounded window frame with a glowing top edge,
+ * fog in the dark greys behind. It is a complete picture, not light on black,
+ * so it is drawn as a plain layer (no blend mode) filling the hero with
+ * object-fit: cover. The hero is sized to the clip's 16:9, so nothing is
+ * cropped and the frame's position in the clip is the frame's position on the
+ * page: the product mockup is placed inside it from globals.css (.hero-product).
+ * Below `lg` the hero stacks copy over product on Void and the clip is off.
  *
  * Motion: the markup carries no autoplay. On mount, if the visitor has not
- * asked for reduced motion, the clip is started; otherwise the poster (its
- * first frame) stays, so the hero paints the same picture either way.
+ * asked for reduced motion, the clip is started; otherwise the poster (frame
+ * 0) stays, so the hero paints the same picture either way.
  */
 export function HeroVideo() {
   const ref = useRef<HTMLVideoElement>(null);
@@ -34,7 +32,7 @@ export function HeroVideo() {
   }, []);
 
   return (
-    <div aria-hidden="true" className="hero-video pointer-events-none absolute top-0 hidden aspect-video mix-blend-lighten lg:block">
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">
       <video
         ref={ref}
         data-hero-video
