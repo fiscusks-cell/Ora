@@ -38,7 +38,7 @@ ORA turns tracked time into issued invoices. A member starts a timer against a c
 ## Brand Commitments
 
 - Name: ORA. Byline: "Powered by Fiscus LLC".
-- Visual system: `docs/DESIGN.md` is binding (dark graphite canvas, one aurora beam, Electric Iris / Ember Pulse, Akt for body and display, pill controls).
+- Visual system: `docs/DESIGN.md` is binding (dark graphite canvas, one aurora beam, Electric Iris / Ember Pulse, Barlow body with Akt display, pill controls).
 - No gradient text, no eyebrow labels, no decorative glass — per the design reference and craft floor.
 
 ## Evidence on Hand
