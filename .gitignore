@@ -45,3 +45,6 @@ next-env.d.ts
 
 # the hero clip as delivered; the served files are encoded from it
 public/hero/beam-source.mp4
+
+# font source packages; only the converted woff2 files in app/fonts are served
+fonts-src/
